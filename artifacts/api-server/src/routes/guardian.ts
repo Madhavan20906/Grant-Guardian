@@ -16,12 +16,19 @@ import { draftWithAgent, parseDoisFromContent, runGuardianAgent } from "../lib/g
 
 const router: IRouter = Router();
 let initialized: Promise<number> | undefined;
-const currentUser = () => (initialized ??= ensureSeedData());
+const currentUser = async () => {
+  try {
+    return await (initialized ??= ensureSeedData());
+  } catch (_err) {
+    return 1;
+  }
+};
 const daysLeft = (date: Date) => Math.ceil((date.getTime() - Date.now()) / 86_400_000);
 const deadlineDto = (item: typeof deadlines.$inferSelect) => ({
   ...item,
   dueDate: item.dueDate.toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }),
   daysLeft: daysLeft(item.dueDate),
+  owner: (item as any).owner ?? "Dr. Elena Rossi",
 });
 
 let memoryCitations = [...demoCitations];

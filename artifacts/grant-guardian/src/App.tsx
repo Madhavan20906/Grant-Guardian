@@ -17,6 +17,10 @@ import {
   Router as WouterRouter,
 } from 'wouter';
 
+import { setBaseUrl } from '@workspace/api-client-react';
+
+setBaseUrl('http://127.0.0.1:3000');
+
 const queryClient = new QueryClient();
 
 function Router() {

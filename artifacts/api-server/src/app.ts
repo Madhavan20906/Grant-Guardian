@@ -27,8 +27,8 @@ app.use(
   }),
 );
 app.use(cors({
-  origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(",").map((value) => value.trim()) : false,
-  credentials: Boolean(process.env.CORS_ORIGIN),
+  origin: true,
+  credentials: true,
 }));
 app.use((req, res, next) => {
   const key = `${req.ip}:${req.path}`;

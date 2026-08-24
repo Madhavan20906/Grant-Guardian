@@ -1,3 +1,7 @@
+import { eq } from "drizzle-orm";
+import { db } from "./index";
+import { activities, citations, deadlines, preferences, users } from "./schema";
+
 export const demoUser = { id: 1, name: "Elena Rossi", email: "elena.rossi@example.org", role: "PI" };
 
 export const demoCitations = [
@@ -124,9 +128,9 @@ export const demoCitations = [
 ];
 
 export const demoDeadlines = [
-  { id: 1, userId: 1, type: "IRB renewal", title: "Human Subjects Protocol 24-118", dueDate: new Date(Date.now() + 11 * 86400000), progress: 72, status: "due_soon" },
-  { id: 2, userId: 1, type: "Funding report", title: "NSF CAREER annual progress report", dueDate: new Date(Date.now() + 52 * 86400000), progress: 38, status: "on_track" },
-  { id: 3, userId: 1, type: "Data management", title: "NIH Data Management & Sharing update", dueDate: new Date(Date.now() + 3 * 86400000), progress: 12, status: "attention" },
+  { id: 1, userId: 1, type: "IRB renewal", title: "Human Subjects Protocol 24-118", dueDate: new Date(Date.now() + 11 * 86400000), progress: 72, status: "due_soon" as const, owner: "Dr. Elena Rossi" },
+  { id: 2, userId: 1, type: "Funding report", title: "NSF CAREER annual progress report", dueDate: new Date(Date.now() + 52 * 86400000), progress: 38, status: "on_track" as const, owner: "Dr. Elena Rossi" },
+  { id: 3, userId: 1, type: "Data management", title: "NIH Data Management & Sharing update", dueDate: new Date(Date.now() + 3 * 86400000), progress: 12, status: "attention" as const, owner: "Dr. Elena Rossi" },
 ];
 
 export const demoActivities = [
