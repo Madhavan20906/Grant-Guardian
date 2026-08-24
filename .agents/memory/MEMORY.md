@@ -1,0 +1,1 @@
+- [Generated API integer schemas](tooling-quirks.md) — use numeric OpenAPI fields until the workspace's Zod version supports generated zod.int().

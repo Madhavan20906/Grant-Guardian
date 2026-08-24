@@ -1,0 +1,235 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: guardian
+    description: Grant Guardian monitoring operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /guardian/overview:
+    get:
+      operationId: getGuardianOverview
+      tags: [guardian]
+      summary: Get the Grant Guardian overview
+      responses:
+        "200":
+          description: Overview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GuardianOverview"
+  /guardian/citations:
+    get:
+      operationId: listCitations
+      tags: [guardian]
+      summary: List tracked citations
+      responses:
+        "200":
+          description: Tracked citations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Citation"
+  /guardian/deadlines:
+    get:
+      operationId: listDeadlines
+      tags: [guardian]
+      summary: List compliance deadlines
+      responses:
+        "200":
+          description: Compliance deadlines
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Deadline"
+  /guardian/activity:
+    get:
+      operationId: listActivity
+      tags: [guardian]
+      summary: List recent agent decisions
+      responses:
+        "200":
+          description: Decision log
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Activity"
+  /guardian/scan:
+    post:
+      operationId: runGuardianScan
+      tags: [guardian]
+      summary: Run a citation and propagation scan
+      responses:
+        "200":
+          description: Scan result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScanResult"
+  /guardian/deadlines/{id}/draft:
+    post:
+      operationId: draftComplianceReport
+      tags: [guardian]
+      summary: Draft a compliance report
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Draft created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Draft"
+  /guardian/drafts:
+    get:
+      operationId: listDrafts
+      tags: [guardian]
+      summary: List saved compliance drafts
+      responses:
+        "200":
+          description: Saved drafts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Draft"
+  /guardian/drafts/{id}:
+    patch:
+      operationId: updateDraftStatus
+      tags: [guardian]
+      summary: Update a draft lifecycle status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: number }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [draft, reviewed, approved, submitted_externally]
+      responses:
+        "200":
+          description: Updated draft
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Draft"
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    Citation:
+      type: object
+      required: [id, title, authors, venue, year, status, risk, doi]
+      properties:
+        id: { type: number }
+        title: { type: string }
+        authors: { type: string }
+        venue: { type: string }
+        year: { type: number }
+        status:
+          type: string
+          enum: [clear, retracted, corrected, propagation]
+        risk:
+          type: string
+          enum: [low, medium, high]
+        doi: { type: string }
+        detail: { type: ["string", "null"] }
+    Deadline:
+      type: object
+      required: [id, type, title, dueDate, daysLeft, status, owner]
+      properties:
+        id: { type: number }
+        type: { type: string }
+        title: { type: string }
+        dueDate: { type: string }
+        daysLeft: { type: number }
+        status:
+          type: string
+          enum: [on_track, due_soon, attention]
+        owner: { type: string }
+        progress: { type: number }
+    Activity:
+      type: object
+      required: [id, kind, title, description, timestamp, tone]
+      properties:
+        id: { type: number }
+        kind:
+          type: string
+          enum: [scan, flagged, escalation, draft, clear]
+        title: { type: string }
+        description: { type: string }
+        timestamp: { type: string }
+        tone:
+          type: string
+          enum: [neutral, success, warning, danger]
+    GuardianOverview:
+      type: object
+      required: [citationsTracked, issuesFound, deadlinesTracked, pendingJudgments, lastScan]
+      properties:
+        citationsTracked: { type: number }
+        issuesFound: { type: number }
+        deadlinesTracked: { type: number }
+        pendingJudgments: { type: number }
+        lastScan: { type: string }
+    ScanResult:
+      type: object
+      required: [scanned, flagged, escalated, message]
+      properties:
+        scanned: { type: number }
+        flagged: { type: number }
+        escalated: { type: number }
+        message: { type: string }
+    Draft:
+      type: object
+      required: [id, deadlineId, title, status, body]
+      properties:
+        id: { type: number }
+        deadlineId: { type: number }
+        title: { type: string }
+        status: { type: string, enum: [draft] }
+        body: { type: string }
+

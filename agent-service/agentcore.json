@@ -1,0 +1,23 @@
+{
+  "agentName": "GrantGuardianAgentCore",
+  "version": "1.0.0",
+  "description": "Strands Python Agent Service for Research Integrity & Citation Safety Verification",
+  "runtime": "python3.11",
+  "entrypoint": "main:app",
+  "port": 8000,
+  "environment": {
+    "AWS_REGION": "us-east-1",
+    "STRANDS_LOG_LEVEL": "INFO",
+    "BEDROCK_MODEL_ID": "us.anthropic.claude-3-5-sonnet-20241022-v2:0"
+  },
+  "endpoints": {
+    "health": "/health",
+    "scan": "/scan"
+  },
+  "deployment": {
+    "type": "container",
+    "containerPort": 8000,
+    "healthCheckPath": "/health",
+    "ecrRepository": "grant-guardian-strands-agent"
+  }
+}

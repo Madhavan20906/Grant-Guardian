@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Grant Guardian"
+description = "An autonomous research safety workspace that catches retracted citations, surfaces second-order propagation risk, and keeps compliance deadlines from becoming crises for solo researchers and small labs."
+version = "1.0.0"
+id = "artifacts/grant-guardian"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22463
+
+[services.development]
+run = "pnpm --filter @workspace/grant-guardian run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/grant-guardian", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/grant-guardian/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22463"
+BASE_PATH = "/"
