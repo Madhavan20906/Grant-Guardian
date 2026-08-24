@@ -10,7 +10,7 @@ export default function Compliance() {
   const draftMutation = useDraftComplianceReport();
   const [draft, setDraft] = useState<{ id: number; deadlineId: number; title: string; status: string; body: string } | null>(null);
   const [draftError, setDraftError] = useState('');
-  const deadlines = query.data ?? [];
+  const deadlines = Array.isArray(query.data) ? query.data : [];
   const attention = deadlines.filter((deadline: Deadline) => deadline.status === 'attention').length;
   const draftReport = (id: number) => {
     setDraftError('');

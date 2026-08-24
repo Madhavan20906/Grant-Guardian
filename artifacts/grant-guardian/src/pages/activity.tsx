@@ -8,7 +8,8 @@ export default function ActivityPage() {
   const query = useListActivity();
   const [tone, setTone] = useState('all');
   const [selected, setSelected] = useState<Activity | null>(null);
-  const activity = useMemo(() => (query.data ?? []).filter((item: Activity) => tone === 'all' || item.tone === tone), [query.data, tone]);
+  const rawActivity = Array.isArray(query.data) ? query.data : [];
+  const activity = useMemo(() => rawActivity.filter((item: Activity) => tone === 'all' || item.tone === tone), [rawActivity, tone]);
 
   return (
     <div className="gg-stagger">

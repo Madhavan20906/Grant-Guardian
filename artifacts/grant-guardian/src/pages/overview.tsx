@@ -28,9 +28,9 @@ export default function Overview() {
   const scan = useRunGuardianScan();
   const [scanMessage, setScanMessage] = useState('');
   const [scanError, setScanError] = useState('');
-  const citations = citationsQuery.data ?? [];
-  const deadlines = deadlinesQuery.data ?? [];
-  const activity = activityQuery.data ?? [];
+  const citations = Array.isArray(citationsQuery.data) ? citationsQuery.data : [];
+  const deadlines = Array.isArray(deadlinesQuery.data) ? deadlinesQuery.data : [];
+  const activity = Array.isArray(activityQuery.data) ? activityQuery.data : [];
   const urgentCitations = useMemo(() => citations.filter((c: Citation) => c.risk !== 'low').slice(0, 4), [citations]);
   const urgentDeadlines = useMemo(() => deadlines.filter((d: Deadline) => d.status !== 'on_track').slice(0, 3), [deadlines]);
 

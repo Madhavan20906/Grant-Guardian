@@ -9,11 +9,12 @@ export default function Citations() {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('all');
   const [selected, setSelected] = useState<number | null>(null);
-  const citations = useMemo(() => (query.data ?? []).filter((citation: Citation) => {
+  const rawCitations = Array.isArray(query.data) ? query.data : [];
+  const citations = useMemo(() => rawCitations.filter((citation: Citation) => {
     const matchesSearch = `${citation.title} ${citation.authors} ${citation.venue} ${citation.doi}`.toLowerCase().includes(search.toLowerCase());
     return matchesSearch && (status === 'all' || citation.status === status);
-  }), [query.data, search, status]);
-  const selectedCitation = (query.data ?? []).find((citation: Citation) => citation.id === selected);
+  }), [rawCitations, search, status]);
+  const selectedCitation = rawCitations.find((citation: Citation) => citation.id === selected);
 
   return (
     <div className="gg-stagger">
