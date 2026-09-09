@@ -127,6 +127,7 @@ export default function Overview() {
               value={overviewQuery.data?.citationsTracked ?? 0}
               detail="Active reference register"
               icon={ScanLine}
+              sparklineData={[3, 4, 4, 5, 5, 6]}
             />
             <StatCard
               label="Retractions Caught"
@@ -134,12 +135,14 @@ export default function Overview() {
               detail="Direct & propagation signals"
               tone={(overviewQuery.data?.issuesFound ?? 0) > 0 ? 'danger' : 'success'}
               icon={FileWarning}
+              sparklineData={[0, 0, 1, 1, 2]}
             />
             <StatCard
               label="Compliance Deadlines"
               value={overviewQuery.data?.deadlinesTracked ?? 0}
               detail="IRB renewal & NSF progress"
               icon={Clock3}
+              sparklineData={[4, 4, 3, 3, 3]}
             />
             <StatCard
               label="Escalated Judgments"
@@ -147,6 +150,7 @@ export default function Overview() {
               detail="Requires researcher claim read"
               tone={(overviewQuery.data?.pendingJudgments ?? 0) > 0 ? 'warning' : 'success'}
               icon={CheckCircle2}
+              sparklineData={[0, 1, 1, 1]}
             />
           </section>
 

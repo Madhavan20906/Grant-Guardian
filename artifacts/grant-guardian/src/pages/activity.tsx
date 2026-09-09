@@ -19,10 +19,41 @@ export default function ActivityPage() {
         description="A complete, human-readable record of what Guardian saw, decided, and left for you. Click any event to inspect its provider trace sequence."
         action={
           <div className="flex items-center gap-2 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-3 py-2 text-[10px] text-[hsl(var(--muted-foreground))]">
-            <ActivityIcon size={14} /> {query.data?.length ?? 0} recorded events
+            <ActivityIcon size={14} /> {rawActivity.length} recorded events
           </div>
         }
       />
+
+      {/* Activity Breakdown Metric Row */}
+      <div className="grid max-w-[920px] gap-3 sm:grid-cols-3">
+        <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3.5 shadow-sm">
+          <div className="gg-mono text-[9px] uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+            Active Escalations
+          </div>
+          <div className="mt-1.5 text-[22px] font-extrabold text-[hsl(var(--destructive))]">
+            {rawActivity.filter((a: Activity) => a.tone === 'danger').length}
+          </div>
+          <div className="text-[10px] text-[hsl(var(--muted-foreground))]">Requires PI scientific judgment</div>
+        </div>
+        <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3.5 shadow-sm">
+          <div className="gg-mono text-[9px] uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+            Reviews & Warnings
+          </div>
+          <div className="mt-1.5 text-[22px] font-extrabold text-[hsl(25_62%_35%)]">
+            {rawActivity.filter((a: Activity) => a.tone === 'warning').length}
+          </div>
+          <div className="text-[10px] text-[hsl(var(--muted-foreground))]">Propagation & deadline alerts</div>
+        </div>
+        <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3.5 shadow-sm">
+          <div className="gg-mono text-[9px] uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+            Cleared Sweeps
+          </div>
+          <div className="mt-1.5 text-[22px] font-extrabold text-[hsl(155_35%_35%)]">
+            {rawActivity.filter((a: Activity) => a.tone === 'success').length}
+          </div>
+          <div className="text-[10px] text-[hsl(var(--muted-foreground))]">Verified clean signals</div>
+        </div>
+      </div>
       {query.isError ? (
         <ErrorBlock onRetry={() => void query.refetch()} />
       ) : query.isLoading ? (

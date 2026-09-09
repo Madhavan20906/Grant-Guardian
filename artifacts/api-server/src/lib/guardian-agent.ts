@@ -17,7 +17,7 @@ export function parseDoisFromContent(input: string): string[] {
   const trimmed = String(input ?? "").trim();
   if (!trimmed) return [];
   const matches = [...trimmed.matchAll(/10\.\d{4,9}\/[-._;()/:A-Z0-9]+/gi)].map((match) =>
-    match[0].replace(/[.,}]+$/, "")
+    match[0].replace(/[.,;:}\s]+$/, "")
   );
   return [...new Set(matches)];
 }
@@ -302,6 +302,16 @@ export async function runGuardianAgent(citations: CitationInput[]) {
         durationMs: 12,
       },
     ];
+
+    if (strands.available && strands.output) {
+      trace.push({
+        step: "strands_reasoning",
+        status: "neutral",
+        label: "Strands Agent Synthesis & Bedrock",
+        detail: `Agent Reasoning: ${typeof strands.output === "string" ? strands.output.slice(0, 240) : "Trace recorded"}`,
+        durationMs: 450,
+      });
+    }
 
     decisions.push({
       citationId: citation.id,

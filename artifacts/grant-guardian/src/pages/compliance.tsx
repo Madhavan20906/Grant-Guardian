@@ -27,7 +27,47 @@ export default function Compliance() {
   };
   return (
     <div className="gg-stagger">
-      <SectionHeading eyebrow="Compliance desk" title="Keep the paperwork moving." description="Guardian tracks the dates that can quietly derail a grant. When a deadline needs shape, it can make the first draft for you." action={<div className="flex items-center gap-2 text-[10px] text-[hsl(var(--muted-foreground))]"><span className="size-2 rounded-full bg-[hsl(var(--accent-foreground))]" />{attention ? `${attention} deadline${attention === 1 ? '' : 's'} need attention` : 'All deadlines on track'}</div>} />
+      <SectionHeading
+        eyebrow="Compliance desk"
+        title="Keep the paperwork moving."
+        description="Guardian tracks the dates that can quietly derail a grant. When a deadline needs shape, it can make the first draft for you."
+        action={
+          <div className="flex items-center gap-2 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-3 py-2 text-[10px] text-[hsl(var(--muted-foreground))]">
+            <span className="size-2 rounded-full bg-[hsl(var(--accent-foreground))]" />
+            {attention ? `${attention} deadline${attention === 1 ? '' : 's'} need attention` : 'All deadlines on track'}
+          </div>
+        }
+      />
+
+      {/* Compliance Metrics Overview */}
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-sm">
+          <div className="gg-mono text-[9px] uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+            Total Deadlines Tracked
+          </div>
+          <div className="mt-2 text-[24px] font-extrabold">{deadlines.length}</div>
+          <div className="mt-1 text-[10px] text-[hsl(var(--muted-foreground))]">IRB renewals & agency reports</div>
+        </div>
+        <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-sm">
+          <div className="gg-mono text-[9px] uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+            Requiring Attention
+          </div>
+          <div className={`mt-2 text-[24px] font-extrabold ${attention > 0 ? 'text-[hsl(var(--destructive))]' : 'text-emerald-500'}`}>
+            {attention}
+          </div>
+          <div className="mt-1 text-[10px] text-[hsl(var(--muted-foreground))]">Due in less than 21 days</div>
+        </div>
+        <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-sm">
+          <div className="gg-mono text-[9px] uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+            On Track / Clear
+          </div>
+          <div className="mt-2 text-[24px] font-extrabold text-[hsl(155_35%_35%)]">
+            {deadlines.filter((d: Deadline) => d.status === 'on_track').length}
+          </div>
+          <div className="mt-1 text-[10px] text-[hsl(var(--muted-foreground))]">Adequate milestone runway</div>
+        </div>
+      </div>
+
       {draftError && <div className="mb-5 flex items-center justify-between rounded-lg border border-[hsl(var(--destructive)/.25)] bg-[hsl(var(--destructive)/.06)] px-4 py-3 text-[11px] text-[hsl(var(--destructive))]" data-testid="status-draft-error">{draftError}<button type="button" onClick={() => setDraftError('')} aria-label="Dismiss error" data-testid="button-dismiss-draft-error"><X size={14} /></button></div>}
       {query.isError ? <ErrorBlock onRetry={() => void query.refetch()} /> : query.isLoading ? <LoadingBlock lines={7} /> : deadlines.length === 0 ? <EmptyBlock title="No deadlines in view" detail="When compliance dates are connected, Guardian will keep their distance and timeline here." /> : (
         <div className="grid gap-5 lg:grid-cols-[1fr_330px]">

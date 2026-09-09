@@ -198,29 +198,86 @@ router.put("/guardian/preferences", async (req, res) => {
 router.post("/guardian/scan", async (_req, res) => {
   try {
     let tracked: any[] = [];
+    let isDbConnected = false;
     try {
       const userId = await currentUser();
       tracked = await db.select().from(citations).where(eq(citations.userId, userId));
+      isDbConnected = true;
     } catch (_dbError) {
       tracked = memoryCitations;
     }
 
     const result = await runGuardianAgent(tracked);
 
+    for (const decision of result.decisions) {
+      if (isDbConnected) {
+        try {
+          await db
+            .update(citations)
+            .set({
+              status: decision.status as any,
+              risk: decision.risk as any,
+              detail: decision.detail,
+              metadata: { graph: decision.graph, providers: decision.providerStatus, trace: decision.trace },
+              updatedAt: new Date(),
+            })
+            .where(eq(citations.id, decision.citationId));
+        } catch (_updateErr) {}
+      }
+      const memTarget = memoryCitations.find((c) => c.id === decision.citationId);
+      if (memTarget) {
+        memTarget.status = decision.status as any;
+        memTarget.risk = decision.risk as any;
+        memTarget.detail = decision.detail;
+        memTarget.metadata = { graph: decision.graph, providers: decision.providerStatus, trace: decision.trace };
+        memTarget.updatedAt = new Date();
+      }
+    }
+
     const flagged = result.decisions.filter((item) => item.status === "retracted").length;
     const escalated = result.decisions.filter((item) => item.escalated).length;
-    const trace = result.strands.available
-      ? " Strands service trace recorded."
-      : " Local evidence policy used; Strands service was not configured.";
+    const scanSummaryText = `${tracked.length} sources inspected. ${flagged} direct issue(s) flagged and ${escalated} ambiguous propagation risk(s) routed for your judgment.${
+      result.strands.available ? " Strands Agent trace recorded." : ""
+    }${result.reasoning && !result.strands.available ? " Bedrock added a conservative reasoning note." : ""}`;
+
+    const newActivity = {
+      title: result.strands.available ? "Autonomous Strands Agent sweep complete" : "Integrity sweep complete",
+      description: scanSummaryText,
+      kind: flagged > 0 ? "flagged" : escalated > 0 ? "escalation" : "scan",
+      tone: flagged > 0 ? "danger" : escalated > 0 ? "warning" : "success",
+      createdAt: new Date(),
+    };
+
+    if (isDbConnected) {
+      try {
+        const userId = await currentUser();
+        await db.insert(activities).values({
+          userId,
+          title: newActivity.title,
+          description: newActivity.description,
+          kind: newActivity.kind as any,
+          tone: newActivity.tone as any,
+          createdAt: newActivity.createdAt,
+        });
+      } catch (_actErr) {}
+    }
+    memoryActivities.unshift({
+      id: memoryActivities.length + 1,
+      userId: 1,
+      title: newActivity.title,
+      description: newActivity.description,
+      kind: newActivity.kind,
+      tone: newActivity.tone,
+      createdAt: newActivity.createdAt,
+    });
 
     res.json(
       RunGuardianScanResponse.parse({
         scanned: tracked.length,
         flagged,
         escalated,
-        message: `${tracked.length} sources inspected. ${flagged} direct issue(s) flagged and ${escalated} ambiguous propagation risk(s) routed for your judgment.${
-          result.strands.available ? " Strands Agent trace recorded." : ""
-        }${result.reasoning && !result.strands.available ? " Bedrock added a conservative reasoning note." : ""}`,
+        message: scanSummaryText,
+        decisions: result.decisions,
       })
     );
   } catch (error) {

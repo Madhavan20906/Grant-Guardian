@@ -129,3 +129,27 @@ test("GET & PUT /api/guardian/preferences handles user settings", async () => {
   });
   assert.ok([200, 500].includes(putRes.status));
 });
+
+test("POST /api/guardian/scan enforces proof of restraint (direct retraction vs propagation escalation)", async () => {
+  const scanRes = await request("/api/guardian/scan", { method: "POST" });
+  assert.equal(scanRes.status, 200);
+  assert.ok(typeof scanRes.body.scanned === "number");
+  assert.ok(typeof scanRes.body.flagged === "number");
+  assert.ok(typeof scanRes.body.escalated === "number");
+
+  if (Array.isArray(scanRes.body.decisions)) {
+    const directRetraction = scanRes.body.decisions.find((d: any) => d.status === "retracted");
+    if (directRetraction) {
+      assert.equal(directRetraction.status, "retracted");
+      assert.equal(directRetraction.escalated, false);
+      assert.equal(directRetraction.risk, "high");
+    }
+
+    const propagationItem = scanRes.body.decisions.find((d: any) => d.status === "propagation" || d.escalated);
+    if (propagationItem) {
+      assert.equal(propagationItem.escalated, true);
+      assert.notEqual(propagationItem.status, "retracted");
+      assert.equal(propagationItem.status, "propagation");
+    }
+  }
+});

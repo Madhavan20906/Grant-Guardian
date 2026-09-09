@@ -78,7 +78,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           </div>
           <div className="flex items-center gap-3 border-t border-[hsl(var(--sidebar-border))] px-2 pt-4">
             <div className="flex size-8 items-center justify-center rounded-full bg-[hsl(var(--secondary))] text-[11px] font-bold text-[hsl(var(--secondary-foreground))]">ER</div>
-            <div className="min-w-0"><div className="truncate text-[11px] font-bold text-[hsl(var(--sidebar-foreground))]">Elena Rossi</div><div className="gg-mono mt-0.5 truncate text-[9px] text-[hsl(var(--sidebar-foreground)/.42)]">PI · Materials Lab</div></div>
+            <div className="min-w-0"><div className="truncate text-[11px] font-bold text-[hsl(var(--sidebar-foreground))]">Elena Rossi</div><div className="gg-mono mt-0.5 truncate text-[9px] text-[hsl(var(--sidebar-foreground)/.42)]">PI · Materials Lab (Single-Tenant)</div></div>
             <Link href="/settings" className="ml-auto text-[hsl(var(--sidebar-foreground)/.45)] hover:text-[hsl(var(--sidebar-foreground))]" data-testid="link-profile-settings"><Settings2 size={15} /></Link>
           </div>
         </div>
@@ -98,7 +98,8 @@ export function TopBar({ onMenu }: { onMenu: () => void }) {
         <div className="text-[13px] font-bold sm:hidden">{current.label}</div>
       </div>
       <div className="flex items-center gap-3">
-        <div className="hidden items-center gap-2 rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-3 py-1.5 text-[10px] text-[hsl(var(--muted-foreground))] sm:flex"><span className="size-1.5 rounded-full bg-[hsl(var(--accent-foreground))]" />All systems nominal</div>
+        <div className="hidden items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-[10px] font-semibold text-amber-700 dark:text-amber-300 md:flex" data-testid="badge-single-tenant-disclosure"><span className="size-1.5 rounded-full bg-amber-500 animate-pulse" />Demo workspace — single-tenant by design</div>
+        <div className="hidden items-center gap-2 rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-3 py-1.5 text-[10px] text-[hsl(var(--muted-foreground))] lg:flex"><span className="size-1.5 rounded-full bg-[hsl(var(--accent-foreground))]" />All systems nominal</div>
         <button type="button" onClick={() => setLocation('/activity')} className="relative rounded-lg p-2 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))]" aria-label="Open notifications" data-testid="button-open-notifications"><Bell size={17} /><span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-[hsl(var(--destructive))]" /></button>
         <div className="flex size-8 items-center justify-center rounded-full bg-[hsl(var(--primary))] text-[10px] font-bold text-[hsl(var(--primary-foreground))] md:hidden">ER</div>
       </div>
@@ -154,8 +155,74 @@ export function EmptyBlock({ title, detail, action }: { title: string; detail: s
   return <div className="flex min-h-[180px] flex-col items-center justify-center rounded-xl border border-dashed border-[hsl(var(--border))] bg-[hsl(var(--card)/.5)] p-6 text-center" data-testid="state-empty"><div className="mb-3 flex size-10 items-center justify-center rounded-full bg-[hsl(var(--accent)/.25)] text-[hsl(var(--accent-foreground))]"><Sparkles size={17} /></div><h3 className="text-[13px] font-bold">{title}</h3><p className="mt-1 max-w-sm text-[11px] leading-relaxed text-[hsl(var(--muted-foreground))]">{detail}</p>{action && <div className="mt-4">{action}</div>}</div>;
 }
 
-export function StatCard({ label, value, detail, tone = 'neutral', icon: Icon = CircleDot }: { label: string; value: string | number; detail: string; tone?: 'neutral' | 'warning' | 'danger' | 'success'; icon?: typeof CircleDot }) {
-  return <div className="group rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-[0_1px_2px_hsl(var(--primary)/.04)] transition-transform hover:-translate-y-0.5" data-testid={`stat-${label.toLowerCase().replaceAll(' ', '-')}`}><div className="flex items-start justify-between"><span className="gg-mono text-[9px] uppercase tracking-[.16em] text-[hsl(var(--muted-foreground))]">{label}</span><Icon size={15} className={tone === 'danger' ? 'text-[hsl(var(--destructive))]' : tone === 'warning' ? 'text-[hsl(35_70%_43%)]' : tone === 'success' ? 'text-[hsl(155_35%_35%)]' : 'text-[hsl(var(--muted-foreground))]'} /></div><div className="mt-4 text-[28px] font-extrabold tracking-[-.06em]">{value}</div><div className="mt-1 text-[10px] text-[hsl(var(--muted-foreground))]">{detail}</div></div>;
+export function StatCard({
+  label,
+  value,
+  detail,
+  tone = 'neutral',
+  icon: Icon = CircleDot,
+  sparklineData,
+}: {
+  label: string;
+  value: string | number;
+  detail: string;
+  tone?: 'neutral' | 'warning' | 'danger' | 'success';
+  icon?: typeof CircleDot;
+  sparklineData?: number[];
+}) {
+  return (
+    <div
+      className="group rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-[0_1px_2px_hsl(var(--primary)/.04)] transition-all hover:-translate-y-0.5 hover:shadow-md"
+      data-testid={`stat-${label.toLowerCase().replaceAll(' ', '-')}`}
+    >
+      <div className="flex items-start justify-between">
+        <span className="gg-mono text-[9px] font-bold uppercase tracking-[.16em] text-[hsl(var(--muted-foreground))]">
+          {label}
+        </span>
+        <Icon
+          size={16}
+          className={
+            tone === 'danger'
+              ? 'text-[hsl(var(--destructive))]'
+              : tone === 'warning'
+              ? 'text-[hsl(35_70%_43%)]'
+              : tone === 'success'
+              ? 'text-[hsl(155_35%_35%)]'
+              : 'text-[hsl(var(--muted-foreground))]'
+          }
+        />
+      </div>
+      <div className="mt-4 flex items-end justify-between">
+        <div>
+          <div className="text-[28px] font-extrabold tracking-[-.06em] leading-none">{value}</div>
+          <div className="mt-1.5 text-[10px] text-[hsl(var(--muted-foreground))]">{detail}</div>
+        </div>
+        {sparklineData && sparklineData.length > 1 && (
+          <div className="h-6 w-16 opacity-75 group-hover:opacity-100 transition-opacity">
+            <svg viewBox="0 0 64 24" className="h-full w-full overflow-visible">
+              <path
+                d={`M 0 ${24 - sparklineData[0] * 3} ${sparklineData
+                  .slice(1)
+                  .map((d, i) => `L ${(i + 1) * (64 / (sparklineData.length - 1))} ${Math.max(2, 22 - d * 3)}`)
+                  .join(' ')}`}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                className={
+                  tone === 'danger'
+                    ? 'text-[hsl(var(--destructive))]'
+                    : tone === 'warning'
+                    ? 'text-[hsl(35_70%_43%)]'
+                    : 'text-[hsl(var(--accent-foreground))]'
+                }
+              />
+            </svg>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export function ActivityRow({ item }: { item: Activity }) {

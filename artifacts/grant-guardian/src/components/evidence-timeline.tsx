@@ -85,6 +85,7 @@ export function EvidenceTimeline({ metadata, doi }: { metadata?: EvidenceMetadat
     if (step === 'retraction_watch') return ShieldCheck;
     if (step === 'citation_graph') return GitFork;
     if (step === 'decision') return Sparkles;
+    if (step === 'strands_reasoning') return Sparkles;
     return CheckCircle2;
   };
 
@@ -95,6 +96,8 @@ export function EvidenceTimeline({ metadata, doi }: { metadata?: EvidenceMetadat
         return <span className="inline-flex items-center gap-1 rounded-full bg-[hsl(var(--destructive)/.15)] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[hsl(var(--destructive))]"><XCircle size={11} /> Flagged</span>;
       case 'warning':
         return <span className="inline-flex items-center gap-1 rounded-full bg-[hsl(35_76%_61%/.2)] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[hsl(25_62%_35%)]"><AlertTriangle size={11} /> Escalated</span>;
+      case 'neutral':
+        return <span className="inline-flex items-center gap-1 rounded-full bg-purple-500/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-purple-700 dark:text-purple-300"><Sparkles size={11} /> Agent Synthesis</span>;
       case 'success':
       default:
         return <span className="inline-flex items-center gap-1 rounded-full bg-[hsl(var(--accent)/.25)] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[hsl(155_35%_27%)]"><CheckCircle2 size={11} /> Verified</span>;
@@ -126,6 +129,7 @@ export function EvidenceTimeline({ metadata, doi }: { metadata?: EvidenceMetadat
           const IconComponent = getStepIcon(step.step, step.status);
           const isDanger = step.status === 'flagged' || step.status === 'danger';
           const isWarning = step.status === 'warning';
+          const isNeutral = step.status === 'neutral';
 
           return (
             <div
@@ -135,6 +139,8 @@ export function EvidenceTimeline({ metadata, doi }: { metadata?: EvidenceMetadat
                   ? 'border-[hsl(var(--destructive)/.3)] bg-[hsl(var(--destructive)/.05)] shadow-sm'
                   : isWarning
                   ? 'border-[hsl(35_76%_61%/.3)] bg-[hsl(35_76%_61%/.05)]'
+                  : isNeutral
+                  ? 'border-purple-500/30 bg-purple-500/5'
                   : 'border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:bg-[hsl(var(--muted)/.4)]'
               }`}
               data-testid={`trace-step-${step.step}`}
@@ -145,6 +151,8 @@ export function EvidenceTimeline({ metadata, doi }: { metadata?: EvidenceMetadat
                     ? 'bg-[hsl(var(--destructive))] text-white'
                     : isWarning
                     ? 'bg-[hsl(35_76%_40%)] text-white'
+                    : isNeutral
+                    ? 'bg-purple-600 text-white'
                     : 'bg-[hsl(var(--accent)/.3)] text-[hsl(var(--accent-foreground))]'
                 }`}
               >

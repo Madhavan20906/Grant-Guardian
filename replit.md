@@ -25,16 +25,12 @@ Grant Guardian is a single-workspace research-operations agent that checks citat
 
 ## Where things live
 
-## Where things live
-
 - `artifacts/api-server/src/routes/guardian.ts` — persistence-backed API and agent orchestration
 - `artifacts/api-server/src/lib/guardian-agent.ts` — provider tools, graph traversal, safety policy, and Bedrock reasoning
 - `agent-service/main.py` — canonical Strands agent and tool definitions
 - `lib/db/src/schema/index.ts` — PostgreSQL source-of-truth schema
 - `artifacts/grant-guardian/src/pages/` — dashboard screens
 - `lib/api-spec/openapi.yaml` — API contract source
-
-## Architecture decisions
 
 ## Architecture decisions
 
@@ -46,17 +42,11 @@ Grant Guardian is a single-workspace research-operations agent that checks citat
 
 ## Product
 
-## Product
-
 The dashboard tracks a bibliography, runs an observable citation scan, shows the evidence and reasoning trail, tracks compliance deadlines, generates reviewable drafts, and stores attention preferences. DOI/BibTeX import is available through the API. No report is submitted autonomously.
 
 ## User preferences
 
-## User preferences
-
 The demo workspace stores high-risk interrupts, weekly desk notes, and deadline reminders in PostgreSQL. Settings are workspace-level rather than browser-local.
-
-## Gotchas
 
 ## Gotchas
 

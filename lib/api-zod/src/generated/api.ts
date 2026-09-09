@@ -83,7 +83,14 @@ export const RunGuardianScanResponse = zod.object({
   "scanned": zod.number(),
   "flagged": zod.number(),
   "escalated": zod.number(),
-  "message": zod.string()
+  "message": zod.string(),
+  "decisions": zod.array(zod.object({
+    "citationId": zod.number(),
+    "status": zod.string(),
+    "risk": zod.string(),
+    "escalated": zod.boolean(),
+    "detail": zod.string().nullish()
+  })).optional()
 })
 
 

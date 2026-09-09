@@ -112,6 +112,7 @@ def scan(request: ScanRequest) -> dict[str, Any]:
     return {"result": str(result), "agent": "strands", "tools": 4}
 
 
+@app.get("/health")
 @app.get("/healthz")
 def health() -> dict[str, str]:
     return {"status": "ok", "agent": "strands"}

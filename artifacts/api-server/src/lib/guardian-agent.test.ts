@@ -5,6 +5,7 @@ import {
   draftWithAgent,
   parseDoisFromContent,
   retractionWatch,
+  runGuardianAgent,
   traversePropagationGraph,
   KNOWN_RETRACTED_DOIS,
   type CitationInput,
@@ -164,4 +165,26 @@ test("draftWithAgent: generates conservative report fallback when Bedrock is unc
   assert.match(report, /NSF Annual Report/);
   assert.match(report, /Current status/);
   assert.match(report, /Risks and deviations/);
+  assert.match(report, /Guardian will not submit this report/);
+});
+
+test("parseDoisFromContent: handles uppercase DOIs, multiline BibTeX blocks, and trailing punctuation", () => {
+  const multilineBibtex = `@article{sample,\n  title={Sample},\n  doi={10.1016/J.STEM.2015.01.002;}\n}`;
+  assert.deepEqual(parseDoisFromContent(multilineBibtex), ["10.1016/J.STEM.2015.01.002"]);
+});
+
+test("runGuardianAgent: produces structured 4-step observable evidence trace sequence for each citation", async () => {
+  const sampleCitations: CitationInput[] = [
+    { id: 1, doi: "10.1038/nature13358", title: "STAP Paper", status: "clear", risk: "low" },
+  ];
+  const { decisions } = await runGuardianAgent(sampleCitations);
+  assert.equal(decisions.length, 1);
+  const trace = decisions[0].trace;
+  assert.equal(trace.length, 4);
+  assert.deepEqual(
+    trace.map((step) => step.step),
+    ["crossref", "retraction_watch", "citation_graph", "decision"]
+  );
+  assert.equal(decisions[0].status, "retracted");
+  assert.equal(decisions[0].escalated, false);
 });
