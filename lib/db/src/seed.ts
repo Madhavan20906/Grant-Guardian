@@ -50,6 +50,9 @@ export const demoCitations = [
         { step: "decision", status: "warning", label: "Guardian Safety Policy", detail: "Ambiguous 2nd-order propagation risk detected. Guardian will not auto-decide; escalated to human researcher.", durationMs: 18 }
       ]
     },
+    judgment: "pending",
+    judgmentNotes: null,
+    judgmentAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   },

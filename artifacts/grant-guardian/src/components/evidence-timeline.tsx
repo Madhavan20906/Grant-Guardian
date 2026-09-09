@@ -11,14 +11,19 @@ import {
   ChevronUp,
   FileCode,
   Sparkles,
+  ExternalLink,
 } from 'lucide-react';
 
 export interface TraceStep {
-  step: 'crossref' | 'retraction_watch' | 'citation_graph' | 'decision' | string;
+  step: 'crossref' | 'retraction_watch' | 'citation_graph' | 'reference_verification' | 'decision' | 'strands_reasoning' | string;
   status: 'success' | 'warning' | 'flagged' | 'danger' | 'neutral' | string;
   label: string;
   detail: string;
   durationMs?: number;
+  timestamp?: string;
+  provider?: string;
+  url?: string;
+  raw?: unknown;
 }
 
 export interface EvidenceMetadata {
@@ -84,6 +89,7 @@ export function EvidenceTimeline({ metadata, doi }: { metadata?: EvidenceMetadat
     if (step === 'crossref') return Database;
     if (step === 'retraction_watch') return ShieldCheck;
     if (step === 'citation_graph') return GitFork;
+    if (step === 'reference_verification') return ShieldCheck;
     if (step === 'decision') return Sparkles;
     if (step === 'strands_reasoning') return Sparkles;
     return CheckCircle2;
@@ -176,6 +182,31 @@ export function EvidenceTimeline({ metadata, doi }: { metadata?: EvidenceMetadat
                 <p className="mt-1 text-[11px] leading-relaxed text-[hsl(var(--muted-foreground))]">
                   {step.detail}
                 </p>
+
+                {(step.provider || step.timestamp || step.url) && (
+                  <div className="mt-2 flex flex-wrap items-center gap-2 text-[9px] text-[hsl(var(--muted-foreground)/.8)]">
+                    {step.provider && (
+                      <span className="inline-flex items-center gap-1 rounded bg-[hsl(var(--muted))] px-1.5 py-0.5 font-medium">
+                        Provider: {step.provider}
+                      </span>
+                    )}
+                    {step.timestamp && (
+                      <span className="gg-mono">
+                        {new Date(step.timestamp).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                      </span>
+                    )}
+                    {step.url && (
+                      <a
+                        href={step.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[hsl(var(--accent-foreground))] hover:underline inline-flex items-center gap-0.5 font-medium"
+                      >
+                        Source <ExternalLink size={9} />
+                      </a>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           );

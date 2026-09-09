@@ -13,6 +13,7 @@ import { activities, citations, deadlines, drafts, preferences } from "@workspac
 import { db } from "@workspace/db";
 import { demoActivities, demoCitations, demoDeadlines, ensureSeedData } from "@workspace/db/seed";
 import { draftWithAgent, parseDoisFromContent, runGuardianAgent } from "../lib/guardian-agent";
+import { getWatchState, runAutonomousSweep } from "../lib/autonomous-watch";
 
 const router: IRouter = Router();
 let initialized: Promise<number> | undefined;
@@ -228,7 +229,7 @@ router.post("/guardian/scan", async (_req, res) => {
       if (memTarget) {
         memTarget.status = decision.status as any;
         memTarget.risk = decision.risk as any;
-        memTarget.detail = decision.detail;
+        memTarget.detail = decision.detail ?? "";
         memTarget.metadata = { graph: decision.graph, providers: decision.providerStatus, trace: decision.trace };
         memTarget.updatedAt = new Date();
       }
@@ -357,32 +358,122 @@ router.post("/guardian/deadlines/:id/draft", async (req, res, next) => {
   }
 });
 
-router.get("/guardian/preferences", async (_req, res, next) => {
+// Human Decision Inbox: Record PI judgment for escalated citations
+router.post("/guardian/citations/:id/judgment", async (req, res, next) => {
   try {
+    const id = Number(req.params.id);
+    const judgment = String(req.body?.judgment ?? "");
+    const notes = String(req.body?.notes ?? "").trim();
+
+    if (!["relevant", "not_relevant", "deferred"].includes(judgment)) {
+      return res.status(400).json({ error: "Invalid judgment. Must be 'relevant', 'not_relevant', or 'deferred'." });
+    }
+
     const userId = await currentUser();
-    const [row] = await db.select().from(preferences).where(eq(preferences.userId, userId));
-    res.json(row);
+    let updatedCitation: any = null;
+    let isDbConnected = false;
+
+    // Status / risk determination based on human judgment
+    const newStatus = judgment === "relevant" ? "quarantined" : judgment === "not_relevant" ? "clear" : "propagation";
+    const newRisk = judgment === "relevant" ? "high" : judgment === "not_relevant" ? "low" : "medium";
+
+    try {
+      const [updated] = await db
+        .update(citations)
+        .set({
+          judgment: judgment as any,
+          judgmentNotes: notes || null,
+          judgmentAt: new Date(),
+          status: newStatus as any,
+          risk: newRisk as any,
+          updatedAt: new Date(),
+        })
+        .where(eq(citations.id, id))
+        .returning();
+      if (updated && updated.userId === userId) {
+        updatedCitation = updated;
+        isDbConnected = true;
+      }
+    } catch (_dbErr) {}
+
+    // Fallback memory state update
+    const memTarget = memoryCitations.find((c) => c.id === id);
+    if (memTarget) {
+      (memTarget as any).judgment = judgment;
+      (memTarget as any).judgmentNotes = notes || null;
+      (memTarget as any).judgmentAt = new Date();
+      memTarget.status = newStatus as any;
+      memTarget.risk = newRisk as any;
+      memTarget.updatedAt = new Date();
+      if (!updatedCitation) updatedCitation = memTarget;
+    }
+
+    if (!updatedCitation) {
+      return res.status(404).json({ error: "Citation not found" });
+    }
+
+    // Log decision feedback activity
+    const activityTitle =
+      judgment === "relevant"
+        ? "PI Judgment: Retraction Reliance Confirmed"
+        : judgment === "not_relevant"
+        ? "PI Judgment: Scientific Independence Verified"
+        : "PI Judgment: Review Deferred";
+
+    const activityDesc =
+      judgment === "relevant"
+        ? `Researcher confirmed finding relies on retracted foundation work. Citation quarantined. Notes: "${notes || "Direct dependency"}"`
+        : judgment === "not_relevant"
+        ? `Researcher evaluated citation and verified claims do not depend on retracted premise. Marked safe. Notes: "${notes || "Independent claim"}"`
+        : `Researcher deferred decision for further consultation. Notes: "${notes || "Pending lab discussion"}"`;
+
+    const newActivity = {
+      id: memoryActivities.length + 1,
+      userId,
+      kind: judgment === "relevant" ? "flagged" : judgment === "not_relevant" ? "scan" : "escalation",
+      tone: judgment === "relevant" ? "danger" : judgment === "not_relevant" ? "success" : "warning",
+      title: activityTitle,
+      description: activityDesc,
+      createdAt: new Date(),
+    };
+
+    if (isDbConnected) {
+      try {
+        await db.insert(activities).values({
+          userId,
+          title: newActivity.title,
+          description: newActivity.description,
+          kind: newActivity.kind as any,
+          tone: newActivity.tone as any,
+          createdAt: newActivity.createdAt,
+        });
+      } catch {}
+    }
+    memoryActivities.unshift(newActivity);
+
+    return res.json(updatedCitation);
   } catch (error) {
     return next(error);
   }
 });
 
-router.put("/guardian/preferences", async (req, res, next) => {
+// Autonomous Watch Mode routes
+router.get("/guardian/watch/status", async (_req, res) => {
+  res.json(getWatchState());
+});
+
+router.post("/guardian/watch/sweep", async (_req, res, next) => {
   try {
     const userId = await currentUser();
-    const [row] = await db
-      .update(preferences)
-      .set({
-        weeklyDeskNote: Boolean(req.body.weeklyDeskNote),
-        highRiskInterrupts: Boolean(req.body.highRiskInterrupts),
-        deadlineReminders: Boolean(req.body.deadlineReminders),
-      })
-      .where(eq(preferences.userId, userId))
-      .returning();
-    res.json(row);
+    const result = await runAutonomousSweep(userId);
+    return res.json(result);
   } catch (error) {
     return next(error);
   }
+});
+
+router.get("/guardian/notifications", async (_req, res) => {
+  res.json(getWatchState().notifications);
 });
 
 export default router;

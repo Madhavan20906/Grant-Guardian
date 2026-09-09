@@ -20,6 +20,9 @@ export const citations = pgTable("citations", {
   risk: text("risk").notNull().default("low"),
   detail: text("detail"),
   metadata: jsonb("metadata").$type<Record<string, unknown>>().default({}),
+  judgment: text("judgment").default("pending"),
+  judgmentNotes: text("judgment_notes"),
+  judgmentAt: timestamp("judgment_at", { withTimezone: true }),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
 

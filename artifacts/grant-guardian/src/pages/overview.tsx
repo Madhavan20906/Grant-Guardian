@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ArrowRight, CheckCircle2, Clock3, FileWarning, ScanLine, ShieldCheck, Cpu, Database, Network } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Clock3, FileWarning, ScanLine, ShieldCheck, Cpu, Database, Network, AlertTriangle } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Link, useLocation } from 'wouter';
 import {
@@ -28,11 +28,35 @@ export default function Overview() {
   const scan = useRunGuardianScan();
   const [scanMessage, setScanMessage] = useState('');
   const [scanError, setScanError] = useState('');
+  const [sweepLoading, setSweepLoading] = useState(false);
+  const [sweepResult, setSweepResult] = useState<{ silent: boolean; summary: string } | null>(null);
   const citations = Array.isArray(citationsQuery.data) ? citationsQuery.data : [];
   const deadlines = Array.isArray(deadlinesQuery.data) ? deadlinesQuery.data : [];
   const activity = Array.isArray(activityQuery.data) ? activityQuery.data : [];
   const urgentCitations = useMemo(() => citations.filter((c: Citation) => c.risk !== 'low').slice(0, 4), [citations]);
   const urgentDeadlines = useMemo(() => deadlines.filter((d: Deadline) => d.status !== 'on_track').slice(0, 3), [deadlines]);
+
+  const triggerMorningSweep = async () => {
+    setSweepLoading(true);
+    setSweepResult(null);
+    try {
+      const res = await fetch('/api/guardian/watch/sweep', { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        setSweepResult(data);
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: getGetGuardianOverviewQueryKey() }),
+          queryClient.invalidateQueries({ queryKey: getListCitationsQueryKey() }),
+          queryClient.invalidateQueries({ queryKey: getListDeadlinesQueryKey() }),
+          queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() }),
+        ]);
+      }
+    } catch {
+      //
+    } finally {
+      setSweepLoading(false);
+    }
+  };
 
   const runScan = () => {
     setScanMessage('');
@@ -95,6 +119,71 @@ export default function Overview() {
           </div>
         </div>
       </div>
+
+      {/* Autonomous Watch Mode Bar (Priority 3 & 8) */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.4)] px-4 py-3 text-[11px]">
+        <div className="flex items-center gap-2.5">
+          <span className="relative flex size-2.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" />
+            <span className="relative inline-flex size-2.5 rounded-full bg-emerald-500" />
+          </span>
+          <div>
+            <span className="font-extrabold text-[hsl(var(--foreground))]">AUTONOMOUS WATCH MODE: ACTIVE</span>
+            <span className="ml-2 text-[hsl(var(--muted-foreground))]">· Routine checks run silently; surfaces only verified risks.</span>
+          </div>
+        </div>
+        <button
+          onClick={triggerMorningSweep}
+          disabled={sweepLoading}
+          className="inline-flex items-center gap-1.5 rounded-md bg-[hsl(var(--primary))] px-3 py-1.5 text-[10px] font-bold text-[hsl(var(--primary-foreground))] hover:opacity-90 disabled:opacity-50"
+          data-testid="button-trigger-sweep"
+        >
+          <Clock3 size={12} />
+          {sweepLoading ? 'Running Sweep...' : 'Simulate Morning Sweep'}
+        </button>
+      </div>
+
+      {sweepResult && (
+        <div
+          className={`flex items-center justify-between gap-2 rounded-xl border p-3.5 text-[11px] ${
+            sweepResult.silent
+              ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300'
+              : 'border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-300'
+          }`}
+          data-testid="status-sweep-result"
+        >
+          <div className="flex items-center gap-2 font-semibold">
+            {sweepResult.silent ? <CheckCircle2 size={16} className="text-emerald-500 shrink-0" /> : <AlertTriangle size={16} className="text-amber-500 shrink-0" />}
+            <span>{sweepResult.summary}</span>
+          </div>
+          <Link href="/activity" className="gg-mono text-[10px] font-bold underline underline-offset-2 hover:opacity-80">
+            View Notifications →
+          </Link>
+        </div>
+      )}
+
+      {/* Human Decision Inbox Banner if pending judgments exist (Priority 4) */}
+      {(overviewQuery.data?.pendingJudgments ?? 0) > 0 && (
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-amber-500/40 bg-amber-500/10 px-5 py-3.5 text-[11px] shadow-sm">
+          <div className="flex items-center gap-2.5">
+            <AlertTriangle size={17} className="text-amber-600 shrink-0" />
+            <div>
+              <span className="font-bold text-amber-900 dark:text-amber-200">
+                HUMAN DECISION INBOX · {overviewQuery.data?.pendingJudgments} Ambiguous Propagation Risk(s)
+              </span>
+              <p className="text-[10px] text-amber-800/80 dark:text-amber-300/80">
+                Guardian does not decide whether retracted premises invalidate your claim. Principal Investigator judgment required.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/citations"
+            className="rounded-md bg-amber-600 px-3 py-1.5 text-[10px] font-bold text-white hover:bg-amber-700 shadow-sm shrink-0"
+          >
+            Open Decision Inbox →
+          </Link>
+        </div>
+      )}
 
       {scanMessage && (
         <div className="flex items-center justify-between gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-5 py-3.5 text-[11px] text-emerald-800 dark:text-emerald-300 shadow-sm" data-testid="status-scan-result">
