@@ -4,9 +4,9 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import app from "../app";
 
-async function request(path: string, options: { method?: string; body?: unknown } = {}): Promise<{ status: number; body: any }> {
+async function request(path: string, options: { method?: string; body?: unknown; headers?: Record<string, string> } = {}): Promise<{ status: number; body: any; headers: Headers }> {
   const method = options.method ?? "GET";
-  const headers: Record<string, string> = {};
+  const headers: Record<string, string> = { ...options.headers };
   let body: string | undefined;
 
   if (options.body) {
@@ -29,38 +29,32 @@ async function request(path: string, options: { method?: string; body?: unknown 
       body,
     });
     const json = await res.json().catch(() => null);
-    return { status: res.status, body: json };
+    return { status: res.status, body: json, headers: res.headers };
   } finally {
     server.close();
   }
 }
 
-test("GET /api/guardian/overview returns 200 or 500 when DB is unprovisioned", async () => {
+test("GET /api/guardian/overview returns 200 via store adapter", async () => {
   const res = await request("/api/guardian/overview");
-  assert.ok([200, 500].includes(res.status));
-  if (res.status === 200) {
-    assert.ok(typeof res.body.citationsTracked === "number");
-    assert.ok(typeof res.body.issuesFound === "number");
-  }
+  assert.equal(res.status, 200);
+  assert.ok(typeof res.body.citationsTracked === "number");
+  assert.ok(typeof res.body.issuesFound === "number");
 });
 
-test("GET /api/guardian/citations returns list or DB error status", async () => {
+test("GET /api/guardian/citations returns list via store adapter", async () => {
   const res = await request("/api/guardian/citations");
-  assert.ok([200, 500].includes(res.status));
-  if (res.status === 200) {
-    assert.ok(Array.isArray(res.body));
-  }
+  assert.equal(res.status, 200);
+  assert.ok(Array.isArray(res.body));
 });
 
 test("GET /api/guardian/deadlines returns formatted compliance deadlines", async () => {
   const res = await request("/api/guardian/deadlines");
-  assert.ok([200, 500].includes(res.status));
-  if (res.status === 200) {
-    assert.ok(Array.isArray(res.body));
-  }
+  assert.equal(res.status, 200);
+  assert.ok(Array.isArray(res.body));
 });
 
-test("POST /api/guardian/citations/import parses BibTeX and DOIs cleanly", async () => {
+test("POST /api/guardian/citations/import parses BibTeX and DOIs cleanly with store fallback", async () => {
   const bibtexInput = `@article{test2024,
     author = {Doe, John},
     title = {Test Study},
@@ -72,7 +66,8 @@ test("POST /api/guardian/citations/import parses BibTeX and DOIs cleanly", async
     body: { content: bibtexInput },
   });
 
-  assert.ok([201, 500].includes(res.status));
+  assert.equal(res.status, 201);
+  assert.ok(typeof res.body.imported === "number");
 });
 
 test("POST /api/guardian/citations/import validates missing and invalid content", async () => {
@@ -99,12 +94,12 @@ test("PATCH /api/guardian/drafts/:id validates draft status transitions", async 
   });
   assert.equal(invalidRes.status, 400);
 
-  // Non-existent draft -> 404 or 500 if DB unavailable
+  // Non-existent draft -> 404
   const notFoundRes = await request("/api/guardian/drafts/99999", {
     method: "PATCH",
     body: { status: "approved" },
   });
-  assert.ok([404, 500].includes(notFoundRes.status));
+  assert.equal(notFoundRes.status, 404);
 });
 
 test("POST /api/guardian/deadlines/:id/draft validates deadline ID", async () => {
@@ -115,9 +110,9 @@ test("POST /api/guardian/deadlines/:id/draft validates deadline ID", async () =>
   assert.equal(invalidRes.status, 400);
 });
 
-test("GET & PUT /api/guardian/preferences handles user settings", async () => {
+test("GET & PUT /api/guardian/preferences handles user settings via store adapter", async () => {
   const getRes = await request("/api/guardian/preferences");
-  assert.ok([200, 500].includes(getRes.status));
+  assert.equal(getRes.status, 200);
 
   const putRes = await request("/api/guardian/preferences", {
     method: "PUT",
@@ -127,7 +122,8 @@ test("GET & PUT /api/guardian/preferences handles user settings", async () => {
       deadlineReminders: true,
     },
   });
-  assert.ok([200, 500].includes(putRes.status));
+  assert.equal(putRes.status, 200);
+  assert.equal(putRes.body.highRiskInterrupts, false);
 });
 
 test("POST /api/guardian/scan enforces proof of restraint (direct retraction vs propagation escalation)", async () => {
@@ -152,4 +148,27 @@ test("POST /api/guardian/scan enforces proof of restraint (direct retraction vs 
       assert.equal(propagationItem.status, "propagation");
     }
   }
+});
+
+// CORS security tests
+test("CORS: allows localhost development origin and returns credentials header", async () => {
+  const res = await request("/api/healthz", {
+    headers: { Origin: "http://localhost:5173" },
+  });
+  assert.equal(res.headers.get("access-control-allow-origin"), "http://localhost:5173");
+  assert.equal(res.headers.get("access-control-allow-credentials"), "true");
+});
+
+test("CORS: blocks arbitrary untrusted origins from reflecting origin header", async () => {
+  const res = await request("/api/healthz", {
+    headers: { Origin: "https://malicious-attacker-site.com" },
+  });
+  assert.equal(res.headers.get("access-control-allow-origin"), null);
+});
+
+test("CORS: allows 127.0.0.1 development origin", async () => {
+  const res = await request("/api/healthz", {
+    headers: { Origin: "http://127.0.0.1:3000" },
+  });
+  assert.equal(res.headers.get("access-control-allow-origin"), "http://127.0.0.1:3000");
 });

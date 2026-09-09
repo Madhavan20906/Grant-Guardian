@@ -35,11 +35,19 @@ This restraint is structurally enforced in code via `classifyDecision()` in `gua
 
 ## Run & Clean-Boot Verification
 
-Provision PostgreSQL and set `DATABASE_URL`. For optional model reasoning, set AWS credentials through the runtime secret manager (never commit them), plus `AWS_REGION` and `BEDROCK_MODEL_ID`.
+> [!TIP]
+> **Reviewer Quick Start**: When reviewing from a fresh clone or unzipped archive, always run `pnpm install` before running tests. Do not package or run tests against a pre-bundled `node_modules` directory across different machines or OS environments, as pnpm's internal symlinks do not transfer through standard zip archives. The workspace has `shamefully-hoist=true` enabled in `.npmrc` to guarantee consistent module resolution for all test runners.
+
+Provision PostgreSQL and set `DATABASE_URL` (optional; if unprovisioned, the built-in `guardianStore` adapter automatically engages an in-memory demo dataset with structured logging). For optional model reasoning, set AWS credentials through the runtime secret manager (never commit them), plus `AWS_REGION` and `BEDROCK_MODEL_ID`.
 
 ```bash
+# 1. Install dependencies and recreate workspace symlinks
 pnpm install
+
+# 2. (Optional) Initialize database schema if PostgreSQL is configured
 pnpm --filter @workspace/db push
+
+# 3. Start development servers
 pnpm --filter @workspace/api-server dev
 ```
 
@@ -47,7 +55,7 @@ Set `RETRACTION_WATCH_API_URL` to a live Retraction Watch-compatible endpoint. W
 
 Set `STRANDS_AGENT_URL` to the reachable URL of the Python service (for local development, `http://127.0.0.1:8010`).
 
-Run the complete unit and route integration test suite (including proof-of-restraint assertion):
+Run the complete 37+ test suite (unit tests, route integration tests, proof-of-restraint assertion, and CORS security checks):
 
 ```bash
 pnpm test
@@ -128,21 +136,7 @@ flowchart TD
 - Granular evidence timelines with ISO timestamps, provider status badges, provider URLs, duration metrics, and raw payloads.
 - Single-tenant PI executive desk UI (`Dr. Elena Rossi / Materials Lab`) with responsive status boards, drawers, and audit feeds.
 
-## Run & Clean-Boot Verification
-
-Provision PostgreSQL and set `DATABASE_URL`. For optional model reasoning, set AWS credentials through your runtime secret manager, plus `AWS_REGION` and `BEDROCK_MODEL_ID`.
-
-```bash
-pnpm install
-pnpm --filter @workspace/db push
-pnpm --filter @workspace/api-server dev
-```
-
-Run the complete 37-test unit, route, and adversarial test suite:
-
-```bash
-pnpm test
-```
+## Production Build & Verification
 
 Run full typecheck and production build:
 

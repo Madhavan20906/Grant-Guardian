@@ -1,7 +1,4 @@
-import { desc, eq } from 'drizzle-orm';
-import { db } from '@workspace/db';
-import { activities, citations, deadlines, drafts } from '@workspace/db/schema';
-import { demoCitations, demoDeadlines } from '@workspace/db/seed';
+import { guardianStore } from './store';
 import { CitationInput, draftWithAgent, runGuardianAgent } from './guardian-agent';
 
 export interface WatchNotification {
@@ -58,46 +55,16 @@ export async function runAutonomousSweep(userId = 1): Promise<{
   silent: boolean;
   summary: string;
 }> {
-  let tracked: any[] = [];
-  let deadlineList: any[] = [];
-  let isDb = false;
-
-  try {
-    tracked = await db.select().from(citations).where(eq(citations.userId, userId));
-    deadlineList = await db.select().from(deadlines).where(eq(deadlines.userId, userId));
-    isDb = true;
-  } catch {
-    tracked = [...demoCitations];
-    deadlineList = [...demoDeadlines];
-  }
+  const tracked = await guardianStore.getCitations(userId);
+  const deadlineList = await guardianStore.getDeadlines(userId);
 
   const agentResult = await runGuardianAgent(tracked as CitationInput[]);
   const flagged = agentResult.decisions.filter((d) => d.status === 'retracted').length;
   const escalated = agentResult.decisions.filter((d) => d.escalated).length;
   const isSilent = flagged === 0 && escalated === 0;
 
-  // Persist decisions if DB is available
-  if (isDb) {
-    for (const d of agentResult.decisions) {
-      try {
-        await db
-          .update(citations)
-          .set({
-            status: d.status as any,
-            risk: d.risk as any,
-            detail: d.detail,
-            metadata: {
-              graph: d.graph,
-              providers: d.providerStatus,
-              trace: d.trace,
-              retractedReferences: d.retractedReferences,
-            },
-            updatedAt: new Date(),
-          })
-          .where(eq(citations.id, d.citationId));
-      } catch {}
-    }
-  }
+  // Persist decisions via unified store adapter
+  await guardianStore.saveCitationDecisions(agentResult.decisions);
 
   // Autonomous Compliance Check: inspect deadlines entering 14-day window (< 80% progress)
   let draftsCreated = 0;
@@ -109,13 +76,7 @@ export async function runAutonomousSweep(userId = 1): Promise<{
     const progress = Number(dl.progress ?? 0);
 
     if (daysUntilDue <= 14 && progress < 80) {
-      let existingDraft = false;
-      if (isDb) {
-        try {
-          const found = await db.select().from(drafts).where(eq(drafts.deadlineId, dl.id)).limit(1);
-          existingDraft = found.length > 0;
-        } catch {}
-      }
+      const existingDraft = await guardianStore.findDraftByDeadline(dl.id);
 
       if (!existingDraft) {
         const generated = await draftWithAgent(
@@ -128,24 +89,15 @@ export async function runAutonomousSweep(userId = 1): Promise<{
           'Autonomous Watch triggered draft preparation: deadline entered the 14-day preparation window.'
         );
 
-        if (isDb) {
-          try {
-            await db.insert(drafts).values({
-              userId,
-              deadlineId: dl.id,
-              title: dl.title + ' — autonomous preparation draft',
-              body: generated,
-              status: 'draft',
-            });
-            await db.insert(activities).values({
-              userId,
-              kind: 'draft',
-              title: 'Autonomous compliance draft prepared',
-              description: 'Guardian detected ' + dl.title + ' is due in ' + daysUntilDue + ' days. Report draft generated for PI review and signoff.',
-              tone: 'success',
-            });
-          } catch {}
-        }
+        await guardianStore.createDraft(userId, dl.id, dl.title + ' — autonomous preparation draft', generated);
+        await guardianStore.addActivity({
+          userId,
+          kind: 'draft',
+          title: 'Autonomous compliance draft prepared',
+          description: 'Guardian detected ' + dl.title + ' is due in ' + daysUntilDue + ' days. Report draft generated for PI review and signoff.',
+          tone: 'success',
+        });
+
         draftsCreated++;
         state.notifications.unshift({
           id: 'notif-draft-' + Date.now(),

@@ -26,10 +26,38 @@ app.use(
     },
   }),
 );
-app.use(cors({
-  origin: true,
-  credentials: true,
-}));
+
+const allowedOriginsEnv = (process.env.CORS_ALLOWED_ORIGINS ?? "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+export function isAllowedOrigin(origin?: string): boolean {
+  if (!origin) return true;
+  if (allowedOriginsEnv.includes(origin)) return true;
+  try {
+    const url = new URL(origin);
+    const host = url.hostname;
+    if (host === "localhost" || host === "127.0.0.1") return true;
+    if (host.endsWith(".replit.dev") || host.endsWith(".repl.co")) return true;
+  } catch {
+    return false;
+  }
+  return false;
+}
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (isAllowedOrigin(origin)) {
+        return callback(null, true);
+      }
+      return callback(null, false);
+    },
+    credentials: true,
+  })
+);
+
 app.use((req, res, next) => {
   const key = `${req.ip}:${req.path}`;
   const now = Date.now();
