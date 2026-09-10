@@ -109,18 +109,21 @@ export default function Overview() {
         action={<ScanButton isPending={scan.isPending} onClick={runScan} />}
       />
 
-      {/* Live Provider System Status Board Banner */}
+      {/* Live Provider System Status Board Banner — Strands as Centerpiece */}
       <div className="rounded-xl border border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar))] p-4 text-[hsl(var(--sidebar-foreground))] shadow-md">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-3">
-            <div className="relative flex size-8 items-center justify-center rounded-lg bg-[hsl(var(--sidebar-accent))] text-[hsl(var(--sidebar-primary))]">
-              <ShieldCheck size={18} />
+            <div className="relative flex size-9 items-center justify-center rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/30">
+              <Cpu size={18} />
               <span className="absolute -right-0.5 -top-0.5 size-2.5 rounded-full bg-emerald-500 animate-ping" />
             </div>
             <div>
-              <div className="text-[12px] font-extrabold tracking-tight">RESEARCH INTEGRITY STATUS BOARD</div>
-              <div className="gg-mono text-[9px] text-[hsl(var(--sidebar-foreground)/.5)]">
-                Autonomous Scan Engine · Continuous Monitoring
+              <div className="text-[12px] font-extrabold tracking-tight flex items-center gap-2">
+                <span>STRANDS AGENT ORCHESTRATOR ACTIVE</span>
+                <span className="rounded bg-purple-500/30 px-1.5 py-0.5 text-[9px] font-mono text-purple-200">v2.0.0</span>
+              </div>
+              <div className="gg-mono text-[9px] text-[hsl(var(--sidebar-foreground)/.6)]">
+                Autonomous Multi-Hop Graph Traversal · Crossref & Retraction Watch Tools
               </div>
             </div>
           </div>
@@ -132,13 +135,36 @@ export default function Overview() {
             <span className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(var(--sidebar-accent))] px-3 py-1 gg-mono text-[9px] font-bold text-emerald-400 border border-emerald-500/20">
               <ShieldCheck size={11} /> Retraction Watch: Failsafe Ready
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(var(--sidebar-accent))] px-3 py-1 gg-mono text-[9px] font-bold text-purple-300 border border-purple-500/20">
-              <Network size={11} /> Strands SDK: Trace Active
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(var(--sidebar-accent))] px-3 py-1 gg-mono text-[9px] font-bold text-purple-300 border border-purple-500/30">
+              <Network size={11} /> Strands SDK: Active (6 Tools)
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(var(--sidebar-accent))] px-3 py-1 gg-mono text-[9px] font-bold text-amber-300 border border-amber-500/20">
               <Cpu size={11} /> AWS Bedrock: Policy Fallback
             </span>
           </div>
+        </div>
+
+        {/* Strands Centerpiece Architecture Pipeline Flow */}
+        <div className="mt-3.5 pt-3 border-t border-[hsl(var(--sidebar-border))] hidden sm:flex items-center justify-between text-[10px] gg-mono text-[hsl(var(--sidebar-foreground)/.75)]">
+          <span className="flex items-center gap-1 text-purple-300 font-bold">
+            GRANT GUARDIAN
+          </span>
+          <span>→</span>
+          <span className="flex items-center gap-1 text-purple-300 font-bold bg-purple-500/20 px-2 py-0.5 rounded border border-purple-500/30">
+            Strands Agent
+          </span>
+          <span>→</span>
+          <span className="text-[hsl(var(--sidebar-foreground))] font-semibold">
+            Tools: Crossref · Retraction Watch · Semantic Scholar
+          </span>
+          <span>→</span>
+          <span className="text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+            🛡️ Deterministic Guardrail
+          </span>
+          <span>→</span>
+          <span className="text-amber-300 font-bold">
+            [ Quarantine | PI Decision Inbox ]
+          </span>
         </div>
       </div>
 

@@ -15,15 +15,18 @@ export const demoCitations = [
     doi: "10.1038/nature13358",
     status: "retracted",
     risk: "high",
-    detail: "Retraction Watch flagged a direct retraction notice (Retracted July 2, 2014 due to image duplication). Do not cite.",
+    detail: "Retraction Watch flagged a direct retraction notice (Retracted July 2, 2014 due to image duplication). Direct retraction isolated from active drafts.",
     metadata: {
       graph: { rootDoi: "10.1038/nature13358", referencedDois: ["10.1038/nature02000"], retractedReferencedDois: [], depth: 0 },
       providers: { crossref: true, retractionWatch: true, semanticScholar: true },
       trace: [
-        { step: "crossref", status: "success", label: "Crossref Metadata Lookup", detail: "Metadata retrieved. Article indexed in Nature (2014).", durationMs: 142 },
-        { step: "retraction_watch", status: "flagged", label: "Retraction Watch Database", detail: "MATCH CONFIRMED: Retracted on 2014-07-02 (Image Manipulation & Unreliable Data).", durationMs: 88 },
-        { step: "citation_graph", status: "success", label: "Semantic Scholar Graph (1-Hop)", detail: "Traversed 18 references. No downstream propagation dependencies.", durationMs: 210 },
-        { step: "decision", status: "danger", label: "Guardian Safety Policy", detail: "Direct retraction signal confirmed. Flagged automatically; citation quarantined.", durationMs: 15 }
+        { step: "dependency", status: "success", label: "Step 1 — Identify Dependency", detail: "Direct citation registered in active lab workspace bibliography.", durationMs: 12 },
+        { step: "crossref", status: "success", label: "Step 2 — Check Crossref", detail: "Metadata retrieved. Indexed in Nature (2014). Crossref publisher status: Verified.", durationMs: 142 },
+        { step: "retraction_watch", status: "flagged", label: "Step 3 — Query Retraction Watch", detail: "MATCH CONFIRMED: Retracted on 2014-07-02 (Image Manipulation & Data Fabrication).", durationMs: 88 },
+        { step: "relationship", status: "flagged", label: "Step 4 — Verify Relationship", detail: "Publisher notice confirmed. Paper is primary target of formal retraction decree.", durationMs: 45 },
+        { step: "propagation", status: "neutral", label: "Step 5 — Assess Propagation", detail: "No downstream propagation analysis needed for direct primary retraction.", durationMs: 10 },
+        { step: "safety_policy", status: "danger", label: "Step 6 — Apply Safety Policy", detail: "Autonomous Quarantine Triggered: Direct retraction signal permits automatic isolation.", durationMs: 15 },
+        { step: "decision", status: "danger", label: "Step 7 — Action Enforced", detail: "Quarantined permanently from grant drafts. Audit record logged.", durationMs: 5 }
       ]
     },
     createdAt: new Date(),
@@ -39,15 +42,29 @@ export const demoCitations = [
     doi: "10.1016/j.stem.2015.01.002",
     status: "propagation",
     risk: "medium",
-    detail: "Crossref citation graph traversal found 1-hop reference to retracted paper 10.1038/nature13358. Effect on your claim is context-dependent; routed for human judgment.",
+    detail: "Multi-hop graph traversal found 2nd-order reliance on retracted paper 10.1038/nature13358. Autonomous quarantine prohibited; routed for PI judgment.",
     metadata: {
-      graph: { rootDoi: "10.1016/j.stem.2015.01.002", referencedDois: ["10.1038/nature13358", "10.1038/nature03819"], retractedReferencedDois: ["10.1038/nature13358"], depth: 1 },
+      graph: {
+        rootDoi: "10.1016/j.stem.2015.01.002",
+        referencedDois: ["10.1038/nature13358", "10.1038/nature03819"],
+        retractedReferencedDois: ["10.1038/nature13358"],
+        depth: 2,
+        cascade: {
+          project: "Active NSF Proposal (Tissue Scaffolds)",
+          intermediatePaper: "Lin et al., Cell Stem Cell 2015 (10.1016/j.stem.2015.01.002)",
+          retractedPaper: "Obokata et al., Nature 2014 (10.1038/nature13358)",
+          retractionReason: "Image manipulation & unreliable pluripotency protocol"
+        }
+      },
       providers: { crossref: true, retractionWatch: true, semanticScholar: true },
       trace: [
-        { step: "crossref", status: "success", label: "Crossref Metadata Lookup", detail: "Metadata retrieved. Article indexed in Cell Stem Cell (2015).", durationMs: 120 },
-        { step: "retraction_watch", status: "success", label: "Retraction Watch Database", detail: "Direct DOI check clear. No direct retraction notice recorded for this paper.", durationMs: 76 },
-        { step: "citation_graph", status: "warning", label: "Semantic Scholar Graph (1-Hop)", detail: "Found 1 reference to retracted DOI 10.1038/nature13358 in section 3.2.", durationMs: 315 },
-        { step: "decision", status: "warning", label: "Guardian Safety Policy", detail: "Ambiguous 2nd-order propagation risk detected. Guardian will not auto-decide; escalated to human researcher.", durationMs: 18 }
+        { step: "dependency", status: "success", label: "Step 1 — Identify Dependency", detail: "Dependency mapped: Lab grant cites Lin et al. (2015) for tissue scaffold protocol.", durationMs: 18 },
+        { step: "crossref", status: "success", label: "Step 2 — Check Crossref", detail: "Metadata retrieved. Article indexed in Cell Stem Cell (2015). Direct record is clean.", durationMs: 120 },
+        { step: "retraction_watch", status: "success", label: "Step 3 — Query Retraction Watch", detail: "Direct check: Clean. Lin et al. itself has NEVER been retracted or issued errata.", durationMs: 76 },
+        { step: "relationship", status: "warning", label: "Step 4 — Verify Relationship", detail: "Semantic Scholar 1-hop graph traversed 44 references. Found reference to 10.1038/nature13358 in section 3.2.", durationMs: 315 },
+        { step: "propagation", status: "warning", label: "Step 5 — Assess Propagation", detail: "Potential 2nd-order impact: Foundational premise relies on retracted STAP protocol.", durationMs: 82 },
+        { step: "safety_policy", status: "warning", label: "Step 6 — Apply Safety Policy", detail: "Autonomous quarantine NOT permitted. Scientific validity depends on researcher claim.", durationMs: 18 },
+        { step: "decision", status: "warning", label: "Step 7 — Human Escalation", detail: "Escalated to Human Decision Inbox. Principal Investigator review required.", durationMs: 12 }
       ]
     },
     judgment: "pending",
@@ -59,22 +76,25 @@ export const demoCitations = [
   {
     id: 3,
     userId: 1,
-    title: "Deep learning for protein structure prediction",
+    title: "Deep learning for protein structure prediction with AlphaFold",
     authors: "Jumper et al.",
     venue: "Nature",
     year: 2021,
     doi: "10.1038/s41586-021-03819-2",
     status: "clear",
     risk: "low",
-    detail: "All provider checks cleared. Zero retractions or propagation risks found.",
+    detail: "Verified clean across Crossref and Retraction Watch. Graph traversal across 62 references revealed zero retractions.",
     metadata: {
       graph: { rootDoi: "10.1038/s41586-021-03819-2", referencedDois: [], retractedReferencedDois: [], depth: 0 },
       providers: { crossref: true, retractionWatch: true, semanticScholar: true },
       trace: [
-        { step: "crossref", status: "success", label: "Crossref Metadata Lookup", detail: "Metadata verified. Publisher: Nature Portfolio.", durationMs: 105 },
-        { step: "retraction_watch", status: "success", label: "Retraction Watch Database", detail: "Clean. No retractions or expressions of concern.", durationMs: 64 },
-        { step: "citation_graph", status: "success", label: "Semantic Scholar Graph (1-Hop)", detail: "Graph traversed 62 references. All clean.", durationMs: 198 },
-        { step: "decision", status: "success", label: "Guardian Safety Policy", detail: "Status: Clear pass. Citation safe to cite.", durationMs: 12 }
+        { step: "dependency", status: "success", label: "Step 1 — Identify Dependency", detail: "Direct reference verified in protein design bibliography.", durationMs: 10 },
+        { step: "crossref", status: "success", label: "Step 2 — Check Crossref", detail: "Metadata verified. Publisher: Nature Portfolio (2021).", durationMs: 105 },
+        { step: "retraction_watch", status: "success", label: "Step 3 — Query Retraction Watch", detail: "Clean. No retractions, expressions of concern, or errata.", durationMs: 64 },
+        { step: "relationship", status: "success", label: "Step 4 — Verify Relationship", detail: "Crossref publication relations: 0 corrections, 0 retractions.", durationMs: 40 },
+        { step: "propagation", status: "success", label: "Step 5 — Assess Propagation", detail: "Semantic Scholar graph traversed 62 references. 0 retractions found.", durationMs: 198 },
+        { step: "safety_policy", status: "success", label: "Step 6 — Apply Safety Policy", detail: "Deterministic check satisfied. No human interrupt needed.", durationMs: 12 },
+        { step: "decision", status: "success", label: "Step 7 — Silent Pass", detail: "Citation cleared. System remains silent.", durationMs: 8 }
       ]
     },
     createdAt: new Date(),
@@ -83,22 +103,25 @@ export const demoCitations = [
   {
     id: 4,
     userId: 1,
-    title: "The social contagion of suicide",
+    title: "The social contagion of suicide: A network study",
     authors: "Cheng et al.",
     venue: "PLoS ONE",
     year: 2018,
     doi: "10.1371/journal.pone.0208326",
     status: "corrected",
     risk: "medium",
-    detail: "Crossref reported an official publisher correction notice published on 2019-03-14 regarding dataset sample size adjustments.",
+    detail: "Crossref reported an official publisher correction notice published on 2019-03-14 regarding dataset sample size adjustments. Paper remains valid.",
     metadata: {
       graph: { rootDoi: "10.1371/journal.pone.0208326", referencedDois: [], retractedReferencedDois: [], depth: 0 },
       providers: { crossref: true, retractionWatch: true, semanticScholar: true },
       trace: [
-        { step: "crossref", status: "warning", label: "Crossref Metadata Lookup", detail: "Publisher Correction Notice linked (2019-03-14).", durationMs: 130 },
-        { step: "retraction_watch", status: "success", label: "Retraction Watch Database", detail: "No retraction notice. Only correction logged.", durationMs: 70 },
-        { step: "citation_graph", status: "success", label: "Semantic Scholar Graph (1-Hop)", detail: "Reference graph clear.", durationMs: 180 },
-        { step: "decision", status: "warning", label: "Guardian Safety Policy", detail: "Correction flagged for PI awareness. Paper remains valid with updated errata.", durationMs: 14 }
+        { step: "dependency", status: "success", label: "Step 1 — Identify Dependency", detail: "Citation indexed in behavioral metrics section.", durationMs: 15 },
+        { step: "crossref", status: "warning", label: "Step 2 — Check Crossref", detail: "Publisher Correction Notice linked (2019-03-14): is-corrected-by.", durationMs: 130 },
+        { step: "retraction_watch", status: "success", label: "Step 3 — Query Retraction Watch", detail: "No retraction notice. Only publisher erratum logged.", durationMs: 70 },
+        { step: "relationship", status: "warning", label: "Step 4 — Verify Relationship", detail: "Erratum verified: Sample size calculation corrected; findings unchanged.", durationMs: 50 },
+        { step: "propagation", status: "success", label: "Step 5 — Assess Propagation", detail: "Reference graph clear of retracted works.", durationMs: 180 },
+        { step: "safety_policy", status: "warning", label: "Step 6 — Apply Safety Policy", detail: "Restraint Invariant: Publisher Erratum is NEVER classified as retraction.", durationMs: 14 },
+        { step: "decision", status: "warning", label: "Step 7 — Erratum Flagged", detail: "Flagged for researcher awareness. Safe to cite with erratum noted.", durationMs: 10 }
       ]
     },
     createdAt: new Date(),
@@ -107,7 +130,7 @@ export const demoCitations = [
   {
     id: 5,
     userId: 1,
-    title: "The effects of remote work on productivity",
+    title: "Does working from home work? Evidence from a Chinese experiment",
     authors: "Bloom et al.",
     venue: "Quarterly Journal of Economics",
     year: 2015,
@@ -119,10 +142,202 @@ export const demoCitations = [
       graph: { rootDoi: "10.1093/qje/qju032", referencedDois: [], retractedReferencedDois: [], depth: 0 },
       providers: { crossref: true, retractionWatch: true, semanticScholar: true },
       trace: [
-        { step: "crossref", status: "success", label: "Crossref Metadata Lookup", detail: "Clean record.", durationMs: 95 },
-        { step: "retraction_watch", status: "success", label: "Retraction Watch Database", detail: "Clean record.", durationMs: 60 },
-        { step: "citation_graph", status: "success", label: "Semantic Scholar Graph (1-Hop)", detail: "Clean reference graph.", durationMs: 160 },
-        { step: "decision", status: "success", label: "Guardian Safety Policy", detail: "Cleared.", durationMs: 10 }
+        { step: "dependency", status: "success", label: "Step 1 — Identify Dependency", detail: "Reference active in lab operations bibliography.", durationMs: 8 },
+        { step: "crossref", status: "success", label: "Step 2 — Check Crossref", detail: "Clean record. Oxford University Press.", durationMs: 95 },
+        { step: "retraction_watch", status: "success", label: "Step 3 — Query Retraction Watch", detail: "Clean record.", durationMs: 60 },
+        { step: "relationship", status: "success", label: "Step 4 — Verify Relationship", detail: "No publisher corrections or concerns.", durationMs: 30 },
+        { step: "propagation", status: "success", label: "Step 5 — Assess Propagation", detail: "Clean reference graph.", durationMs: 160 },
+        { step: "safety_policy", status: "success", label: "Step 6 — Apply Safety Policy", detail: "Cleared without interruption.", durationMs: 10 },
+        { step: "decision", status: "success", label: "Step 7 — Silent Pass", detail: "Cleared.", durationMs: 6 }
+      ]
+    },
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 6,
+    userId: 1,
+    title: "Electric field effect in atomically thin carbon films",
+    authors: "Novoselov et al.",
+    venue: "Science",
+    year: 2004,
+    doi: "10.1126/science.1102896",
+    status: "clear",
+    risk: "low",
+    detail: "Foundational graphene discovery verified. All provider databases confirm clean status.",
+    metadata: {
+      graph: { rootDoi: "10.1126/science.1102896", referencedDois: [], retractedReferencedDois: [], depth: 0 },
+      providers: { crossref: true, retractionWatch: true, semanticScholar: true },
+      trace: [
+        { step: "dependency", status: "success", label: "Step 1 — Identify Dependency", detail: "Foundational materials reference.", durationMs: 10 },
+        { step: "crossref", status: "success", label: "Step 2 — Check Crossref", detail: "Science (AAAS). Fully verified DOI.", durationMs: 110 },
+        { step: "retraction_watch", status: "success", label: "Step 3 — Query Retraction Watch", detail: "Zero retraction notices recorded.", durationMs: 55 },
+        { step: "relationship", status: "success", label: "Step 4 — Verify Relationship", detail: "No errata or publisher updates.", durationMs: 35 },
+        { step: "propagation", status: "success", label: "Step 5 — Assess Propagation", detail: "32 referenced works inspected. 0 retractions.", durationMs: 175 },
+        { step: "safety_policy", status: "success", label: "Step 6 — Apply Safety Policy", detail: "Clear pass.", durationMs: 10 },
+        { step: "decision", status: "success", label: "Step 7 — Silent Pass", detail: "Verified clean.", durationMs: 5 }
+      ]
+    },
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 7,
+    userId: 1,
+    title: "A programmable dual-RNA-guided DNA endonuclease in adaptive bacterial immunity",
+    authors: "Jinek, Doudna, Charpentier et al.",
+    venue: "Science",
+    year: 2012,
+    doi: "10.1126/science.1225829",
+    status: "clear",
+    risk: "low",
+    detail: "Seminal CRISPR-Cas9 mechanism verified across Crossref, Retraction Watch, and citation tree.",
+    metadata: {
+      graph: { rootDoi: "10.1126/science.1225829", referencedDois: [], retractedReferencedDois: [], depth: 0 },
+      providers: { crossref: true, retractionWatch: true, semanticScholar: true },
+      trace: [
+        { step: "dependency", status: "success", label: "Step 1 — Identify Dependency", detail: "Gene editing core reference.", durationMs: 12 },
+        { step: "crossref", status: "success", label: "Step 2 — Check Crossref", detail: "Metadata valid. Science (AAAS).", durationMs: 115 },
+        { step: "retraction_watch", status: "success", label: "Step 3 — Query Retraction Watch", detail: "Verified clean.", durationMs: 65 },
+        { step: "relationship", status: "success", label: "Step 4 — Verify Relationship", detail: "Relations clean.", durationMs: 40 },
+        { step: "propagation", status: "success", label: "Step 5 — Assess Propagation", detail: "51 references inspected. All clean.", durationMs: 190 },
+        { step: "safety_policy", status: "success", label: "Step 6 — Apply Safety Policy", detail: "Policy clearance confirmed.", durationMs: 11 },
+        { step: "decision", status: "success", label: "Step 7 — Silent Pass", detail: "Safe to cite.", durationMs: 6 }
+      ]
+    },
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 8,
+    userId: 1,
+    title: "Tough adhesives for diverse wet surfaces",
+    authors: "Li, Celiz, Yang, Langer, Mooney et al.",
+    venue: "Science",
+    year: 2017,
+    doi: "10.1126/science.aah6362",
+    status: "clear",
+    risk: "low",
+    detail: "Bioadhesive hydrogel technology verified clear across all providers.",
+    metadata: {
+      graph: { rootDoi: "10.1126/science.aah6362", referencedDois: [], retractedReferencedDois: [], depth: 0 },
+      providers: { crossref: true, retractionWatch: true, semanticScholar: true },
+      trace: [
+        { step: "dependency", status: "success", label: "Step 1 — Identify Dependency", detail: "Bioadhesive interface reference.", durationMs: 9 },
+        { step: "crossref", status: "success", label: "Step 2 — Check Crossref", detail: "Indexed in Science.", durationMs: 102 },
+        { step: "retraction_watch", status: "success", label: "Step 3 — Query Retraction Watch", detail: "Clean signal.", durationMs: 58 },
+        { step: "relationship", status: "success", label: "Step 4 — Verify Relationship", detail: "No issues found.", durationMs: 32 },
+        { step: "propagation", status: "success", label: "Step 5 — Assess Propagation", detail: "38 references verified.", durationMs: 165 },
+        { step: "safety_policy", status: "success", label: "Step 6 — Apply Safety Policy", detail: "Verified clear.", durationMs: 9 },
+        { step: "decision", status: "success", label: "Step 7 — Silent Pass", detail: "Silent pass.", durationMs: 4 }
+      ]
+    },
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 9,
+    userId: 1,
+    title: "Laser additive manufacturing of metallic components: materials, processes and mechanisms",
+    authors: "Sing, An, Yeong, Wiria et al.",
+    venue: "International Materials Reviews",
+    year: 2016,
+    doi: "10.1080/09506608.2015.1116649",
+    status: "clear",
+    risk: "low",
+    detail: "Additive manufacturing review verified. Provider registers clean.",
+    metadata: {
+      graph: { rootDoi: "10.1080/09506608.2015.1116649", referencedDois: [], retractedReferencedDois: [], depth: 0 },
+      providers: { crossref: true, retractionWatch: true, semanticScholar: true },
+      trace: [
+        { step: "dependency", status: "success", label: "Step 1 — Identify Dependency", detail: "3D manufacturing reference.", durationMs: 11 },
+        { step: "crossref", status: "success", label: "Step 2 — Check Crossref", detail: "Taylor & Francis indexing verified.", durationMs: 118 },
+        { step: "retraction_watch", status: "success", label: "Step 3 — Query Retraction Watch", detail: "Clean signal.", durationMs: 62 },
+        { step: "relationship", status: "success", label: "Step 4 — Verify Relationship", detail: "Clean relations.", durationMs: 38 },
+        { step: "propagation", status: "success", label: "Step 5 — Assess Propagation", detail: "102 references traversed clean.", durationMs: 220 },
+        { step: "safety_policy", status: "success", label: "Step 6 — Apply Safety Policy", detail: "Clear pass.", durationMs: 12 },
+        { step: "decision", status: "success", label: "Step 7 — Silent Pass", detail: "Verified clean.", durationMs: 5 }
+      ]
+    },
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 10,
+    userId: 1,
+    title: "Nanoparticle therapeutics: an emerging reality",
+    authors: "Davis, Chen, Shin et al.",
+    venue: "Nature Reviews Drug Discovery",
+    year: 2008,
+    doi: "10.1038/nrd2614",
+    status: "clear",
+    risk: "low",
+    detail: "Nanotechnology therapeutics reference verified clean across all databases.",
+    metadata: {
+      graph: { rootDoi: "10.1038/nrd2614", referencedDois: [], retractedReferencedDois: [], depth: 0 },
+      providers: { crossref: true, retractionWatch: true, semanticScholar: true },
+      trace: [
+        { step: "dependency", status: "success", label: "Step 1 — Identify Dependency", detail: "Nanomedicine delivery reference.", durationMs: 10 },
+        { step: "crossref", status: "success", label: "Step 2 — Check Crossref", detail: "Nature Reviews Drug Discovery.", durationMs: 108 },
+        { step: "retraction_watch", status: "success", label: "Step 3 — Query Retraction Watch", detail: "Clean signal.", durationMs: 56 },
+        { step: "relationship", status: "success", label: "Step 4 — Verify Relationship", detail: "No errata recorded.", durationMs: 34 },
+        { step: "propagation", status: "success", label: "Step 5 — Assess Propagation", detail: "75 references clean.", durationMs: 185 },
+        { step: "safety_policy", status: "success", label: "Step 6 — Apply Safety Policy", detail: "Clear pass.", durationMs: 10 },
+        { step: "decision", status: "success", label: "Step 7 — Silent Pass", detail: "Verified clean.", durationMs: 5 }
+      ]
+    },
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 11,
+    userId: 1,
+    title: "Microengineered physiological biomimicry: Organs-on-Chips",
+    authors: "Huh, Torisawa, Hamilton, Kim, Ingber et al.",
+    venue: "Lab on a Chip",
+    year: 2012,
+    doi: "10.1039/c2lc40089h",
+    status: "clear",
+    risk: "low",
+    detail: "Organ-on-a-chip biomimicry platform verified. Clean provider signals.",
+    metadata: {
+      graph: { rootDoi: "10.1039/c2lc40089h", referencedDois: [], retractedReferencedDois: [], depth: 0 },
+      providers: { crossref: true, retractionWatch: true, semanticScholar: true },
+      trace: [
+        { step: "dependency", status: "success", label: "Step 1 — Identify Dependency", detail: "Microfluidic platform reference.", durationMs: 12 },
+        { step: "crossref", status: "success", label: "Step 2 — Check Crossref", detail: "Royal Society of Chemistry indexing.", durationMs: 112 },
+        { step: "retraction_watch", status: "success", label: "Step 3 — Query Retraction Watch", detail: "Clean signal.", durationMs: 59 },
+        { step: "relationship", status: "success", label: "Step 4 — Verify Relationship", detail: "No corrections logged.", durationMs: 36 },
+        { step: "propagation", status: "success", label: "Step 5 — Assess Propagation", detail: "48 references clean.", durationMs: 170 },
+        { step: "safety_policy", status: "success", label: "Step 6 — Apply Safety Policy", detail: "Clear pass.", durationMs: 11 },
+        { step: "decision", status: "success", label: "Step 7 — Silent Pass", detail: "Verified clean.", durationMs: 5 }
+      ]
+    },
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 12,
+    userId: 1,
+    title: "Biodegradable polymers as biomaterials",
+    authors: "Nair & Laurencin",
+    venue: "Progress in Polymer Science",
+    year: 2007,
+    doi: "10.1016/j.progpolymsci.2007.05.017",
+    status: "clear",
+    risk: "low",
+    detail: "Biopolymer degradability standard verified. Clean across all registers.",
+    metadata: {
+      graph: { rootDoi: "10.1016/j.progpolymsci.2007.05.017", referencedDois: [], retractedReferencedDois: [], depth: 0 },
+      providers: { crossref: true, retractionWatch: true, semanticScholar: true },
+      trace: [
+        { step: "dependency", status: "success", label: "Step 1 — Identify Dependency", detail: "Polymer biocompatibility reference.", durationMs: 10 },
+        { step: "crossref", status: "success", label: "Step 2 — Check Crossref", detail: "Elsevier indexing verified.", durationMs: 114 },
+        { step: "retraction_watch", status: "success", label: "Step 3 — Query Retraction Watch", detail: "Clean signal.", durationMs: 61 },
+        { step: "relationship", status: "success", label: "Step 4 — Verify Relationship", detail: "No errata recorded.", durationMs: 35 },
+        { step: "propagation", status: "success", label: "Step 5 — Assess Propagation", detail: "120 references clean.", durationMs: 230 },
+        { step: "safety_policy", status: "success", label: "Step 6 — Apply Safety Policy", detail: "Policy clearance confirmed.", durationMs: 10 },
+        { step: "decision", status: "success", label: "Step 7 — Silent Pass", detail: "Safe to cite.", durationMs: 5 }
       ]
     },
     createdAt: new Date(),

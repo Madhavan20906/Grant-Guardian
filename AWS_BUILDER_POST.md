@@ -21,39 +21,52 @@ Unlike naive LLM wrappers that hallucinate retraction claims or invent citations
 
 ---
 
-## 🏗️ System Architecture & Workflow
+## 🏗️ System Architecture & Workflow: Strands as the Core Centerpiece
 
 ```
-┌───────────────────────────────────────────────────────────────────────────────────────────┐
-│                                   GRANT GUARDIAN FRONTEND                                 │
-│                 (React / Vite / Tailwind / Status Board / Decision Inbox UI)              │
-└─────────────────────────────────────────────┬─────────────────────────────────────────────┘
-                                              │ REST API / JSON
-┌─────────────────────────────────────────────▼─────────────────────────────────────────────┐
-│                             EXPRESS API & AUTONOMOUS WATCH ENGINE                         │
-│             Scheduled Sweeps · Drizzle ORM · PostgreSQL · Deterministic Guardrail         │
-└─────────────────────────────────────────────┬─────────────────────────────────────────────┘
-                                              │ Agent Orchestration & Tool Calls
-┌─────────────────────────────────────────────▼─────────────────────────────────────────────┐
-│                           PYTHON STRANDS AGENT SERVICE (FastAPI)                          │
-│                   Dynamic Tool Selection · Multi-Hop Verification · Provenance            │
-└───────────────┬─────────────────────────────┬─────────────────────────────┬───────────────┘
-                │                             │                             │
-┌───────────────▼───────────┐   ┌─────────────▼─────────────┐   ┌───────────▼───────────────┐
-│       CROSSREF API        │   │   RETRACTION WATCH API    │   │   SEMANTIC SCHOLAR        │
-│  Metadata & Errata Lookup │   │   Live Retraction Signals │   │   1-Hop Reference Trees   │
-└───────────────────────────┘   └───────────────────────────┘   └───────────────────────────┘
-                                              │
-┌─────────────────────────────────────────────▼─────────────────────────────────────────────┐
-│                                   AMAZON BEDROCK CONVERSE                                 │
-│                         Anthropic Claude 3.5 Sonnet / Reasoning Engine                    │
-└─────────────────────────────────────────────┬─────────────────────────────────────────────┘
-                                              │
-┌─────────────────────────────────────────────▼─────────────────────────────────────────────┐
-│                                DETERMINISTIC SAFETY GUARDRAIL                             │
-│       Direct Signal: Auto-Quarantine  │  2nd-Order: Human Decision Inbox  │  Clean: Silent│
-└───────────────────────────────────────────────────────────────────────────────────────────┘
+                     GRANT GUARDIAN
+                           │
+                     Strands Agent
+                     (Bedrock LLM)
+                           │
+              ┌────────────┼────────────┐
+              ↓            ↓            ↓
+          Crossref    Retraction    Semantic
+          Metadata       Watch       Scholar
+          (Errata)     (Signals)    (1-Hop Graph)
+              ↓            ↓            ↓
+              └──────── Evidence ───────┘
+                           │
+                    Agent Reasoning
+                 (7-Step Provenance)
+                           │
+                  Safety Policy Layer
+                 (classifyDecision)
+                     /           \
+                    ↓             ↓
+               QUARANTINE    HUMAN REVIEW
+             (Direct Match) (2nd-Order Risk)
 ```
+
+### Why Agents? (Why an LLM Alone Cannot Solve Research Integrity)
+
+1. **Stateful Multi-Hop Graph Traversal**:
+   *The Devastating Multi-Hop Scenario*:
+   ```
+   [Active Grant Proposal] 
+          ↓ (cites in Methodology)
+   [Lin et al., Advanced Synthesis 2021] (Clean DOI Record)
+          ↓ (synthesizes foundation claim from)
+   [Obokata et al., Nature 2014] ⚠️ (RETRACTED — STAP Stem Cell Protocol)
+   ```
+   A standard single-hop lookup marks Lin et al. as 100% clean. The Strands Agent autonomously crawls Lin et al.'s bibliography via Semantic Scholar, queries Retraction Watch for every child node, flags the retracted Obokata root, and escalates the propagation risk to the PI before the grant proposal is submitted to federal reviewers.
+
+2. **Deterministic Restraint vs. Hallucinated Certainty**: Standard LLMs hallucinate claims of retraction or invent non-existent DOIs when prompted about academic validity. In Grant Guardian, Strands performs agentic investigation with strict tool isolation, while the deterministic safety layer (`classifyDecision`) ensures ungrounded model outputs can never alter proposal quarantine states.
+
+3. **Autonomous Background Operation**: Research integrity cannot depend on a human opening a chat box. The Strands Agent runs continuous, autonomous background watch sweeps—remaining completely silent during routine clean runs and waking the PI only when critical risks emerge.
+
+4. **"Failure as a Feature"**:
+   *Grant Guardian would rather admit uncertainty than manufacture certainty.* When external registries experience HTTP 503 outages or return conflicting signals, an LLM typically guesses. Grant Guardian's agent architecture logs circuit breaker deferrals and requests human scientific review rather than manufacturing false certainty.
 
 ---
 

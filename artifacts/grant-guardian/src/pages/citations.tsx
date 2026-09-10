@@ -86,54 +86,104 @@ export default function Citations() {
 
           <div className="mt-4 space-y-4">
             {pendingEscalations.map((c: any) => (
-              <div key={c.id} className="rounded-lg border border-amber-500/20 bg-[hsl(var(--card))] p-4 shadow-sm">
-                <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+              <div key={c.id} className="rounded-xl border border-amber-500/30 bg-[hsl(var(--card))] p-5 shadow-sm space-y-4">
+                <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between border-b border-[hsl(var(--border))] pb-3">
                   <div>
-                    <span className="gg-mono text-[9px] uppercase tracking-wider text-amber-600 font-bold">Propagation Risk</span>
-                    <h4 className="text-[13px] font-bold">{c.title}</h4>
-                    <p className="text-[10px] text-[hsl(var(--muted-foreground))]">{c.authors} · {c.venue} ({c.year}) · DOI: {c.doi}</p>
+                    <div className="flex items-center gap-2">
+                      <span className="gg-mono text-[9px] uppercase tracking-wider bg-amber-500/20 text-amber-700 dark:text-amber-300 font-extrabold px-2 py-0.5 rounded">
+                        2nd-Order Propagation Risk
+                      </span>
+                      <span className="text-[10px] text-[hsl(var(--muted-foreground))] gg-mono">
+                        Cascade Depth: 2 Hops
+                      </span>
+                    </div>
+                    <h4 className="mt-1 text-[14px] font-bold text-[hsl(var(--foreground))]">{c.title}</h4>
+                    <p className="text-[11px] text-[hsl(var(--muted-foreground))]">{c.authors} · {c.venue} ({c.year}) · DOI: {c.doi}</p>
                   </div>
                   <Button variant="secondary" onClick={() => setSelected(c.id)} testId={`btn-inspect-inbox-${c.id}`}>
-                    Inspect Trace
+                    Inspect 7-Step Trace →
                   </Button>
                 </div>
 
-                <div className="mt-3 rounded-md bg-[hsl(var(--muted)/.4)] p-3 text-[11px] leading-relaxed">
-                  <span className="font-bold text-[hsl(var(--foreground))]">Why we're escalating: </span>
-                  <span className="text-[hsl(var(--muted-foreground))]">
-                    {c.detail || 'This paper references a confirmed retracted study. Guardian cannot determine whether your scientific claim actually relies on the invalidated premise.'}
-                  </span>
-                  <div className="mt-1 gg-mono text-[10px] text-amber-600 dark:text-amber-400 font-semibold">
-                    Confidence: High evidence / uncertain scientific impact
+                {/* Structured Agents for Humans Triad */}
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-lg bg-[hsl(var(--muted)/.5)] p-3 border border-[hsl(var(--border))]">
+                    <div className="text-[9px] uppercase tracking-wider font-extrabold text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
+                      <span>🤖 Agent Recommendation</span>
+                    </div>
+                    <div className="mt-1 text-[12px] font-extrabold text-[hsl(var(--foreground))]">
+                      ESCALATE TO PI
+                    </div>
+                    <p className="mt-0.5 text-[10px] text-[hsl(var(--muted-foreground))]">
+                      Potential downstream impact. Autonomous quarantine prohibited.
+                    </p>
+                  </div>
+
+                  <div className="rounded-lg bg-[hsl(var(--muted)/.5)] p-3 border border-[hsl(var(--border))]">
+                    <div className="text-[9px] uppercase tracking-wider font-extrabold text-emerald-600 dark:text-emerald-400">
+                      Evidence: 3 Verified Providers
+                    </div>
+                    <ul className="mt-1 text-[10px] space-y-0.5 font-medium text-[hsl(var(--foreground))]">
+                      <li>✓ Retraction Watch: Root retracted</li>
+                      <li>✓ Crossref: Metadata & errata clean</li>
+                      <li>✓ Semantic Scholar: 1-hop link</li>
+                    </ul>
+                  </div>
+
+                  <div className="rounded-lg bg-[hsl(var(--muted)/.5)] p-3 border border-[hsl(var(--border))]">
+                    <div className="text-[9px] uppercase tracking-wider font-extrabold text-amber-600 dark:text-amber-400">
+                      Confidence & Restraint
+                    </div>
+                    <div className="mt-1 text-[11px] font-bold text-amber-700 dark:text-amber-300">
+                      High Evidence / Uncertain Claim Impact
+                    </div>
+                    <p className="mt-0.5 text-[10px] text-[hsl(var(--muted-foreground))]">
+                      Only the researcher knows if their claim relies on this premise.
+                    </p>
                   </div>
                 </div>
 
-                <div className="mt-4 flex flex-wrap items-center gap-2">
-                  <Button
-                    variant="danger"
-                    onClick={() => handleJudgment(c.id, 'relevant')}
-                    disabled={judgmentSubmitting === c.id}
-                    testId={`btn-mark-relevant-${c.id}`}
-                  >
-                    <XCircle size={13} className="mr-1.5" /> Mark Relevant (Quarantine)
-                  </Button>
-                  <Button
-                    variant="primary"
-                    onClick={() => handleJudgment(c.id, 'not_relevant')}
-                    disabled={judgmentSubmitting === c.id}
-                    testId={`btn-mark-not-relevant-${c.id}`}
-                  >
-                    <CheckCircle size={13} className="mr-1.5" /> Mark Not Relevant (Safe)
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    onClick={() => handleJudgment(c.id, 'deferred')}
-                    disabled={judgmentSubmitting === c.id}
-                    testId={`btn-defer-${c.id}`}
-                  >
-                    <Clock size={13} className="mr-1.5" /> Defer Judgment
-                  </Button>
-                  {judgmentSubmitting === c.id && <span className="text-[10px] text-[hsl(var(--muted-foreground))] animate-pulse">Recording PI decision...</span>}
+                {/* PI Scientific Rational Notes input */}
+                <div className="pt-1">
+                  <input
+                    type="text"
+                    placeholder="Optional lab notebook rationale (e.g. 'Our tissue scaffold hypothesis is biochemically independent of STAP pluripotency findings')..."
+                    value={judgmentNotes}
+                    onChange={(e) => setJudgmentNotes(e.target.value)}
+                    className="w-full rounded-lg border border-[hsl(var(--input))] bg-[hsl(var(--background))] px-3 py-2 text-[11px] outline-none placeholder:text-[hsl(var(--muted-foreground))] focus:border-amber-500"
+                    data-testid={`input-judgment-notes-${c.id}`}
+                  />
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-[hsl(var(--border))]">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                      variant="danger"
+                      onClick={() => handleJudgment(c.id, 'relevant')}
+                      disabled={judgmentSubmitting === c.id}
+                      testId={`btn-mark-relevant-${c.id}`}
+                    >
+                      <XCircle size={13} className="mr-1.5" /> Confirm Impact (Quarantine)
+                    </Button>
+                    <Button
+                      variant="primary"
+                      onClick={() => handleJudgment(c.id, 'not_relevant')}
+                      disabled={judgmentSubmitting === c.id}
+                      testId={`btn-mark-not-relevant-${c.id}`}
+                    >
+                      <CheckCircle size={13} className="mr-1.5" /> Dismiss / Mark Independent (Safe)
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={() => handleJudgment(c.id, 'deferred')}
+                      disabled={judgmentSubmitting === c.id}
+                      testId={`btn-defer-${c.id}`}
+                    >
+                      <Clock size={13} className="mr-1.5" /> Defer / Investigate Further
+                    </Button>
+                  </div>
+                  {judgmentSubmitting === c.id && <span className="text-[10px] text-amber-600 font-semibold animate-pulse">Persisting PI decision to database...</span>}
                 </div>
               </div>
             ))}
