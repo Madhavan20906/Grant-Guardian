@@ -7,21 +7,19 @@
 
 ### [0:00 – 0:20] The Hook: The Silent Crisis of Research Integrity
 
-**Visual**: Close-up of a high-profile retracted paper notice (e.g. STAP cells in *Nature:), then pan to a researcher writing a major NSF grant proposal with dozens of citations.
+**Visual**: Close-up of a high-profile retracted paper notice (e.g. STAP cells in *Nature*), then pan to a researcher writing a major NSF grant proposal with dozens of citations.
 
 **Speaker (Voiceover)**:
->
- "Researchers don't just have to worry about whether their citations are correct today. They have to worry about whether those papers become compromised tomorrow. Over 4,000 scientific papers are retracted every year. When a foundational study is retracted, hundreds of downstream papers inherit that rot—often without the authors ever knowing until their grant is rejected or their reputation is damaged."
+> "Researchers don't just have to worry about whether their citations are correct today. They have to worry about whether those papers become compromised tomorrow. According to a landmark 2023 analysis published in *Nature* (drawing on Crossref and Retraction Watch data), over 10,000 scientific papers were retracted in 2023 alone—driven by paper mills and compromised peer review. When a foundational study is retracted, hundreds of downstream papers inherit that rot—often without the authors ever knowing until their grant is rejected or their reputation is damaged."
 
 ---
 
 ### [0:20 – 0:35] Introducing Grant Guardian
 
-**Visual**: Screen transitions to the Grant Guardian PI Executive Desk (`DOr. Elena Rossi / Materials Lab`). Clean, modern status board with live provider badges: Crossref, Retraction Watch, Strands SDK, AWS Bedrock.
+**Visual**: Screen transitions to the Grant Guardian PI Executive Desk (`Dr. Elena Rossi / Materials Lab`). Clean, modern status board with live provider badges: Crossref, Retraction Watch, Strands SDK, AWS Bedrock.
 
 **Speaker**:
->
- "This is Grant Guardian—aj autonomous research integrity and compliance agent built on AWS Bedrock and the Strands Agent framework. Guardian runs silently in the background, continuously watching two critical risks: citation rot and compliance drift. Routine work is automated; ambiguous scientific decisions are surfaced to the human."
+> "This is Grant Guardian—an autonomous research integrity and compliance agent built on AWS Bedrock and the Strands Agent framework. Guardian runs silently in the background, continuously watching two critical risks: citation rot and compliance drift. Routine work is automated; ambiguous scientific decisions are surfaced to the human."
 
 ---
 
@@ -30,13 +28,11 @@
 **Visual**: Click on the Autonomous Watch Mode banner. Show the morning sweep summary.
 
 **Speaker**:
+> "Most AI assistants spam you with notifications. Grant Guardian's core philosophy is **silence when everything is fine, interrupt only when action is required**.
 >
- "Most AI assistants spam you with notifications. Grant Guardian's core philosophy is **silence when everything is fine, interrupt only when action is required**.
+> Watch: Guardian wakes up every morning and performs an autonomous sweep across Dr. Rossi's reference register. It queries Crossref, verifies retraction sources, and checks upcoming compliance deadlines.
 >
-> Watch: Guardian wakes up every morning and performs
-an autonomous sweep across Dr. Rossi's reference register. It queries Crossref, verifies retraction sources, and checks upcoming compliance deadlines.
->
-> For 37 clean citations—like Jumper et al.'s AlphaFold study—Guardian checks the literature, confirms no retraction or errata notices, and stays completely quiet. A quiet heartbeat log is recorded. Zero distractions. The researcher stays in flow."
+> For clean citations—like Jumper et al.'s AlphaFold study—Guardian checks the literature, confirms no retraction or errata notices, and stays completely quiet. A quiet heartbeat log is recorded. Zero distractions. The researcher stays in flow."
 
 ---
 
@@ -61,13 +57,13 @@ an autonomous sweep across Dr. Rossi's reference register. It queries Crossref, 
 
 ---
 
-### [2:30 – 3:30] THE KILLER DEMO: Live Propagation Risk & Human Decision Inbox
+#### [2:30 – 3:30] THE KILLER DEMO: Live Propagation Risk & Human Decision Inbox
 
 **Visual**: Navigate to Lin et al.'s paper (`Cell Stem Cell`, `10.1016/j.stem.2015.01.002`). Show that this paper *itself* is NOT retracted. Then show the Human Decision Inbox alert banner.
 **Speaker**:
 > "Here is the standout technical innovation of Grant Guardian.
 > 
-> Look at this paper by Lin et al<. on downstream tissue engineering. If you check this paper on PubMed or Crossref today, it looks 100% clean. It has never been retracted.
+> Look at this paper by Lin et al. on downstream tissue engineering. If you check this paper on PubMed or Crossref today, it looks 100% clean. It has never been retracted.
 > 
 > But Guardian's Strands Agent doesn't just check the surface. It traverses the citation graph using Semantic Scholar, retrieves the paper's 1-hop references, and **dynamically queries live Retraction Watch data for every single referenced work**.
 > 
@@ -76,7 +72,7 @@ an autonomous sweep across Dr. Rossi's reference register. It queries Crossref, 
 > Now, here is where most AI tools fail: an LLM might hallucinate that Lin's paper is retracted, or silently ignore it. **Guardian does neither.**
 > 
 > Guardian routes it to the **Human Decision Inbox**:
-> *'Guardian cannot determine whether Lin's scientific claim actually depends on the retracted STAP protocol. Principal Investigator judgment required.'
+> *'Guardian cannot determine whether Lin's scientific claim actually depends on the retracted STAP protocol. Principal Investigator judgment required.'*
 > 
 > As Dr. Rossi, I click **Inspect Trace**. I see the retracted foundation paper. I review my hypothesis.
 > - If my project depends on that specific finding, I click **[Mark Relevant]** to quarantine it.
@@ -89,8 +85,7 @@ an autonomous sweep across Dr. Rossi's reference register. It queries Crossref, 
 ### [3:30 – 4:15] Demonstration 4: Autonomous Compliance Drafting
 **Visual**: Navigate to Compliance Desk. Show the NSF Annual Progress Report deadline (due in 9 days, progress 72%). Show the draft drawer.
 **Speaker**:
->
- "Next: compliance drift. Dr. Rossi has an NSF Annual Report due in 9 days, currently at 72% progress.
+> "Next: compliance drift. Dr. Rossi has an NSF Annual Report due in 9 days, currently at 72% progress.
 > 
 > Because this deadline entered the 14-day preparation window, Guardian's Autonomous Watch engine automatically prepared a preliminary draft.
 > 
@@ -102,19 +97,18 @@ an autonomous sweep across Dr. Rossi's reference register. It queries Crossref, 
 
 ---
 
-### [4:15 – 4:45] Technical Architecture & 37 Adversarial Safety Tests
+### [4:15 – 4:45] Technical Architecture & 40+ Automated Adversarial Tests
 
-**Visual**: Quick display of the Mermaid architecture diagram, then terminal showing pnpm test passing all 37 tests.
+**Visual**: Quick display of the Mermaid architecture diagram, then terminal showing pnpm test passing all 42 TypeScript tests and 8 Python service tests.
 
 **Speaker**:
->
- "Under the hood, Grant Guardian is architected around two decoupled layers:
+> "Under the hood, Grant Guardian is architected around two decoupled layers:
 > 1. The **Strands Agent Orchestrator** on AWS Bedrock, which dynamically selects tools across Crossref, Retraction Watch, and Semantic Scholar.
 > 2. A **Deterministic Safety Boundary** that strictly enforces our conservative policy.
 > 
-> We don't just claim the agent is safe—we prove it. Our test suite includes **37 automated adversarial tests**:
+> We don't just claim the agent is safe—we prove it. Our test suite includes **42 automated TypeScript tests plus 8 Python service tests**:
 > - Crossref or Retraction Watch outages never trigger hallucinated clearances.
-> - Prompt injection strings hidden inside paper titles or abstracts are completely ignored.
+> - Prompt injection strings hidden inside paper titles or abstracts are completely ignored by the deterministic safety boundary.
 > - Second-order propagation is mathematically prevented from auto-retracting.
 > - Publisher errata notices are strictly distinguished from retractions."
 
@@ -125,17 +119,16 @@ an autonomous sweep across Dr. Rossi's reference register. It queries Crossref, 
 **Visual**: Return to the live dashboard with the Autonomous Watch pulsing indicator. Clean logo and GitHub link.
 
 **Speaker**:
->
- "Research integrity shouldn't depend on luck or manual searching after it's too late.
+> "Research integrity shouldn't depend on luck or manual searching after it's too late.
 > 
 > **Grant Guardian handles the repetitive investigation. Humans keep the judgment.**
 > 
-> Thanjk you."
+> Thank you."
 
 ---
 
 ### Production Checklist for Recording
 - [ ] Screen resolution set to 1080p (1920x1080) at 60fps.
-- [ ] Ensure terminal test run (pnpm test) tunes all 37 tests cleanly.
+- [ ] Ensure terminal test run (`pnpm test` and `python agent-service/test_agent_service.py`) runs all tests cleanly.
 - [ ] Show the live interactive clicks on [Simulate Morning Sweep] and [Mark Not Relevant].
 - [ ] Keep video length under 4:58 to safely clear the 5:00 hackathon cutoff.

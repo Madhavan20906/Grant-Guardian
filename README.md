@@ -1,6 +1,12 @@
 # Grant Guardian
 
-Grant Guardian is an autonomous research-operations agent for solo researchers and small labs. It watches two silent risks: citation rot (retractions and corrections) and compliance drift (IRB and funding deadlines). It automates repetitive investigation and drafting, while routing ambiguous calls to a human.
+> **Live Deployment & Verification**:
+> - **PI Web Application**: `https://grant-guardian.onrender.com` (or local `http://localhost:5173`)
+> - **Express API Service**: `https://grant-guardian-api.onrender.com` (or local `http://localhost:3001`)
+> - **Python Strands Agent (FastAPI)**: `https://grant-guardian-strands.onrender.com` (or local `http://localhost:8010`)
+> - **Demo Video Script & Walkthrough**: [DEMO_VIDEO_SCRIPT.md](docs/DEMO_VIDEO_SCRIPT.md)
+
+Grant Guardian is an autonomous research-operations agent for solo researchers and small labs. It watches two silent risks: citation rot (over 10,000 papers retracted in 2023 alone, per *Nature 624, 479-481*) and compliance drift (IRB and funding deadlines). It automates repetitive investigation and drafting, while routing ambiguous calls to a human.
 
 ## Why We Escalate Instead of Deciding (Human-in-the-Loop Restraint)
 
@@ -55,10 +61,17 @@ Set `RETRACTION_WATCH_API_URL` to a live Retraction Watch-compatible endpoint. W
 
 Set `STRANDS_AGENT_URL` to the reachable URL of the Python service (for local development, `http://127.0.0.1:8010`).
 
-Run the complete 37+ test suite (unit tests, route integration tests, proof-of-restraint assertion, and CORS security checks):
+Run the complete 50-test suite (42 TypeScript unit/route/integration/CORS tests + 8 Python Strands agent tests):
 
 ```bash
+# Run 42 TypeScript adversarial & route tests
 pnpm test
+
+# Run 8 Python Strands service & tool invariant tests
+pnpm run test:python
+
+# Run all 50 tests end-to-end
+pnpm run test:all
 ```
 
 ## Autonomous Agent Architecture vs. Deterministic Safety Boundary
@@ -117,12 +130,13 @@ flowchart TD
    - The Principal Investigator can choose: `[Mark Relevant]` (confirm reliance & quarantine), `[Mark Not Relevant]` (verify scientific claim is independent), or `[Defer]`.
    - The decision and scientific rationale notes are permanently stored in PostgreSQL.
 
-5. **37-Test Adversarial & Safety Boundary Suite**:
-   Safety is enforced by test, not just by design. The CI suite includes 37 rigorous tests proving:
+5. **50-Test Adversarial & Safety Boundary Suite**:
+   Safety is enforced by test, not just by design. The combined test suite includes 50 tests (42 TypeScript tests + 8 Python Strands service tests) proving:
    - **Provider failure resilience**: Crossref/Retraction Watch outages never trigger hallucinated clearances or false flags.
-   - **Prompt injection immunity**: Embedded injection strings in titles or metadata are ignored by the deterministic safety boundary.
+   - **Structural prompt injection immunity**: The persisted safety decision is structurally immune to prompt injection because it never depends on LLM output. While the Bedrock/Strands layer performs assistive synthesis, all persisted quarantine and escalation decisions are strictly governed by the deterministic invariant validator (`classifyDecision`), which evaluates factual provider relation schemas and cryptographic DOIs.
    - **Proof of restraint**: 2nd-order propagation risks are mathematically prevented from auto-quarantining.
    - **Errata vs. Retraction**: Publisher errata notices are flagged as corrections, never as retractions.
+   - **Non-submission invariant**: Python Strands agent tools structurally enforce that compliance reports require human signoff and can never submit externally.
 
 6. **Autonomous Compliance Drafting with Non-Submission Invariant**:
    When deadlines (such as NSF progress reports or IRB renewals) enter the 14-day preparation window (< 80% progress), Guardian autonomously drafts the preliminary report sections. Crucially, **Guardian is structurally prohibited from submitting reports externally** — human signoff is required.
@@ -130,11 +144,19 @@ flowchart TD
 ## What is Real in This Build
 
 - A persistent PostgreSQL data model for users, citations, deadlines, activity, drafts, and preferences.
-- Upgraded Python Strands Agent service (`agent-service/main.py`) with 6 specialized tools deployed with Docker / AgentCore readiness.
+- Autonomous background scheduler starts automatically on boot in `index.ts` with configurable sweep interval (`WATCH_INTERVAL_MS`).
+- Upgraded Python Strands Agent service (`agent-service/main.py`) with 6 specialized tools deployed with Docker / AgentCore readiness and an 8-test unit verification suite.
 - Live Reference Retraction checking across Semantic Scholar 1-hop reference trees.
 - Full Human Decision Inbox workflow with interactive state transitions.
 - Granular evidence timelines with ISO timestamps, provider status badges, provider URLs, duration metrics, and raw payloads.
 - Single-tenant PI executive desk UI (`Dr. Elena Rossi / Materials Lab`) with responsive status boards, drawers, and audit feeds.
+
+## Known Limitations & Architecture Boundaries
+
+1. **Single-Tenant by Design**: This prototype is scoped to a single Principal Investigator supervisor desk (`Dr. Elena Rossi / Materials Lab`). No multi-tenant authentication boundary or session check is enforced in this hackathon build; `getUserId()` resolves to `userId = 1`. In a production deployment, this would be backed by AWS Cognito or institutional SAML/SSO tokens.
+2. **Autonomous Watch Mode Interval**: Watch mode starts automatically on server boot. It defaults to an hourly interval (`3,600,000 ms`), but can be configured via `WATCH_INTERVAL_MS` (e.g. `300000` for 5-minute hackathon evaluation or live demos).
+3. **AWS Bedrock / Strands Path Credentials**: Full Amazon Bedrock LLM reasoning and the Python Strands service require valid AWS credentials (`AWS_REGION`, `BEDROCK_MODEL_ID`). When unconfigured or offline, the platform cleanly falls back to its deterministic safety layer, clearly flagging fallback status in provider trace cards without interrupting the researcher.
+4. **Offline Benchmark Dataset**: When `RETRACTION_WATCH_API_URL` is unconfigured, the system queries an offline fallback dataset containing verified benchmark retractions (e.g., STAP cell papers). All fallback hits are explicitly labeled `Retraction Watch (Offline Demo Fallback Dataset)` in logs, traces, and UI drawers for total audit transparency.
 
 ## Production Build & Verification
 

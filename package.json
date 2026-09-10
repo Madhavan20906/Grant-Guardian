@@ -6,7 +6,9 @@
     "build": "pnpm run typecheck:libs && pnpm -r --if-present run build",
     "typecheck:libs": "tsc --build",
     "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck",
-    "test": "pnpm -r --if-present run test"
+    "test": "pnpm -r --if-present run test",
+    "test:python": "python agent-service/test_agent_service.py",
+    "test:all": "pnpm test && pnpm run test:python"
   },
   "private": true,
   "dependencies": {

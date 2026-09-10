@@ -23,26 +23,22 @@ export interface WatchState {
   notifications: WatchNotification[];
 }
 
+const DEFAULT_INTERVAL_MS = process.env["WATCH_INTERVAL_MS"]
+  ? Number(process.env["WATCH_INTERVAL_MS"])
+  : 3600_000;
+let currentIntervalMs = DEFAULT_INTERVAL_MS;
+
 const state: WatchState = {
   enabled: true,
   lastSweepAt: null,
-  nextSweepAt: new Date(Date.now() + 3600_000).toISOString(),
-  totalSweeps: 1,
-  silentSweeps: 1,
-  citationsChecked: 37,
+  nextSweepAt: null,
+  totalSweeps: 0,
+  silentSweeps: 0,
+  citationsChecked: 0,
   retractionsCaught: 0,
   propagationsEscalated: 0,
   draftsAssembled: 0,
-  notifications: [
-    {
-      id: 'notif-init',
-      timestamp: new Date().toISOString(),
-      type: 'sweep_silent',
-      title: 'Autonomous Morning Sweep Complete',
-      message: '37 citations verified against Crossref & Retraction Watch. 0 direct retractions, 0 propagation risks. System silent.',
-      urgent: false,
-    },
-  ],
+  notifications: [],
 };
 
 let timer: NodeJS.Timeout | null = null;
@@ -118,7 +114,7 @@ export async function runAutonomousSweep(userId = 1): Promise<{
   state.propagationsEscalated += escalated;
   state.draftsAssembled += draftsCreated;
   state.lastSweepAt = new Date().toISOString();
-  state.nextSweepAt = new Date(Date.now() + 3600_000).toISOString();
+  state.nextSweepAt = new Date(Date.now() + currentIntervalMs).toISOString();
 
   if (isSilent) {
     state.silentSweeps++;
@@ -171,9 +167,11 @@ export async function runAutonomousSweep(userId = 1): Promise<{
   };
 }
 
-export function startAutonomousWatch(intervalMs = 3600_000) {
+export function startAutonomousWatch(intervalMs = DEFAULT_INTERVAL_MS) {
   if (timer) clearInterval(timer);
+  currentIntervalMs = intervalMs;
   state.enabled = true;
+  state.nextSweepAt = new Date(Date.now() + intervalMs).toISOString();
   timer = setInterval(() => {
     runAutonomousSweep().catch(() => {});
   }, intervalMs);
@@ -185,8 +183,24 @@ export function stopAutonomousWatch() {
     timer = null;
   }
   state.enabled = false;
+  state.nextSweepAt = null;
 }
 
 export function getWatchState(): WatchState {
   return { ...state };
+}
+
+export function resetWatchStateForTesting() {
+  stopAutonomousWatch();
+  currentIntervalMs = DEFAULT_INTERVAL_MS;
+  state.enabled = true;
+  state.lastSweepAt = null;
+  state.nextSweepAt = null;
+  state.totalSweeps = 0;
+  state.silentSweeps = 0;
+  state.citationsChecked = 0;
+  state.retractionsCaught = 0;
+  state.propagationsEscalated = 0;
+  state.draftsAssembled = 0;
+  state.notifications = [];
 }

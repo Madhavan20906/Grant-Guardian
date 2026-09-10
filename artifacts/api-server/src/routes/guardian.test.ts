@@ -172,3 +172,31 @@ test("CORS: allows 127.0.0.1 development origin", async () => {
   });
   assert.equal(res.headers.get("access-control-allow-origin"), "http://127.0.0.1:3000");
 });
+
+// Autonomous Watch Mode tests
+test("GET /api/guardian/watch/status returns unpolluted initial state on boot", async () => {
+  const res = await request("/api/guardian/watch/status");
+  assert.equal(res.status, 200);
+  assert.equal(typeof res.body.totalSweeps, "number");
+  assert.ok(Array.isArray(res.body.notifications));
+});
+
+test("POST /api/guardian/watch/sweep executes a real sweep and updates state with audit trail", async () => {
+  const sweepRes = await request("/api/guardian/watch/sweep", { method: "POST" });
+  assert.equal(sweepRes.status, 200);
+  assert.ok(typeof sweepRes.body.scanned === "number");
+  assert.ok(typeof sweepRes.body.flagged === "number");
+  assert.ok(typeof sweepRes.body.escalated === "number");
+  assert.ok(typeof sweepRes.body.summary === "string");
+
+  const statusRes = await request("/api/guardian/watch/status");
+  assert.equal(statusRes.status, 200);
+  assert.ok(statusRes.body.totalSweeps >= 1);
+  assert.ok(statusRes.body.lastSweepAt !== null);
+
+  const notifsRes = await request("/api/guardian/notifications");
+  assert.equal(notifsRes.status, 200);
+  assert.ok(Array.isArray(notifsRes.body));
+  assert.ok(notifsRes.body.length >= 1);
+});
+

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { ArrowRight, CheckCircle2, Clock3, FileWarning, ScanLine, ShieldCheck, Cpu, Database, Network, AlertTriangle } from 'lucide-react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useLocation } from 'wouter';
 import {
   getGetGuardianOverviewQueryKey,
@@ -30,6 +30,27 @@ export default function Overview() {
   const [scanError, setScanError] = useState('');
   const [sweepLoading, setSweepLoading] = useState(false);
   const [sweepResult, setSweepResult] = useState<{ silent: boolean; summary: string } | null>(null);
+
+  const watchStatusQuery = useQuery({
+    queryKey: ['guardian', 'watch', 'status'],
+    queryFn: async () => {
+      const res = await fetch('/api/guardian/watch/status');
+      if (!res.ok) throw new Error('Failed to fetch watch status');
+      return res.json() as Promise<{
+        enabled: boolean;
+        lastSweepAt: string | null;
+        nextSweepAt: string | null;
+        totalSweeps: number;
+        silentSweeps: number;
+        citationsChecked: number;
+        retractionsCaught: number;
+        propagationsEscalated: number;
+        draftsAssembled: number;
+      }>;
+    },
+    refetchInterval: 15000,
+  });
+
   const citations = Array.isArray(citationsQuery.data) ? citationsQuery.data : [];
   const deadlines = Array.isArray(deadlinesQuery.data) ? deadlinesQuery.data : [];
   const activity = Array.isArray(activityQuery.data) ? activityQuery.data : [];
@@ -49,6 +70,7 @@ export default function Overview() {
           queryClient.invalidateQueries({ queryKey: getListCitationsQueryKey() }),
           queryClient.invalidateQueries({ queryKey: getListDeadlinesQueryKey() }),
           queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() }),
+          queryClient.invalidateQueries({ queryKey: ['guardian', 'watch', 'status'] }),
         ]);
       }
     } catch {
@@ -129,7 +151,11 @@ export default function Overview() {
           </span>
           <div>
             <span className="font-extrabold text-[hsl(var(--foreground))]">AUTONOMOUS WATCH MODE: ACTIVE</span>
-            <span className="ml-2 text-[hsl(var(--muted-foreground))]">· Routine checks run silently; surfaces only verified risks.</span>
+            <span className="ml-2 text-[hsl(var(--muted-foreground))]">
+              {watchStatusQuery.data?.totalSweeps === 0
+                ? '· No sweep has run yet (Autonomous sweep scheduled in background).'
+                : `· ${watchStatusQuery.data?.totalSweeps ?? 1} sweep(s) completed · ${watchStatusQuery.data?.citationsChecked ?? 0} citations checked · Routine checks run silently.`}
+            </span>
           </div>
         </div>
         <button
