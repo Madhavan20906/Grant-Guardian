@@ -19,7 +19,8 @@ import {
 
 import { setBaseUrl } from '@workspace/api-client-react';
 
-setBaseUrl('http://127.0.0.1:3000');
+const apiBase = (import.meta.env.VITE_API_URL as string | undefined) ?? '';
+setBaseUrl(apiBase || null);
 
 const queryClient = new QueryClient();
 

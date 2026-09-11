@@ -8,7 +8,7 @@ import {
   ListDeadlinesResponse,
   RunGuardianScanResponse,
 } from "@workspace/api-zod";
-import { draftWithAgent, parseDoisFromContent, runGuardianAgent } from "../lib/guardian-agent";
+import { draftWithAgent, parseDoisFromContent, runGuardianAgent, runStrandsService } from "../lib/guardian-agent";
 import { getWatchState, runAutonomousSweep } from "../lib/autonomous-watch";
 import { guardianStore, type DeadlineRecord } from "../lib/store";
 
@@ -241,6 +241,17 @@ router.post("/guardian/watch/sweep", async (_req, res, next) => {
 
 router.get("/guardian/notifications", async (_req, res) => {
   res.json(getWatchState().notifications);
+});
+
+router.get("/guardian/strands/status", async (_req, res) => {
+  const result = await runStrandsService([]);
+  return res.json({
+    available: result.available,
+    mode: result.mode,
+    statusLabel: result.status_label,
+    tools: result.tools ?? 6,
+    error: result.error,
+  });
 });
 
 export default router;

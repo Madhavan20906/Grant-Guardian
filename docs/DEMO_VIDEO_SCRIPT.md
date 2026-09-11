@@ -7,10 +7,10 @@
 
 ### [0:00 – 0:20] The Hook: The Silent Crisis of Research Integrity
 
-**Visual**: Close-up of a high-profile retracted paper notice (e.g. STAP cells in *Nature*), then pan to a researcher writing a major NSF grant proposal with dozens of citations.
+**Visual**: Close-up of a high-profile retracted paper notice (e.g. STAP cells in *Nature*), then pan to an early-career Principal Investigator drafting an NIH R01 / NSF grant proposal with dozens of literature citations.
 
 **Speaker (Voiceover)**:
-> "Researchers don't just have to worry about whether their citations are correct today. They have to worry about whether those papers become compromised tomorrow. According to a landmark 2023 analysis published in *Nature* (drawing on Crossref and Retraction Watch data), over 10,000 scientific papers were retracted in 2023 alone—driven by paper mills and compromised peer review. When a foundational study is retracted, hundreds of downstream papers inherit that rot—often without the authors ever knowing until their grant is rejected or their reputation is damaged."
+> "For an early-career Principal Investigator writing an NIH R01 or NSF CAREER grant proposal, a single undetected retracted reference isn't just an embarrassment—it is career-threatening: an immediate award rejection, a mandatory 12-month federal Office of Research Integrity inquiry, and the loss of a $1.5 million federal grant. According to a landmark *Nature* analysis, over 10,000 papers were retracted in 2023 alone. And when a foundational paper collapses, hundreds of downstream grant proposals inherit that rot silently—without the PI ever knowing."
 
 ---
 
@@ -19,7 +19,7 @@
 **Visual**: Screen transitions to the Grant Guardian PI Executive Desk (`Dr. Elena Rossi / Materials Lab`). Clean, modern status board with live provider badges: Crossref, Retraction Watch, Strands SDK, AWS Bedrock.
 
 **Speaker**:
-> "This is Grant Guardian—an autonomous research integrity and compliance agent built on AWS Bedrock and the Strands Agent framework. Guardian runs silently in the background, continuously watching two critical risks: citation rot and compliance drift. Routine work is automated; ambiguous scientific decisions are surfaced to the human."
+> "This is Grant Guardian—an autonomous research integrity and compliance agent built on AWS Bedrock and the Strands Agent framework. Guardian is built specifically for early-career PIs and laboratory directors. It runs silently in the background, continuously watching two critical risks: citation rot and compliance drift. The Strands Agent drives multi-step tool investigation; ambiguous scientific decisions are surfaced to the researcher."
 
 ---
 
@@ -41,8 +41,7 @@
 **Visual**: Navigate to the Citation Health register. Click on the Obokata STAP paper (`10.1038/nature13358`). Open the Source Inspection drawer.
 
 **Speaker**:
->
- "Now, what happens when a paper in your bibliography is actually compromised?
+> "Now, what happens when a paper in your bibliography is actually compromised?
 > 
 > Here, Guardian flagged Obokata et al.'s STAP cell paper in Nature. Notice what happened automatically:
 > 1. Guardian quarantined the citation, isolating it from active grant drafts.
@@ -97,20 +96,19 @@
 
 ---
 
-### [4:15 – 4:45] Technical Architecture & 40+ Automated Adversarial Tests
-
-**Visual**: Quick display of the Mermaid architecture diagram, then terminal showing pnpm test passing all 42 TypeScript tests and 8 Python service tests.
+### [4:15 – 4:45] Technical Architecture & 53 Automated Tests
+**Visual**: Display of the Strands Agent tool orchestration sequence feeding the deterministic guardrail, then terminal showing `pnpm run test:all` passing all 53 tests (43 TypeScript + 10 Python).
 
 **Speaker**:
-> "Under the hood, Grant Guardian is architected around two decoupled layers:
-> 1. The **Strands Agent Orchestrator** on AWS Bedrock, which dynamically selects tools across Crossref, Retraction Watch, and Semantic Scholar.
-> 2. A **Deterministic Safety Boundary** that strictly enforces our conservative policy.
+> "Under the hood, Grant Guardian puts the **Strands Agent as the true decision-maker**:
+> 1. The Strands Agent actively executes the multi-step investigation loop across Crossref, Retraction Watch, and Semantic Scholar.
+> 2. The TypeScript backend consumes the agent's tool-call trace as verified evidence.
+> 3. Our **Deterministic Safety Boundary** enforces the conservative human-in-the-loop invariant.
 > 
-> We don't just claim the agent is safe—we prove it. Our test suite includes **42 automated TypeScript tests plus 8 Python service tests**:
-> - Crossref or Retraction Watch outages never trigger hallucinated clearances.
-> - Prompt injection strings hidden inside paper titles or abstracts are completely ignored by the deterministic safety boundary.
-> - Second-order propagation is mathematically prevented from auto-retracting.
-> - Publisher errata notices are strictly distinguished from retractions."
+> We prove this with **53 automated tests**:
+> - Real dynamic tool selection branching and Bedrock transcript replay tests in Python.
+> - Structural prompt injection immunity and registry outage circuit breakers in TypeScript.
+> - Proof of restraint: second-order propagation is mathematically prevented from auto-retracting without human review."
 
 ---
 

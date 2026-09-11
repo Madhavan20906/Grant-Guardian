@@ -376,3 +376,132 @@ test("adversarial: Autonomous Watch silent-pass invariant — zero retractions g
   assert.equal(typeof result.silent, "boolean");
   assert.match(result.summary, /Autonomous sweep/);
 });
+
+test("strands integration: runGuardianAgent consumes Strands agent tool trace and evidence into classifyDecision", async () => {
+  const originalFetch = globalThis.fetch;
+  const originalStrandsUrl = process.env.STRANDS_AGENT_URL;
+  process.env.STRANDS_AGENT_URL = "http://127.0.0.1:8010";
+
+  try {
+    globalThis.fetch = async (url: string | URL | Request, init?: RequestInit) => {
+      const urlStr = String(url);
+      if (urlStr.includes("/scan")) {
+        return new Response(
+          JSON.stringify({
+            agent: "strands",
+            version: "2.0.0",
+            mode: "strands_agentcore_live",
+            status_label: "STRANDS AGENT LIVE — AWS Bedrock Orchestration",
+            fallback: false,
+            tools_available: 6,
+            tool_trace: [
+              {
+                tool: "crossref_lookup",
+                citation_doi: "10.1016/j.stem.2015.01.002",
+                timestamp: "2026-09-11T07:00:00.000Z",
+                duration_ms: 85,
+                status: "success",
+                input: { doi: "10.1016/j.stem.2015.01.002" },
+                output: { is_retracted: false, reference_count: 44 },
+              },
+              {
+                tool: "retraction_watch_lookup",
+                citation_doi: "10.1016/j.stem.2015.01.002",
+                timestamp: "2026-09-11T07:00:00.100Z",
+                duration_ms: 65,
+                status: "success",
+                input: { doi: "10.1016/j.stem.2015.01.002" },
+                output: { retracted: false },
+              },
+              {
+                tool: "semantic_scholar_graph",
+                citation_doi: "10.1016/j.stem.2015.01.002",
+                timestamp: "2026-09-11T07:00:00.200Z",
+                duration_ms: 110,
+                status: "success",
+                input: { doi: "10.1016/j.stem.2015.01.002" },
+                output: { referenced_dois: ["10.1038/nature13358"] },
+              },
+              {
+                tool: "check_reference_retractions",
+                citation_doi: "10.1016/j.stem.2015.01.002",
+                timestamp: "2026-09-11T07:00:00.350Z",
+                duration_ms: 90,
+                status: "warning",
+                input: { referenced_count: 1 },
+                output: {
+                  has_propagation_risk: true,
+                  retracted_references: [
+                    { doi: "10.1038/nature13358", reason: "STAP data fabrication", source: "Retraction Watch" },
+                  ],
+                },
+              },
+              {
+                tool: "escalate_to_human",
+                citation_doi: "10.1016/j.stem.2015.01.002",
+                timestamp: "2026-09-11T07:00:00.450Z",
+                duration_ms: 15,
+                status: "warning",
+                input: { root_doi: "10.1016/j.stem.2015.01.002", retracted_ref: "10.1038/nature13358" },
+                output: { action: "escalate_to_human" },
+              },
+            ],
+            evidence: {
+              "10.1016/j.stem.2015.01.002": {
+                doi: "10.1016/j.stem.2015.01.002",
+                title: "Downstream Study",
+                direct_retraction: false,
+                retraction_reason: null,
+                retraction_source: null,
+                crossref_status: true,
+                is_corrected: false,
+                referenced_dois: ["10.1038/nature13358"],
+                has_propagation_risk: true,
+                retracted_references: [
+                  { doi: "10.1038/nature13358", reason: "STAP data fabrication", source: "Retraction Watch" },
+                ],
+                escalation: { action: "escalate_to_human" },
+              },
+            },
+            result: "Strands Agent completed investigation: 1 propagation risk escalated to human decision inbox.",
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        );
+      }
+      return originalFetch(url, init);
+    };
+
+    const sampleCitations: CitationInput[] = [
+      { id: 2, doi: "10.1016/j.stem.2015.01.002", title: "Downstream Study", status: "clear", risk: "low" },
+    ];
+
+    const { decisions, strands } = await runGuardianAgent(sampleCitations);
+    assert.equal(strands.available, true);
+    assert.equal(strands.mode, "strands_agentcore_live");
+    assert.equal(decisions.length, 1);
+
+    const d = decisions[0];
+    // Strands agent evidence fed directly into deterministic classifyDecision
+    assert.equal(d.status, "propagation");
+    assert.equal(d.risk, "medium");
+    assert.equal(d.escalated, true);
+    assert.equal(d.retractedReferences.length, 1);
+    assert.equal(d.retractedReferences[0].doi, "10.1038/nature13358");
+
+    // Trace visibly contains the Strands agent tool calls
+    const toolsInTrace = d.trace.map((t: any) => t.step);
+    assert.ok(toolsInTrace.includes("crossref"));
+    assert.ok(toolsInTrace.includes("retraction_watch"));
+    assert.ok(toolsInTrace.includes("citation_graph"));
+    assert.ok(toolsInTrace.includes("reference_verification"));
+    assert.ok(toolsInTrace.includes("human_escalation"));
+    assert.ok(toolsInTrace.includes("decision"));
+  } finally {
+    globalThis.fetch = originalFetch;
+    if (originalStrandsUrl === undefined) {
+      delete process.env.STRANDS_AGENT_URL;
+    } else {
+      process.env.STRANDS_AGENT_URL = originalStrandsUrl;
+    }
+  }
+});

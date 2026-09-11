@@ -294,7 +294,24 @@ export default function Citations() {
               <span>Risk</span>
             </div>
 
-            {citations.length ? (
+            {rawCitations.length === 0 ? (
+              <EmptyBlock
+                title="No citations tracked yet"
+                detail="Register your proposal's bibliography using the DOI input above or import BibTeX to start autonomous integrity monitoring."
+                action={
+                  <Button
+                    variant="primary"
+                    onClick={() => {
+                      const input = document.querySelector('input[placeholder*="DOI"]') as HTMLInputElement;
+                      input?.focus();
+                    }}
+                    testId="button-focus-import"
+                  >
+                    Register First DOI
+                  </Button>
+                }
+              />
+            ) : citations.length ? (
               citations.map((citation: Citation) => (
                 <CitationRow key={citation.id} citation={citation} onSelect={() => setSelected(citation.id)} />
               ))

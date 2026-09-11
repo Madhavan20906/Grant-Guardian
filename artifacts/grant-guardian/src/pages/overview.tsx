@@ -83,6 +83,22 @@ export default function Overview() {
     refetchInterval: 15000,
   });
 
+  const strandsStatusQuery = useQuery({
+    queryKey: ['guardian', 'strands', 'status'],
+    queryFn: async () => {
+      const res = await fetch('/api/guardian/strands/status');
+      if (!res.ok) throw new Error('Failed to fetch strands status');
+      return res.json() as Promise<{
+        available: boolean;
+        mode: string;
+        statusLabel: string;
+        tools: number;
+        error?: string | null;
+      }>;
+    },
+    refetchInterval: 30000,
+  });
+
   const citations = Array.isArray(citationsQuery.data) ? citationsQuery.data : [];
   const deadlines = Array.isArray(deadlinesQuery.data) ? deadlinesQuery.data : [];
   const activity = Array.isArray(activityQuery.data) ? activityQuery.data : [];
@@ -170,6 +186,19 @@ export default function Overview() {
                 <span className="size-1.5 rounded-full bg-emerald-400 animate-ping" />
                 WATCHING
               </span>
+              <span
+                className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[9px] font-extrabold border ${
+                  strandsStatusQuery.data?.available
+                    ? 'bg-purple-500/25 text-purple-300 border-purple-500/50'
+                    : 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                }`}
+                data-testid="badge-strands-mode"
+              >
+                <Cpu size={10} />
+                {strandsStatusQuery.data?.available
+                  ? `STRANDS AGENTCORE LIVE (${strandsStatusQuery.data.tools} TOOLS)`
+                  : 'STRANDS FALLBACK ACTIVE'}
+              </span>
             </div>
             <h1 className="mt-2 text-[26px] md:text-[32px] font-serif font-bold tracking-tight text-[hsl(var(--sidebar-foreground))]">
               Good morning, Elena.
@@ -228,6 +257,74 @@ export default function Overview() {
           </div>
         </div>
       </div>
+
+      {/* LIVE SCAN PROGRESS & FEEDBACK BANNERS */}
+      {scan.isPending && (
+        <div
+          className="rounded-xl border border-purple-500/50 bg-purple-500/10 p-4 shadow-md flex items-center gap-3.5 animate-pulse"
+          data-testid="banner-scan-active"
+        >
+          <div className="size-5 rounded-full border-2 border-purple-500 border-t-transparent animate-spin shrink-0" />
+          <div>
+            <h4 className="text-[13px] font-bold text-purple-900 dark:text-purple-200">
+              Strands Agent Investigation in Progress...
+            </h4>
+            <p className="text-[11px] text-purple-800/90 dark:text-purple-300/90">
+              Strands is querying Crossref metadata, Retraction Watch signals, and traversing 1-hop reference trees across Semantic Scholar. Evidence will feed the deterministic safety policy.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {scanMessage && !scan.isPending && (
+        <div
+          className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4 shadow-sm flex items-center justify-between gap-3"
+          data-testid="banner-scan-success"
+        >
+          <div className="flex items-center gap-2.5">
+            <CheckCircle2 size={18} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <div>
+              <h4 className="text-[13px] font-bold text-emerald-900 dark:text-emerald-200">
+                Scan Sweep Completed Successfully
+              </h4>
+              <p className="text-[11px] text-emerald-800/90 dark:text-emerald-300/90">
+                {scanMessage}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setScanMessage('')}
+            className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 hover:underline shrink-0"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {scanError && !scan.isPending && (
+        <div
+          className="rounded-xl border border-red-500/40 bg-red-500/10 p-4 shadow-sm flex items-center justify-between gap-3"
+          data-testid="banner-scan-error"
+        >
+          <div className="flex items-center gap-2.5">
+            <AlertTriangle size={18} className="text-red-600 dark:text-red-400 shrink-0" />
+            <div>
+              <h4 className="text-[13px] font-bold text-red-900 dark:text-red-200">
+                Scan Disruption Notice
+              </h4>
+              <p className="text-[11px] text-red-800/90 dark:text-red-300/90">
+                {scanError}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setScanError('')}
+            className="text-[11px] font-bold text-red-700 dark:text-red-300 hover:underline shrink-0"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {/* 3. GUARDIAN MORNING BRIEF CARD (Expandable / Dismissable) */}
       {showMorningBrief && (
