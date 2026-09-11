@@ -1,5 +1,28 @@
 import { useMemo, useState } from 'react';
-import { ArrowRight, CheckCircle2, Clock3, FileWarning, ScanLine, ShieldCheck, Cpu, Database, Network, AlertTriangle } from 'lucide-react';
+import {
+  ArrowRight,
+  CheckCircle2,
+  Clock3,
+  FileWarning,
+  ScanLine,
+  ShieldCheck,
+  ShieldAlert,
+  Cpu,
+  Database,
+  Network,
+  AlertTriangle,
+  Layers,
+  Sparkles,
+  GitFork,
+  Check,
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+  Info,
+  Calendar,
+  FileText,
+  Activity as ActivityIcon,
+} from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useLocation } from 'wouter';
 import {
@@ -16,7 +39,11 @@ import {
   type Deadline,
   type Activity,
 } from '@workspace/api-client-react';
-import { ActivityRow, CitationRow, DeadlineRow, EmptyBlock, ErrorBlock, LoadingBlock, ScanButton, SectionHeading, StatCard } from '@/components/guardian-ui';
+import { Drawer, EmptyBlock, ErrorBlock, LoadingBlock, ScanButton, StatCard } from '@/components/guardian-ui';
+import { CitationGraph } from '@/components/citation-graph';
+import { BlastRadius } from '@/components/blast-radius';
+import { InvestigationWorkspace } from '@/components/investigation-workspace';
+import { ClaimMonitor } from '@/components/claim-monitor';
 
 export default function Overview() {
   const queryClient = useQueryClient();
@@ -26,10 +53,15 @@ export default function Overview() {
   const deadlinesQuery = useListDeadlines();
   const activityQuery = useListActivity();
   const scan = useRunGuardianScan();
+
   const [scanMessage, setScanMessage] = useState('');
   const [scanError, setScanError] = useState('');
   const [sweepLoading, setSweepLoading] = useState(false);
   const [sweepResult, setSweepResult] = useState<{ silent: boolean; summary: string } | null>(null);
+  const [selectedCitationId, setSelectedCitationId] = useState<number | null>(null);
+  const [showMorningBrief, setShowMorningBrief] = useState(true);
+  const [activeViewTab, setActiveViewTab] = useState<'attention' | 'graph' | 'claims' | 'blast'>('attention');
+  const [isSubmittingJudgment, setIsSubmittingJudgment] = useState(false);
 
   const watchStatusQuery = useQuery({
     queryKey: ['guardian', 'watch', 'status'],
@@ -54,8 +86,8 @@ export default function Overview() {
   const citations = Array.isArray(citationsQuery.data) ? citationsQuery.data : [];
   const deadlines = Array.isArray(deadlinesQuery.data) ? deadlinesQuery.data : [];
   const activity = Array.isArray(activityQuery.data) ? activityQuery.data : [];
-  const urgentCitations = useMemo(() => citations.filter((c: Citation) => c.risk !== 'low').slice(0, 4), [citations]);
-  const urgentDeadlines = useMemo(() => deadlines.filter((d: Deadline) => d.status !== 'on_track').slice(0, 3), [deadlines]);
+
+  const selectedCitation = citations.find((c: Citation) => c.id === selectedCitationId) || citations[1] || null;
 
   const triggerMorningSweep = async () => {
     setSweepLoading(true);
@@ -96,287 +128,512 @@ export default function Overview() {
       onError: () => setScanError('The scan could not complete. Guardian will keep watching and you can try again.'),
     });
   };
+
+  const handleJudgment = async (id: number, judgment: 'relevant' | 'not_relevant' | 'deferred', notes?: string) => {
+    setIsSubmittingJudgment(true);
+    try {
+      const response = await fetch(`/api/guardian/citations/${id}/judgment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ judgment, notes }),
+      });
+      if (response.ok) {
+        setSelectedCitationId(null);
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: getListCitationsQueryKey() }),
+          queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() }),
+          queryClient.invalidateQueries({ queryKey: getGetGuardianOverviewQueryKey() }),
+        ]);
+      }
+    } catch {
+      //
+    } finally {
+      setIsSubmittingJudgment(false);
+    }
+  };
+
   const retryAll = () => {
     void Promise.all([overviewQuery.refetch(), citationsQuery.refetch(), deadlinesQuery.refetch(), activityQuery.refetch()]);
   };
 
   return (
-    <div className="gg-stagger space-y-7">
-      <SectionHeading
-        eyebrow="PI Desk Status Board · Active Supervision"
-        title="Good morning, Elena."
-        description="Guardian is actively monitoring your research workspace. 2 critical items require your judgment before submission."
-        action={<ScanButton isPending={scan.isPending} onClick={runScan} />}
-      />
-
-      {/* Live Provider System Status Board Banner — Strands as Centerpiece */}
-      <div className="rounded-xl border border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar))] p-4 text-[hsl(var(--sidebar-foreground))] shadow-md">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-center gap-3">
-            <div className="relative flex size-9 items-center justify-center rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/30">
-              <Cpu size={18} />
-              <span className="absolute -right-0.5 -top-0.5 size-2.5 rounded-full bg-emerald-500 animate-ping" />
-            </div>
-            <div>
-              <div className="text-[12px] font-extrabold tracking-tight flex items-center gap-2">
-                <span>STRANDS AGENT ORCHESTRATOR ACTIVE</span>
-                <span className="rounded bg-purple-500/30 px-1.5 py-0.5 text-[9px] font-mono text-purple-200">v2.0.0</span>
-              </div>
-              <div className="gg-mono text-[9px] text-[hsl(var(--sidebar-foreground)/.6)]">
-                Autonomous Multi-Hop Graph Traversal · Crossref & Retraction Watch Tools
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(var(--sidebar-accent))] px-3 py-1 gg-mono text-[9px] font-bold text-emerald-400 border border-emerald-500/20">
-              <Database size={11} /> Crossref: Connected
-            </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(var(--sidebar-accent))] px-3 py-1 gg-mono text-[9px] font-bold text-emerald-400 border border-emerald-500/20">
-              <ShieldCheck size={11} /> Retraction Watch: Failsafe Ready
-            </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(var(--sidebar-accent))] px-3 py-1 gg-mono text-[9px] font-bold text-purple-300 border border-purple-500/30">
-              <Network size={11} /> Strands SDK: Active (6 Tools)
-            </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(var(--sidebar-accent))] px-3 py-1 gg-mono text-[9px] font-bold text-amber-300 border border-amber-500/20">
-              <Cpu size={11} /> AWS Bedrock: Policy Fallback
-            </span>
-          </div>
-        </div>
-
-        {/* Strands Centerpiece Architecture Pipeline Flow */}
-        <div className="mt-3.5 pt-3 border-t border-[hsl(var(--sidebar-border))] hidden sm:flex items-center justify-between text-[10px] gg-mono text-[hsl(var(--sidebar-foreground)/.75)]">
-          <span className="flex items-center gap-1 text-purple-300 font-bold">
-            GRANT GUARDIAN
-          </span>
-          <span>→</span>
-          <span className="flex items-center gap-1 text-purple-300 font-bold bg-purple-500/20 px-2 py-0.5 rounded border border-purple-500/30">
-            Strands Agent
-          </span>
-          <span>→</span>
-          <span className="text-[hsl(var(--sidebar-foreground))] font-semibold">
-            Tools: Crossref · Retraction Watch · Semantic Scholar
-          </span>
-          <span>→</span>
-          <span className="text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-            🛡️ Deterministic Guardrail
-          </span>
-          <span>→</span>
-          <span className="text-amber-300 font-bold">
-            [ Quarantine | PI Decision Inbox ]
-          </span>
-        </div>
-      </div>
-
-      {/* Autonomous Watch Mode Bar (Priority 3 & 8) */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.4)] px-4 py-3 text-[11px]">
-        <div className="flex items-center gap-2.5">
-          <span className="relative flex size-2.5">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" />
-            <span className="relative inline-flex size-2.5 rounded-full bg-emerald-500" />
-          </span>
+    <div className="gg-stagger space-y-7" data-testid="page-overview">
+      {/* 1. TOP RESEARCH INTEGRITY COMMAND CENTER HEADER */}
+      <div className="rounded-2xl border border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar))] p-6 text-[hsl(var(--sidebar-foreground))] shadow-lg">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <span className="font-extrabold text-[hsl(var(--foreground))]">AUTONOMOUS WATCH MODE: ACTIVE</span>
-            <span className="ml-2 text-[hsl(var(--muted-foreground))]">
-              {watchStatusQuery.data?.totalSweeps === 0
-                ? '· No sweep has run yet (Autonomous sweep scheduled in background).'
-                : `· ${watchStatusQuery.data?.totalSweeps ?? 1} sweep(s) completed · ${watchStatusQuery.data?.citationsChecked ?? 0} citations checked · Routine checks run silently.`}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="gg-mono text-[10px] uppercase tracking-[.25em] text-[hsl(var(--sidebar-primary))] font-extrabold">
+                GRANT GUARDIAN · RESEARCH INTEGRITY COMMAND CENTER
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-[9px] font-extrabold text-emerald-400 border border-emerald-500/30">
+                <span className="size-1.5 rounded-full bg-emerald-400 animate-ping" />
+                WATCHING
+              </span>
+            </div>
+            <h1 className="mt-2 text-[26px] md:text-[32px] font-serif font-bold tracking-tight text-[hsl(var(--sidebar-foreground))]">
+              Good morning, Elena.
+            </h1>
+            <p className="mt-1 text-[13px] text-[hsl(var(--sidebar-foreground)/.75)]">
+              Guardian checked <strong className="text-white">48 sources</strong> overnight. 1 direct retraction was quarantined, and 1 downstream dependency requires your domain review.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={triggerMorningSweep}
+              disabled={sweepLoading}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar-accent))] px-3.5 py-2 text-[11px] font-bold text-white hover:bg-[hsl(var(--sidebar-accent)/.8)] transition-all disabled:opacity-50"
+              data-testid="btn-simulate-sweep"
+            >
+              <Clock3 size={13} className={sweepLoading ? 'animate-spin text-amber-400' : ''} />
+              {sweepLoading ? 'Sweeping Registry...' : 'Simulate Overnight Sweep'}
+            </button>
+            <ScanButton isPending={scan.isPending} onClick={runScan} />
           </div>
         </div>
-        <button
-          onClick={triggerMorningSweep}
-          disabled={sweepLoading}
-          className="inline-flex items-center gap-1.5 rounded-md bg-[hsl(var(--primary))] px-3 py-1.5 text-[10px] font-bold text-[hsl(var(--primary-foreground))] hover:opacity-90 disabled:opacity-50"
-          data-testid="button-trigger-sweep"
-        >
-          <Clock3 size={12} />
-          {sweepLoading ? 'Running Sweep...' : 'Simulate Morning Sweep'}
-        </button>
+
+        {/* 2. FOUR CORE STAT STATUS BAR (What is safe? What requires me?) */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6 pt-5 border-t border-[hsl(var(--sidebar-border))]">
+          <div className="rounded-xl bg-[hsl(var(--sidebar-accent)/.6)] p-3 border border-[hsl(var(--sidebar-border))]">
+            <div className="gg-mono text-[24px] font-extrabold text-white">48</div>
+            <div className="text-[10px] uppercase font-bold tracking-wider text-[hsl(var(--sidebar-foreground)/.7)]">
+              MONITORED
+            </div>
+            <div className="text-[9px] text-[hsl(var(--sidebar-foreground)/.5)]">Reference register</div>
+          </div>
+
+          <div className="rounded-xl bg-emerald-500/10 p-3 border border-emerald-500/20">
+            <div className="gg-mono text-[24px] font-extrabold text-emerald-400">46</div>
+            <div className="text-[10px] uppercase font-bold tracking-wider text-emerald-300">
+              CLEAR
+            </div>
+            <div className="text-[9px] text-emerald-400/70">Quiet by default</div>
+          </div>
+
+          <div className="rounded-xl bg-red-500/15 p-3 border border-red-500/30">
+            <div className="gg-mono text-[24px] font-extrabold text-red-400">1</div>
+            <div className="text-[10px] uppercase font-bold tracking-wider text-red-300">
+              RETRACTED
+            </div>
+            <div className="text-[9px] text-red-400/70">Isolated from drafts</div>
+          </div>
+
+          <div className="rounded-xl bg-amber-500/15 p-3 border border-amber-500/30">
+            <div className="gg-mono text-[24px] font-extrabold text-amber-400">1</div>
+            <div className="text-[10px] uppercase font-bold tracking-wider text-amber-300">
+              NEEDS YOUR REVIEW
+            </div>
+            <div className="text-[9px] text-amber-400/70">2nd-order propagation</div>
+          </div>
+        </div>
       </div>
 
-      {sweepResult && (
-        <div
-          className={`flex items-center justify-between gap-2 rounded-xl border p-3.5 text-[11px] ${
-            sweepResult.silent
-              ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300'
-              : 'border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-300'
-          }`}
-          data-testid="status-sweep-result"
-        >
-          <div className="flex items-center gap-2 font-semibold">
-            {sweepResult.silent ? <CheckCircle2 size={16} className="text-emerald-500 shrink-0" /> : <AlertTriangle size={16} className="text-amber-500 shrink-0" />}
-            <span>{sweepResult.summary}</span>
-          </div>
-          <Link href="/activity" className="gg-mono text-[10px] font-bold underline underline-offset-2 hover:opacity-80">
-            View Notifications →
-          </Link>
-        </div>
-      )}
-
-      {/* Human Decision Inbox Banner if pending judgments exist (Priority 4) */}
-      {(overviewQuery.data?.pendingJudgments ?? 0) > 0 && (
-        <div className="flex items-center justify-between gap-3 rounded-xl border border-amber-500/40 bg-amber-500/10 px-5 py-3.5 text-[11px] shadow-sm">
-          <div className="flex items-center gap-2.5">
-            <AlertTriangle size={17} className="text-amber-600 shrink-0" />
-            <div>
-              <span className="font-bold text-amber-900 dark:text-amber-200">
-                HUMAN DECISION INBOX · {overviewQuery.data?.pendingJudgments} Ambiguous Propagation Risk(s)
+      {/* 3. GUARDIAN MORNING BRIEF CARD (Expandable / Dismissable) */}
+      {showMorningBrief && (
+        <div className="rounded-xl border border-blue-500/30 bg-blue-500/5 p-5 shadow-sm space-y-3" data-testid="card-morning-brief">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="flex size-7 items-center justify-center rounded-lg bg-blue-500/20 text-blue-700 dark:text-blue-300">
+                <Sparkles size={16} />
               </span>
-              <p className="text-[10px] text-amber-800/80 dark:text-amber-300/80">
-                Guardian does not decide whether retracted premises invalidate your claim. Principal Investigator judgment required.
-              </p>
-            </div>
-          </div>
-          <Link
-            href="/citations"
-            className="rounded-md bg-amber-600 px-3 py-1.5 text-[10px] font-bold text-white hover:bg-amber-700 shadow-sm shrink-0"
-          >
-            Open Decision Inbox →
-          </Link>
-        </div>
-      )}
-
-      {scanMessage && (
-        <div className="flex items-center justify-between gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-5 py-3.5 text-[11px] text-emerald-800 dark:text-emerald-300 shadow-sm" data-testid="status-scan-result">
-          <div className="flex items-center gap-2 font-semibold">
-            <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />
-            <span>{scanMessage}</span>
-          </div>
-          <Link href="/activity" className="gg-mono text-[10px] font-bold underline underline-offset-2 hover:opacity-80">
-            View Decision Trace Log →
-          </Link>
-        </div>
-      )}
-
-      {scanError && (
-        <div className="rounded-xl border border-[hsl(var(--destructive)/.3)] bg-[hsl(var(--destructive)/.08)] px-5 py-3.5 text-[11px] text-[hsl(var(--destructive))]" data-testid="status-scan-error">
-          {scanError}
-        </div>
-      )}
-
-      {overviewQuery.isError || citationsQuery.isError || deadlinesQuery.isError || activityQuery.isError ? (
-        <ErrorBlock onRetry={retryAll} />
-      ) : overviewQuery.isLoading || citationsQuery.isLoading || deadlinesQuery.isLoading || activityQuery.isLoading ? (
-        <LoadingBlock lines={5} />
-      ) : (
-        <>
-          {/* Researcher Executive Status Board Stat Grid */}
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Guardian summary">
-            <StatCard
-              label="Citations Watched"
-              value={overviewQuery.data?.citationsTracked ?? 0}
-              detail="Active reference register"
-              icon={ScanLine}
-              sparklineData={[3, 4, 4, 5, 5, 6]}
-            />
-            <StatCard
-              label="Retractions Caught"
-              value={overviewQuery.data?.issuesFound ?? 0}
-              detail="Direct & propagation signals"
-              tone={(overviewQuery.data?.issuesFound ?? 0) > 0 ? 'danger' : 'success'}
-              icon={FileWarning}
-              sparklineData={[0, 0, 1, 1, 2]}
-            />
-            <StatCard
-              label="Compliance Deadlines"
-              value={overviewQuery.data?.deadlinesTracked ?? 0}
-              detail="IRB renewal & NSF progress"
-              icon={Clock3}
-              sparklineData={[4, 4, 3, 3, 3]}
-            />
-            <StatCard
-              label="Escalated Judgments"
-              value={overviewQuery.data?.pendingJudgments ?? 0}
-              detail="Requires researcher claim read"
-              tone={(overviewQuery.data?.pendingJudgments ?? 0) > 0 ? 'warning' : 'success'}
-              icon={CheckCircle2}
-              sparklineData={[0, 1, 1, 1]}
-            />
-          </section>
-
-          <div className="grid gap-6 xl:grid-cols-[1.15fr_.85fr]">
-            <section className="overflow-hidden rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-sm" data-testid="section-priority-signals">
-              <div className="flex items-start justify-between border-b border-[hsl(var(--border))] px-5 py-4">
-                <div>
-                  <div className="gg-mono text-[9px] font-bold uppercase tracking-[.17em] text-[hsl(var(--destructive))]">
-                    Priority Integrity Signals
-                  </div>
-                  <h2 className="mt-1 text-[15px] font-bold">Action Required by PI</h2>
-                </div>
-                <Link href="/citations" className="flex items-center gap-1 text-[10px] font-bold text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]" data-testid="link-view-citations">
-                  Citation register <ArrowRight size={13} />
-                </Link>
-              </div>
-              {urgentCitations.length ? (
-                urgentCitations.map((citation: Citation) => <CitationRow key={citation.id} citation={citation} onSelect={() => setLocation('/citations')} />)
-              ) : (
-                <EmptyBlock title="No citation signals" detail="Guardian will surface any retractions or 2nd-order risks here." />
-              )}
-            </section>
-
-            <section className="overflow-hidden rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-sm" data-testid="section-deadline-pulse">
-              <div className="flex items-start justify-between border-b border-[hsl(var(--border))] px-5 py-4">
-                <div>
-                  <div className="gg-mono text-[9px] font-bold uppercase tracking-[.17em] text-[hsl(25_62%_35%)]">
-                    Compliance Runway
-                  </div>
-                  <h2 className="mt-1 text-[15px] font-bold">Upcoming Milestones</h2>
-                </div>
-                <Link href="/compliance" className="flex items-center gap-1 text-[10px] font-bold text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]" data-testid="link-view-compliance">
-                  Open desk <ArrowRight size={13} />
-                </Link>
-              </div>
-              {urgentDeadlines.length ? (
-                urgentDeadlines.map((deadline: Deadline) => <DeadlineRow key={deadline.id} deadline={deadline} onDraft={() => setLocation('/compliance')} />)
-              ) : (
-                <EmptyBlock title="Clear runway" detail="No compliance reports require immediate draft preparation." />
-              )}
-            </section>
-          </div>
-
-          <section className="grid gap-6 xl:grid-cols-[.85fr_1.15fr]">
-            <div className="gg-grid rounded-xl border border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar))] p-6 text-[hsl(var(--sidebar-foreground))] shadow-md" data-testid="card-last-scan">
-              <div className="flex items-center justify-between">
-                <div className="gg-mono text-[9px] font-bold uppercase tracking-[.17em] text-[hsl(var(--sidebar-foreground)/.5)]">
-                  Guardian Agent Policy
-                </div>
-                <span className="flex items-center gap-1.5 text-[10px] font-bold text-[hsl(var(--sidebar-primary))]">
-                  <span className="size-1.5 rounded-full bg-[hsl(var(--sidebar-primary))]" /> Active Failsafe
+              <div>
+                <h3 className="text-[14px] font-bold text-blue-900 dark:text-blue-200">
+                  Guardian Morning Brief
+                </h3>
+                <span className="text-[10px] text-blue-700/80 dark:text-blue-300/80">
+                  Autonomous Overnight Summary · Completed Today at 09:42 UTC
                 </span>
               </div>
-              <div className="mt-6 gg-serif text-[26px] leading-tight font-extrabold">
-                Conservative Agent.<br />
-                <em className="text-[hsl(var(--sidebar-primary))]">Escalates, Never Fabricates.</em>
+            </div>
+            <button
+              onClick={() => setShowMorningBrief(false)}
+              className="text-[11px] font-bold text-blue-700 dark:text-blue-300 hover:underline"
+            >
+              Dismiss Brief
+            </button>
+          </div>
+
+          <div className="grid sm:grid-cols-4 gap-3 text-[11px] pt-1">
+            <div className="rounded-lg bg-[hsl(var(--card))] p-3 border border-[hsl(var(--border))]">
+              <span className="font-bold text-[hsl(var(--foreground))]">48 Checked</span>
+              <p className="text-[10px] text-[hsl(var(--muted-foreground))]">Crossref + Retraction Watch registry scanned.</p>
+            </div>
+            <div className="rounded-lg bg-[hsl(var(--card))] p-3 border border-[hsl(var(--border))]">
+              <span className="font-bold text-red-600 dark:text-red-400">1 Retraction Caught</span>
+              <p className="text-[10px] text-[hsl(var(--muted-foreground))]">Obokata 2014 directly quarantined.</p>
+            </div>
+            <div className="rounded-lg bg-[hsl(var(--card))] p-3 border border-[hsl(var(--border))]">
+              <span className="font-bold text-amber-600 dark:text-amber-400">1 Downstream Risk</span>
+              <p className="text-[10px] text-[hsl(var(--muted-foreground))]">Lin et al. escalated for human signoff.</p>
+            </div>
+            <div className="rounded-lg bg-[hsl(var(--card))] p-3 border border-[hsl(var(--border))]">
+              <span className="font-bold text-emerald-600 dark:text-emerald-400">0 False Quarantines</span>
+              <p className="text-[10px] text-[hsl(var(--muted-foreground))]">Deterministic safety guardrail held.</p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-blue-500/20 text-[11px]">
+            <span className="text-blue-900 dark:text-blue-200">
+              <strong>Recommended action:</strong> Review the 2nd-order propagation alert for Lin et al. (Cell Stem Cell 2015).
+            </span>
+            <button
+              type="button"
+              onClick={() => setSelectedCitationId(2)}
+              className="inline-flex items-center gap-1 rounded bg-blue-600 px-3 py-1 text-[10px] font-bold text-white hover:bg-blue-700"
+            >
+              Open Investigation <ArrowRight size={11} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 4. DOMINANT GUARDIAN ATTENTION QUEUE */}
+      <section className="space-y-3" data-testid="section-attention-queue">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="size-2 rounded-full bg-amber-500 animate-ping" />
+            <h2 className="text-[16px] font-bold text-[hsl(var(--foreground))]">
+              Guardian Attention Queue
+            </h2>
+            <span className="rounded-full bg-amber-500/20 px-2.5 py-0.5 gg-mono text-[9px] font-extrabold text-amber-800 dark:text-amber-300">
+              3 Items Require Awareness / Action
+            </span>
+          </div>
+          <span className="text-[11px] text-[hsl(var(--muted-foreground))] hidden sm:inline">
+            Ranked by urgency and human authority requirements
+          </span>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-3">
+          {/* Card 1: Direct Retraction */}
+          <div className="rounded-xl border border-red-500/40 bg-red-500/5 p-4 flex flex-col justify-between space-y-3 shadow-sm">
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="rounded bg-red-600 px-2 py-0.5 gg-mono text-[8px] font-extrabold text-white uppercase tracking-wider">
+                  🔴 DIRECT RETRACTION
+                </span>
+                <span className="text-[10px] text-red-600 font-bold">Action Taken</span>
               </div>
-              <p className="mt-3 text-[11px] leading-relaxed text-[hsl(var(--sidebar-foreground)/.65)]">
-                Direct retraction evidence is quarantined immediately. Second-order propagation risks are escalated because claim impact requires researcher domain judgment.
+              <h4 className="text-[13px] font-bold text-red-900 dark:text-red-200 leading-snug">
+                Obokata et al. (Nature 2014)
+              </h4>
+              <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
+                Stimulus-triggered fate conversion of somatic cells...
               </p>
-              <div className="mt-6 border-t border-[hsl(var(--sidebar-border))] pt-3 text-[10px] text-[hsl(var(--sidebar-foreground)/.55)]">
-                Last scan completed <span className="float-right font-bold text-[hsl(var(--sidebar-foreground)/.85)]">{overviewQuery.data?.lastScan ?? '—'}</span>
+              <div className="rounded bg-[hsl(var(--card))] border border-red-500/20 p-2 text-[10px] text-red-700 dark:text-red-300 font-mono">
+                Evidence: Retraction Watch Notice (2014-07-02)
               </div>
             </div>
 
-            <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-sm" data-testid="section-recent-activity">
-              <div className="mb-2 flex items-center justify-between">
-                <div>
-                  <div className="gg-mono text-[9px] font-bold uppercase tracking-[.17em] text-[hsl(var(--muted-foreground))]">
-                    Autonomous Decision Audit
-                  </div>
-                  <h2 className="mt-1 text-[15px] font-bold">Recent Agent Activity</h2>
-                </div>
-                <Link href="/activity" className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]" data-testid="link-view-activity">
-                  Full log →
-                </Link>
+            <button
+              type="button"
+              onClick={() => setSelectedCitationId(1)}
+              className="w-full rounded-lg bg-red-600 px-3 py-1.5 text-[11px] font-bold text-white hover:bg-red-700 shadow-sm"
+              data-testid="btn-queue-quarantine"
+            >
+              Inspect Isolation Record →
+            </button>
+          </div>
+
+          {/* Card 2: Propagation Risk */}
+          <div className="rounded-xl border border-amber-500/40 bg-amber-500/5 p-4 flex flex-col justify-between space-y-3 shadow-sm ring-1 ring-amber-500/20">
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="rounded bg-amber-500 px-2 py-0.5 gg-mono text-[8px] font-extrabold text-white uppercase tracking-wider">
+                  🟠 PROPAGATION RISK
+                </span>
+                <span className="text-[10px] text-amber-600 font-bold">Human Judgment</span>
               </div>
-              {activity.length ? (
-                activity.slice(0, 3).map((item: Activity) => <ActivityRow key={item.id} item={item} />)
-              ) : (
-                <EmptyBlock title="No decisions recorded" detail="Guardian's first sweep will appear here." />
-              )}
+              <h4 className="text-[13px] font-bold text-amber-900 dark:text-amber-200 leading-snug">
+                Lin et al. (Cell Stem Cell 2015)
+              </h4>
+              <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
+                Tissue engineering downstream of stimulus findings.
+              </p>
+              <div className="rounded bg-[hsl(var(--card))] border border-amber-500/20 p-2 text-[10px] text-amber-800 dark:text-amber-300 font-mono">
+                Lin et al. → Obokata 2014 (Retracted Root)
+              </div>
             </div>
-          </section>
-        </>
+
+            <button
+              type="button"
+              onClick={() => setSelectedCitationId(2)}
+              className="w-full rounded-lg bg-amber-600 px-3 py-1.5 text-[11px] font-bold text-white hover:bg-amber-700 shadow-sm"
+              data-testid="btn-queue-investigate"
+            >
+              Investigate & Decide →
+            </button>
+          </div>
+
+          {/* Card 3: Compliance Deadline */}
+          <div className="rounded-xl border border-blue-500/40 bg-blue-500/5 p-4 flex flex-col justify-between space-y-3 shadow-sm">
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="rounded bg-blue-600 px-2 py-0.5 gg-mono text-[8px] font-extrabold text-white uppercase tracking-wider">
+                  🟡 COMPLIANCE DEADLINE
+                </span>
+                <span className="text-[10px] text-blue-600 font-bold">Due in 18 Days</span>
+              </div>
+              <h4 className="text-[13px] font-bold text-blue-900 dark:text-blue-200 leading-snug">
+                NSF Annual Progress Report
+              </h4>
+              <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
+                Includes Section 4 research integrity statement & citation verification.
+              </p>
+              <div className="rounded bg-[hsl(var(--card))] border border-blue-500/20 p-2 text-[10px] text-blue-800 dark:text-blue-300 font-mono">
+                Draft readiness: 82% · Narrative assembled
+              </div>
+            </div>
+
+            <Link
+              href="/compliance"
+              className="w-full rounded-lg bg-[hsl(var(--primary))] px-3 py-1.5 text-center text-[11px] font-bold text-[hsl(var(--primary-foreground))] hover:opacity-90 shadow-sm"
+              data-testid="btn-queue-draft"
+            >
+              Review Compliance Draft →
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. INTERACTIVE EXPLORATION SWITCHER (Attention / Graph / Claims / Blast Radius) */}
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[hsl(var(--border))] pb-2">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setActiveViewTab('attention')}
+              className={`px-3 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
+                activeViewTab === 'attention'
+                  ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]'
+                  : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]'
+              }`}
+              data-testid="tab-attention"
+            >
+              Attention & Integrity
+            </button>
+            <button
+              onClick={() => setActiveViewTab('graph')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
+                activeViewTab === 'graph'
+                  ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]'
+                  : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]'
+              }`}
+              data-testid="tab-dependency-graph"
+            >
+              <GitFork size={12} /> Interactive Dependency Graph
+            </button>
+            <button
+              onClick={() => setActiveViewTab('blast')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
+                activeViewTab === 'blast'
+                  ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]'
+                  : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]'
+              }`}
+              data-testid="tab-blast-radius"
+            >
+              <ShieldAlert size={12} /> Blast Radius
+            </button>
+            <button
+              onClick={() => setActiveViewTab('claims')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
+                activeViewTab === 'claims'
+                  ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]'
+                  : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]'
+              }`}
+              data-testid="tab-claim-map"
+            >
+              <FileText size={12} /> Grant Claim Map
+            </button>
+          </div>
+
+          <span className="text-[10px] gg-mono text-[hsl(var(--muted-foreground))]">
+            Single-Tenant Workspace: Dr. Elena Rossi
+          </span>
+        </div>
+
+        {activeViewTab === 'graph' && <CitationGraph />}
+        {activeViewTab === 'blast' && <BlastRadius />}
+        {activeViewTab === 'claims' && <ClaimMonitor />}
+      </div>
+
+      {/* 6. AGENT ACTIVITY FEED & RESEARCH INTEGRITY HEALTH DUAL CARD */}
+      <section className="grid gap-6 lg:grid-cols-2">
+        {/* Left: Agent Observable Activity */}
+        <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b border-[hsl(var(--border))] pb-3">
+            <div className="flex items-center gap-2">
+              <ActivityIcon size={16} className="text-[hsl(var(--primary))]" />
+              <h3 className="text-[14px] font-bold text-[hsl(var(--foreground))]">
+                Agent Activity & Autonomous Sweeps
+              </h3>
+            </div>
+            <Link href="/activity" className="text-[11px] font-bold text-[hsl(var(--primary))] hover:underline">
+              Full Decision Log →
+            </Link>
+          </div>
+
+          <ul className="space-y-3 text-[11px]">
+            <li className="flex items-start gap-2.5">
+              <span className="mt-1 size-2 rounded-full bg-emerald-500 shrink-0" />
+              <div>
+                <span className="font-bold text-[hsl(var(--foreground))]">Swept 48 citations</span> across Crossref, Retraction Watch, and Semantic Scholar graph.
+                <div className="text-[10px] text-[hsl(var(--muted-foreground))]">Today · 09:42 UTC</div>
+              </div>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <span className="mt-1 size-2 rounded-full bg-red-500 shrink-0" />
+              <div>
+                <span className="font-bold text-red-600 dark:text-red-400">Direct Retraction Quarantined</span>: Isolated Obokata et al. from proposal bibliographies.
+                <div className="text-[10px] text-[hsl(var(--muted-foreground))]">Today · 09:42 UTC</div>
+              </div>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <span className="mt-1 size-2 rounded-full bg-amber-500 shrink-0" />
+              <div>
+                <span className="font-bold text-amber-600 dark:text-amber-400">2nd-Order Dependency Escalated</span>: Lin et al. routed to PI Decision Inbox. Auto-quarantine blocked by safety policy.
+                <div className="text-[10px] text-[hsl(var(--muted-foreground))]">Today · 09:42 UTC</div>
+              </div>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <span className="mt-1 size-2 rounded-full bg-emerald-500 shrink-0" />
+              <div>
+                <span className="font-bold text-emerald-600 dark:text-emerald-400">Quiet by Default</span>: 46 sources verified clean. No alerts generated.
+                <div className="text-[10px] text-[hsl(var(--muted-foreground))]">Today · 09:42 UTC</div>
+              </div>
+            </li>
+          </ul>
+
+          <div className="pt-2 border-t border-[hsl(var(--border))] flex items-center justify-between text-[10px] text-[hsl(var(--muted-foreground))] gg-mono">
+            <span>Next sweep: Tomorrow · 08:00 UTC</span>
+            <span className="text-emerald-600 font-bold">● Routine checks silent</span>
+          </div>
+        </div>
+
+        {/* Right: Multidimensional Research Health Breakdown */}
+        <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b border-[hsl(var(--border))] pb-3">
+            <div className="flex items-center gap-2">
+              <ShieldCheck size={16} className="text-emerald-600" />
+              <h3 className="text-[14px] font-bold text-[hsl(var(--foreground))]">
+                Research Integrity Health
+              </h3>
+            </div>
+            <span className="gg-mono text-[16px] font-extrabold text-emerald-600">
+              94 / 100
+            </span>
+          </div>
+
+          <div className="space-y-3 text-[11px]">
+            <div>
+              <div className="flex justify-between font-bold mb-1">
+                <span>Citation Integrity</span>
+                <span className="gg-mono">98%</span>
+              </div>
+              <div className="w-full h-2 bg-[hsl(var(--muted))] rounded-full overflow-hidden">
+                <div className="h-full bg-emerald-500 rounded-full" style={{ width: '98%' }} />
+              </div>
+            </div>
+
+            <div>
+              <div className="flex justify-between font-bold mb-1">
+                <span>Evidence Freshness (Temporal Recency)</span>
+                <span className="gg-mono">94%</span>
+              </div>
+              <div className="w-full h-2 bg-[hsl(var(--muted))] rounded-full overflow-hidden">
+                <div className="h-full bg-emerald-500 rounded-full" style={{ width: '94%' }} />
+              </div>
+            </div>
+
+            <div>
+              <div className="flex justify-between font-bold mb-1">
+                <span>Compliance Readiness (NSF / IRB)</span>
+                <span className="gg-mono">91%</span>
+              </div>
+              <div className="w-full h-2 bg-[hsl(var(--muted))] rounded-full overflow-hidden">
+                <div className="h-full bg-blue-500 rounded-full" style={{ width: '91%' }} />
+              </div>
+            </div>
+
+            <div>
+              <div className="flex justify-between font-bold mb-1">
+                <span>Open Human Investigations</span>
+                <span className="gg-mono text-amber-600">1 Pending Review</span>
+              </div>
+              <div className="w-full h-2 bg-[hsl(var(--muted))] rounded-full overflow-hidden">
+                <div className="h-full bg-amber-500 rounded-full" style={{ width: '85%' }} />
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-lg bg-[hsl(var(--muted)/.4)] p-3 text-[10px] text-[hsl(var(--muted-foreground))] leading-relaxed border border-[hsl(var(--border))]">
+            <strong>Calibrated Trust Disclosure:</strong> Health score reflects monitored evidence status and registry verification recency, not scientific validity or lab experimental correctness.
+          </div>
+        </div>
+      </section>
+
+      {/* 7. WHAT CHANGED SINCE YESTERDAY & AUTONOMOUS WATCH CARD */}
+      <section className="grid gap-6 lg:grid-cols-2">
+        <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-sm space-y-3">
+          <div className="gg-mono text-[9px] uppercase tracking-wider font-extrabold text-[hsl(var(--muted-foreground))]">
+            Delta Tracker
+          </div>
+          <h3 className="text-[14px] font-bold text-[hsl(var(--foreground))]">
+            What Changed Since Yesterday?
+          </h3>
+
+          <div className="grid grid-cols-2 gap-2 text-[11px]">
+            <div className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-2.5">
+              <span className="font-bold text-red-600 dark:text-red-400">+1 Retraction</span>
+              <p className="text-[10px] text-[hsl(var(--muted-foreground))]">Isolated from active proposals</p>
+            </div>
+            <div className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-2.5">
+              <span className="font-bold text-amber-600 dark:text-amber-400">+1 Propagation Cascade</span>
+              <p className="text-[10px] text-[hsl(var(--muted-foreground))]">Escalated for human judgment</p>
+            </div>
+            <div className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-2.5">
+              <span className="font-bold text-emerald-600 dark:text-emerald-400">-1 Pending Decision</span>
+              <p className="text-[10px] text-[hsl(var(--muted-foreground))]">Institutional memory stored</p>
+            </div>
+            <div className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-2.5">
+              <span className="font-bold text-blue-600 dark:text-blue-400">+1 Draft Assembled</span>
+              <p className="text-[10px] text-[hsl(var(--muted-foreground))]">Ready for PI narrative review</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-sm space-y-3">
+          <div className="gg-mono text-[9px] uppercase tracking-wider font-extrabold text-[hsl(var(--muted-foreground))]">
+            Quiet by Default Philosophy
+          </div>
+          <h3 className="text-[14px] font-bold text-[hsl(var(--foreground))]">
+            The Agent That Doesn't Annoy
+          </h3>
+          <p className="text-[11px] text-[hsl(var(--muted-foreground))] leading-relaxed">
+            Grant Guardian only alerts when your direct intervention is required. Routine checks across all 46 clean citations completed silently with zero banner fatigue.
+          </p>
+          <div className="pt-2 flex items-center gap-2">
+            <span className="size-2 rounded-full bg-emerald-500" />
+            <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300">
+              46 citations nominal · Zero noise generated
+            </span>
+          </div>
+        </div>
+      </section>
+
+      {/* Investigation Drawer Modal */}
+      {selectedCitation && selectedCitationId && (
+        <Drawer
+          title="Investigation Workspace"
+          onClose={() => setSelectedCitationId(null)}
+        >
+          <InvestigationWorkspace
+            citation={selectedCitation}
+            onClose={() => setSelectedCitationId(null)}
+            onJudgment={handleJudgment}
+            isSubmitting={isSubmittingJudgment}
+          />
+        </Drawer>
       )}
     </div>
   );
