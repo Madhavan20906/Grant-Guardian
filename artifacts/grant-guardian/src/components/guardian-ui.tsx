@@ -7,7 +7,9 @@ import {
   ArrowUpRight,
   Bell,
   BookOpen,
+  Check,
   CheckCircle2,
+  ChevronDown,
   ChevronRight,
   CircleDot,
   ClipboardCheck,
@@ -19,10 +21,12 @@ import {
   Settings2,
   ShieldCheck,
   Sparkles,
+  Users,
   X,
   XCircle,
 } from 'lucide-react';
 import type { Activity, Citation, Deadline } from '@workspace/api-client-react';
+import { usePersona } from '@/context/persona-context';
 
 export const cx = (...items: Array<string | false | null | undefined>) => items.filter(Boolean).join(' ');
 
@@ -51,8 +55,95 @@ const navItems = [
   { href: '/settings', label: 'Workspace', icon: Settings2 },
 ];
 
+export function PersonaSwitcher() {
+  const { activePersona, personas, selectPersona } = usePersona();
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-2 rounded-full border border-purple-500/35 bg-purple-500/10 px-3 py-1.5 text-[11px] font-semibold text-purple-700 dark:text-purple-300 hover:bg-purple-500/20 transition-all"
+        data-testid="button-persona-switcher"
+        title="Switch active research persona"
+      >
+        <span className="flex size-4 items-center justify-center rounded-full bg-purple-600 text-[9px] font-extrabold text-white">
+          {activePersona.initials}
+        </span>
+        <span className="hidden sm:inline font-bold">{activePersona.title}</span>
+        <span className="hidden xl:inline text-[10px] opacity-75 font-normal">· {activePersona.lab.split('&')[0]}</span>
+        <ChevronDown size={13} className={cx('transition-transform duration-200', open && 'rotate-180')} />
+      </button>
+
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="absolute right-0 top-full mt-2 z-50 w-72 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-2 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+            <div className="px-3 py-2 border-b border-[hsl(var(--border))] mb-1.5">
+              <div className="flex items-center justify-between text-[10px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+                <span>Research Personas</span>
+                <span className="rounded bg-purple-500/20 px-1 text-purple-400">Multi-Tenant</span>
+              </div>
+              <p className="mt-0.5 text-[10px] text-[hsl(var(--muted-foreground))]">
+                Select persona or pass <code className="text-purple-400">?user=slug</code>
+              </p>
+            </div>
+            <div className="space-y-1">
+              {personas.map((p) => {
+                const selected = p.slug === activePersona.slug;
+                return (
+                  <button
+                    key={p.slug}
+                    type="button"
+                    onClick={() => {
+                      selectPersona(p.slug);
+                      setOpen(false);
+                    }}
+                    className={cx(
+                      'w-full flex items-start gap-2.5 rounded-lg p-2 text-left transition-colors',
+                      selected
+                        ? 'bg-purple-500/15 text-purple-300 font-bold border border-purple-500/30'
+                        : 'hover:bg-[hsl(var(--muted))] text-[hsl(var(--foreground))]'
+                    )}
+                    data-testid={`option-persona-${p.slug}`}
+                  >
+                    <div
+                      className={cx(
+                        'flex size-7 shrink-0 items-center justify-center rounded-full text-[10px] font-bold mt-0.5',
+                        selected
+                          ? 'bg-purple-600 text-white'
+                          : 'bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]'
+                      )}
+                    >
+                      {p.initials}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between text-[11px] font-bold leading-tight">
+                        <span>{p.title}</span>
+                        {selected && <Check size={13} className="text-purple-400 shrink-0" />}
+                      </div>
+                      <div className="text-[10px] text-[hsl(var(--muted-foreground))] truncate">
+                        {p.lab}
+                      </div>
+                      <div className="text-[9px] text-[hsl(var(--muted-foreground)/.7)] truncate italic">
+                        {p.focus}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [location] = useLocation();
+  const { activePersona } = usePersona();
   return (
     <>
       {open && <button type="button" aria-label="Close navigation" onClick={onClose} className="fixed inset-0 z-30 bg-[hsl(var(--primary)/.45)] md:hidden" data-testid="button-close-navigation" />}
@@ -77,8 +168,17 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
             <p className="mt-2 text-[10px] leading-relaxed text-[hsl(var(--sidebar-foreground)/.5)]">Last sweep completed <span className="text-[hsl(var(--sidebar-foreground)/.8)]">12 min ago</span>.</p>
           </div>
           <div className="flex items-center gap-3 border-t border-[hsl(var(--sidebar-border))] px-2 pt-4">
-            <div className="flex size-8 items-center justify-center rounded-full bg-[hsl(var(--secondary))] text-[11px] font-bold text-[hsl(var(--secondary-foreground))]">ER</div>
-            <div className="min-w-0"><div className="truncate text-[11px] font-bold text-[hsl(var(--sidebar-foreground))]">Elena Rossi</div><div className="gg-mono mt-0.5 truncate text-[9px] text-[hsl(var(--sidebar-foreground)/.42)]">PI · Materials Lab (Single-Tenant)</div></div>
+            <div className="flex size-8 items-center justify-center rounded-full bg-purple-600 text-[11px] font-bold text-white">
+              {activePersona.initials}
+            </div>
+            <div className="min-w-0">
+              <div className="truncate text-[11px] font-bold text-[hsl(var(--sidebar-foreground))]">
+                {activePersona.name}
+              </div>
+              <div className="gg-mono mt-0.5 truncate text-[9px] text-[hsl(var(--sidebar-foreground)/.42)]">
+                {activePersona.role} · {activePersona.lab.split('&')[0]}
+              </div>
+            </div>
             <Link href="/settings" className="ml-auto text-[hsl(var(--sidebar-foreground)/.45)] hover:text-[hsl(var(--sidebar-foreground))]" data-testid="link-profile-settings"><Settings2 size={15} /></Link>
           </div>
         </div>
@@ -89,6 +189,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
 
 export function TopBar({ onMenu }: { onMenu: () => void }) {
   const [location, setLocation] = useLocation();
+  const { activePersona } = usePersona();
   const current = navItems.find((item) => item.href !== '/' && location.startsWith(item.href)) ?? navItems[0];
   return (
     <header className="flex h-[72px] items-center justify-between border-b border-[hsl(var(--border))] bg-[hsl(var(--background)/.88)] px-5 backdrop-blur md:px-9" data-testid="topbar">
@@ -98,10 +199,12 @@ export function TopBar({ onMenu }: { onMenu: () => void }) {
         <div className="text-[13px] font-bold sm:hidden">{current.label}</div>
       </div>
       <div className="flex items-center gap-3">
-        <div className="hidden items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-[10px] font-semibold text-amber-700 dark:text-amber-300 md:flex" data-testid="badge-single-tenant-disclosure"><span className="size-1.5 rounded-full bg-amber-500 animate-pulse" />Demo workspace — single-tenant by design</div>
+        <PersonaSwitcher />
         <div className="hidden items-center gap-2 rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-3 py-1.5 text-[10px] text-[hsl(var(--muted-foreground))] lg:flex"><span className="size-1.5 rounded-full bg-[hsl(var(--accent-foreground))]" />All systems nominal</div>
         <button type="button" onClick={() => setLocation('/activity')} className="relative rounded-lg p-2 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))]" aria-label="Open notifications" data-testid="button-open-notifications"><Bell size={17} /><span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-[hsl(var(--destructive))]" /></button>
-        <div className="flex size-8 items-center justify-center rounded-full bg-[hsl(var(--primary))] text-[10px] font-bold text-[hsl(var(--primary-foreground))] md:hidden">ER</div>
+        <div className="flex size-8 items-center justify-center rounded-full bg-purple-600 text-[10px] font-bold text-white md:hidden">
+          {activePersona.initials}
+        </div>
       </div>
     </header>
   );

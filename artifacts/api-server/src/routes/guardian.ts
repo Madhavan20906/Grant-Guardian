@@ -14,6 +14,11 @@ import { guardianStore, type DeadlineRecord } from "../lib/store";
 
 const router: IRouter = Router();
 
+const resolveUserId = async (req: { query?: Record<string, any>; headers?: Record<string, any> }) => {
+  const param = req.query?.user ?? req.headers?.["x-user-id"];
+  return guardianStore.getUserId(typeof param === "string" ? param : typeof param === "number" ? param : undefined);
+};
+
 const daysLeft = (date: Date) => Math.ceil((date.getTime() - Date.now()) / 86_400_000);
 const deadlineDto = (item: DeadlineRecord) => ({
   ...item,
@@ -22,9 +27,13 @@ const deadlineDto = (item: DeadlineRecord) => ({
   owner: item.owner ?? "Dr. Elena Rossi",
 });
 
-router.get("/guardian/overview", async (_req, res, next) => {
+router.get("/guardian/personas", (_req, res) => {
+  return res.json(guardianStore.getPersonas());
+});
+
+router.get("/guardian/overview", async (req, res, next) => {
   try {
-    const userId = await guardianStore.getUserId();
+    const userId = await resolveUserId(req);
     const overview = await guardianStore.getOverview(userId);
     return res.json(GetGuardianOverviewResponse.parse(overview));
   } catch (error) {
@@ -32,9 +41,9 @@ router.get("/guardian/overview", async (_req, res, next) => {
   }
 });
 
-router.get("/guardian/citations", async (_req, res, next) => {
+router.get("/guardian/citations", async (req, res, next) => {
   try {
-    const userId = await guardianStore.getUserId();
+    const userId = await resolveUserId(req);
     const rows = await guardianStore.getCitations(userId);
     return res.json(ListCitationsResponse.parse(rows));
   } catch (error) {
@@ -42,9 +51,9 @@ router.get("/guardian/citations", async (_req, res, next) => {
   }
 });
 
-router.get("/guardian/deadlines", async (_req, res, next) => {
+router.get("/guardian/deadlines", async (req, res, next) => {
   try {
-    const userId = await guardianStore.getUserId();
+    const userId = await resolveUserId(req);
     const rows = await guardianStore.getDeadlines(userId);
     return res.json(ListDeadlinesResponse.parse(rows.map(deadlineDto)));
   } catch (error) {
@@ -52,9 +61,9 @@ router.get("/guardian/deadlines", async (_req, res, next) => {
   }
 });
 
-router.get("/guardian/activity", async (_req, res, next) => {
+router.get("/guardian/activity", async (req, res, next) => {
   try {
-    const userId = await guardianStore.getUserId();
+    const userId = await resolveUserId(req);
     const rows = await guardianStore.getActivities(userId, 100);
     return res.json(
       ListActivityResponse.parse(
@@ -72,7 +81,7 @@ router.get("/guardian/activity", async (_req, res, next) => {
 
 router.get("/guardian/drafts", async (req, res, next) => {
   try {
-    const userId = await guardianStore.getUserId();
+    const userId = await resolveUserId(req);
     const limit = Math.min(Math.max(Number(req.query.limit) || 25, 1), 100);
     const rows = await guardianStore.getDrafts(userId, limit);
     return res.json(rows);
@@ -87,7 +96,7 @@ router.patch("/guardian/drafts/:id", async (req, res, next) => {
     if (!["draft", "reviewed", "approved", "submitted_externally"].includes(status)) {
       return res.status(400).json({ error: "Invalid draft status" });
     }
-    const userId = await guardianStore.getUserId();
+    const userId = await resolveUserId(req);
     const updated = await guardianStore.updateDraftStatus(Number(req.params.id), userId, status);
     if (!updated) {
       return res.status(404).json({ error: "Draft not found" });
@@ -98,9 +107,9 @@ router.patch("/guardian/drafts/:id", async (req, res, next) => {
   }
 });
 
-router.get("/guardian/preferences", async (_req, res, next) => {
+router.get("/guardian/preferences", async (req, res, next) => {
   try {
-    const userId = await guardianStore.getUserId();
+    const userId = await resolveUserId(req);
     const prefs = await guardianStore.getPreferences(userId);
     return res.json(prefs);
   } catch (error) {
@@ -110,7 +119,7 @@ router.get("/guardian/preferences", async (_req, res, next) => {
 
 router.put("/guardian/preferences", async (req, res, next) => {
   try {
-    const userId = await guardianStore.getUserId();
+    const userId = await resolveUserId(req);
     const prefs = await guardianStore.updatePreferences(userId, {
       weeklyDeskNote: Boolean(req.body?.weeklyDeskNote),
       highRiskInterrupts: Boolean(req.body?.highRiskInterrupts),
@@ -122,9 +131,9 @@ router.put("/guardian/preferences", async (req, res, next) => {
   }
 });
 
-router.post("/guardian/scan", async (_req, res, next) => {
+router.post("/guardian/scan", async (req, res, next) => {
   try {
-    const userId = await guardianStore.getUserId();
+    const userId = await resolveUserId(req);
     const tracked = await guardianStore.getCitations(userId);
     const result = await runGuardianAgent(tracked);
 
@@ -168,7 +177,7 @@ router.post("/guardian/citations/import", async (req, res, next) => {
     if (!unique.length) {
       return res.status(400).json({ error: "No DOI was found in the supplied content" });
     }
-    const userId = await guardianStore.getUserId();
+    const userId = await resolveUserId(req);
     const added = await guardianStore.importCitations(userId, unique);
     return res.status(201).json({ imported: added.length, citations: added });
   } catch (error) {
@@ -182,7 +191,7 @@ router.post("/guardian/deadlines/:id/draft", async (req, res, next) => {
     if (!parsed.success) {
       return res.status(400).json({ error: "Invalid deadline id" });
     }
-    const userId = await guardianStore.getUserId();
+    const userId = await resolveUserId(req);
     const deadline = await guardianStore.getDeadlineById(parsed.data.id, userId);
     if (!deadline) {
       return res.status(404).json({ error: "Deadline not found" });
@@ -213,7 +222,7 @@ router.post("/guardian/citations/:id/judgment", async (req, res, next) => {
       return res.status(400).json({ error: "Invalid judgment. Must be 'relevant', 'not_relevant', or 'deferred'." });
     }
 
-    const userId = await guardianStore.getUserId();
+    const userId = await resolveUserId(req);
     const updatedCitation = await guardianStore.recordJudgment(id, userId, judgment as any, notes);
     if (!updatedCitation) {
       return res.status(404).json({ error: "Citation not found" });
@@ -229,9 +238,9 @@ router.get("/guardian/watch/status", async (_req, res) => {
   res.json(getWatchState());
 });
 
-router.post("/guardian/watch/sweep", async (_req, res, next) => {
+router.post("/guardian/watch/sweep", async (req, res, next) => {
   try {
-    const userId = await guardianStore.getUserId();
+    const userId = await resolveUserId(req);
     const result = await runAutonomousSweep(userId);
     return res.json(result);
   } catch (error) {

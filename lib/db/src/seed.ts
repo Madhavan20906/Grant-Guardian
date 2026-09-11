@@ -4,6 +4,54 @@ import { activities, citations, deadlines, preferences, users } from "./schema";
 
 export const demoUser = { id: 1, name: "Elena Rossi", email: "elena.rossi@example.org", role: "PI" };
 
+export interface PersonaProfile {
+  id: number;
+  slug: string;
+  name: string;
+  email: string;
+  role: string;
+  title: string;
+  lab: string;
+  initials: string;
+  focus: string;
+}
+
+export const demoPersonas: PersonaProfile[] = [
+  {
+    id: 1,
+    slug: "elena",
+    name: "Elena Rossi",
+    email: "elena.rossi@example.org",
+    role: "PI",
+    title: "Dr. Elena Rossi",
+    lab: "Materials Science & Biomaterials Lab",
+    initials: "ER",
+    focus: "Tissue Engineering & Regenerative Scaffolds",
+  },
+  {
+    id: 2,
+    slug: "marcus",
+    name: "Marcus Chen",
+    email: "marcus.chen@example.org",
+    role: "PI",
+    title: "Dr. Marcus Chen",
+    lab: "Computational Oncology & Genomics Lab",
+    initials: "MC",
+    focus: "Cancer Biomarkers & Clinical Microarrays",
+  },
+  {
+    id: 3,
+    slug: "sarah",
+    name: "Sarah Jenkins",
+    email: "sarah.jenkins@example.org",
+    role: "Assoc. Prof",
+    title: "Dr. Sarah Jenkins",
+    lab: "Neurobiology & Molecular Therapeutics Lab",
+    initials: "SJ",
+    focus: "Translational Medicine & COVID-19 Therapeutics",
+  },
+];
+
 export const demoCitations = [
   {
     id: 1,
@@ -342,31 +390,230 @@ export const demoCitations = [
     },
     createdAt: new Date(),
     updatedAt: new Date(),
+  },
+  // User 2: Dr. Marcus Chen (Computational Oncology & Genomics Lab)
+  {
+    id: 201,
+    userId: 2,
+    title: "Genomic signatures to guide chemotherapy selection in cancer",
+    authors: "Potti et al.",
+    venue: "Science",
+    year: 2006,
+    doi: "10.1126/science.1129064",
+    status: "retracted",
+    risk: "high",
+    detail: "Retraction notice issued following Duke University investigation: microarray predictor data and computational models were irreproducible. Direct retraction isolated.",
+    metadata: {
+      graph: { rootDoi: "10.1126/science.1129064", referencedDois: [], retractedReferencedDois: [], depth: 0 },
+      providers: { crossref: true, retractionWatch: true, semanticScholar: true },
+      trace: [
+        { step: "dependency", status: "success", label: "Step 1 — Identify Dependency", detail: "Active citation in chemotherapy sensitivity proposal.", durationMs: 11 },
+        { step: "crossref", status: "success", label: "Step 2 — Check Crossref", detail: "Science (AAAS). Retraction notice indexed.", durationMs: 125 },
+        { step: "retraction_watch", status: "flagged", label: "Step 3 — Query Retraction Watch", detail: "MATCH CONFIRMED: Retracted (Irreproducible Microarrays & Data Inconsistencies).", durationMs: 70 },
+        { step: "safety_policy", status: "danger", label: "Step 6 — Apply Safety Policy", detail: "Direct retraction signal confirmed; quarantined automatically.", durationMs: 12 },
+        { step: "decision", status: "danger", label: "Step 7 — Action Enforced", detail: "Quarantined permanently from oncology grant drafts.", durationMs: 5 }
+      ]
+    },
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 202,
+    userId: 2,
+    title: "Validation of gene signatures for lung cancer recurrence",
+    authors: "Baggerly, Coombes et al.",
+    venue: "NEJM",
+    year: 2008,
+    doi: "10.1056/nejmoa0806455",
+    status: "propagation",
+    risk: "medium",
+    detail: "Multi-hop graph traversal identified 2nd-order foundation dependency on retracted cancer signature paper 10.1126/science.1129064. Routed for PI judgment.",
+    metadata: {
+      graph: {
+        rootDoi: "10.1056/nejmoa0806455",
+        referencedDois: ["10.1126/science.1129064"],
+        retractedReferencedDois: ["10.1126/science.1129064"],
+        depth: 1,
+      },
+      providers: { crossref: true, retractionWatch: true, semanticScholar: true },
+      trace: [
+        { step: "dependency", status: "success", label: "Step 1 — Identify Dependency", detail: "Referenced in predictive oncology model.", durationMs: 14 },
+        { step: "crossref", status: "success", label: "Step 2 — Check Crossref", detail: "NEJM article verified. Direct record indexed.", durationMs: 110 },
+        { step: "retraction_watch", status: "success", label: "Step 3 — Query Retraction Watch", detail: "Direct check: Clean. Article itself is not primary retraction target.", durationMs: 65 },
+        { step: "propagation", status: "warning", label: "Step 5 — Assess Propagation", detail: "References retracted signature paper 10.1126/science.1129064.", durationMs: 95 },
+        { step: "decision", status: "warning", label: "Step 7 — Human Escalation", detail: "Escalated to Human Decision Inbox. PI domain review required.", durationMs: 10 }
+      ]
+    },
+    judgment: "pending",
+    judgmentNotes: null,
+    judgmentAt: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 203,
+    userId: 2,
+    title: "Deep learning for protein structure prediction with AlphaFold",
+    authors: "Jumper et al.",
+    venue: "Nature",
+    year: 2021,
+    doi: "10.1038/s41586-021-03819-2",
+    status: "clear",
+    risk: "low",
+    detail: "Verified clean across Crossref and Retraction Watch.",
+    metadata: {
+      graph: { rootDoi: "10.1038/s41586-021-03819-2", referencedDois: [], retractedReferencedDois: [], depth: 0 },
+      providers: { crossref: true, retractionWatch: true, semanticScholar: true },
+    },
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 204,
+    userId: 2,
+    title: "Nanoparticle therapeutics: an emerging reality",
+    authors: "Davis, Chen, Shin et al.",
+    venue: "Nature Reviews Drug Discovery",
+    year: 2008,
+    doi: "10.1038/nrd2614",
+    status: "clear",
+    risk: "low",
+    detail: "Targeted delivery reference verified clean.",
+    metadata: {
+      graph: { rootDoi: "10.1038/nrd2614", referencedDois: [], retractedReferencedDois: [], depth: 0 },
+      providers: { crossref: true, retractionWatch: true, semanticScholar: true },
+    },
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  // User 3: Dr. Sarah Jenkins (Neurobiology & Molecular Therapeutics Lab)
+  {
+    id: 301,
+    userId: 3,
+    title: "Hydroxychloroquine or chloroquine with or without a macrolide for treatment of COVID-19",
+    authors: "Mehra et al.",
+    venue: "The Lancet",
+    year: 2020,
+    doi: "10.1016/S0140-6736(20)31180-6",
+    status: "retracted",
+    risk: "high",
+    detail: "Retracted due to unverified Surgisphere multinational registry data. Quarantined from active clinical trial drafts.",
+    metadata: {
+      graph: { rootDoi: "10.1016/S0140-6736(20)31180-6", referencedDois: [], retractedReferencedDois: [], depth: 0 },
+      providers: { crossref: true, retractionWatch: true, semanticScholar: true },
+      trace: [
+        { step: "dependency", status: "success", label: "Step 1 — Identify Dependency", detail: "Clinical trial background reference.", durationMs: 10 },
+        { step: "crossref", status: "flagged", label: "Step 2 — Check Crossref", detail: "The Lancet. Title prefix: RETRACTED.", durationMs: 135 },
+        { step: "retraction_watch", status: "flagged", label: "Step 3 — Query Retraction Watch", detail: "MATCH CONFIRMED: Retracted (Surgisphere Unverified Registry Data).", durationMs: 78 },
+        { step: "safety_policy", status: "danger", label: "Step 6 — Apply Safety Policy", detail: "Quarantined automatically.", durationMs: 10 },
+        { step: "decision", status: "danger", label: "Step 7 — Action Enforced", detail: "Quarantined permanently from grant bibliography.", durationMs: 4 }
+      ]
+    },
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 302,
+    userId: 3,
+    title: "Cardiovascular Disease, Drug Therapy, and Mortality in Covid-19",
+    authors: "Mehra, Desai, Anand et al.",
+    venue: "NEJM",
+    year: 2020,
+    doi: "10.1056/NEJMoa2007621",
+    status: "propagation",
+    risk: "medium",
+    detail: "Multi-hop graph traversal flagged 2nd-order reliance on retracted Surgisphere database. Routed for PI judgment.",
+    metadata: {
+      graph: {
+        rootDoi: "10.1056/NEJMoa2007621",
+        referencedDois: ["10.1016/S0140-6736(20)31180-6"],
+        retractedReferencedDois: ["10.1016/S0140-6736(20)31180-6"],
+        depth: 1,
+      },
+      providers: { crossref: true, retractionWatch: true, semanticScholar: true },
+      trace: [
+        { step: "dependency", status: "success", label: "Step 1 — Identify Dependency", detail: "Translational reference mapped.", durationMs: 12 },
+        { step: "crossref", status: "success", label: "Step 2 — Check Crossref", detail: "NEJM article verified.", durationMs: 115 },
+        { step: "propagation", status: "warning", label: "Step 5 — Assess Propagation", detail: "Contains citation to retracted dataset 10.1016/S0140-6736(20)31180-6.", durationMs: 80 },
+        { step: "decision", status: "warning", label: "Step 7 — Human Escalation", detail: "Escalated to Human Decision Inbox.", durationMs: 9 }
+      ]
+    },
+    judgment: "pending",
+    judgmentNotes: null,
+    judgmentAt: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 303,
+    userId: 3,
+    title: "A programmable dual-RNA-guided DNA endonuclease in adaptive bacterial immunity",
+    authors: "Jinek, Doudna, Charpentier et al.",
+    venue: "Science",
+    year: 2012,
+    doi: "10.1126/science.1225829",
+    status: "clear",
+    risk: "low",
+    detail: "CRISPR-Cas9 mechanism verified clear across all providers.",
+    metadata: {
+      graph: { rootDoi: "10.1126/science.1225829", referencedDois: [], retractedReferencedDois: [], depth: 0 },
+      providers: { crossref: true, retractionWatch: true, semanticScholar: true },
+    },
+    createdAt: new Date(),
+    updatedAt: new Date(),
   }
 ];
 
 export const demoDeadlines = [
+  // User 1: Dr. Elena Rossi
   { id: 1, userId: 1, type: "IRB renewal", title: "Human Subjects Protocol 24-118", dueDate: new Date(Date.now() + 11 * 86400000), progress: 72, status: "due_soon" as const, owner: "Dr. Elena Rossi" },
   { id: 2, userId: 1, type: "Funding report", title: "NSF CAREER annual progress report", dueDate: new Date(Date.now() + 52 * 86400000), progress: 38, status: "on_track" as const, owner: "Dr. Elena Rossi" },
   { id: 3, userId: 1, type: "Data management", title: "NIH Data Management & Sharing update", dueDate: new Date(Date.now() + 3 * 86400000), progress: 12, status: "attention" as const, owner: "Dr. Elena Rossi" },
+  // User 2: Dr. Marcus Chen
+  { id: 201, userId: 2, type: "Grant renewal", title: "NIH R01 Clinical Proteomics Core renewal", dueDate: new Date(Date.now() + 8 * 86400000), progress: 68, status: "due_soon" as const, owner: "Dr. Marcus Chen" },
+  { id: 202, userId: 2, type: "Funding report", title: "DoD CDMRP Breast Cancer Research progress report", dueDate: new Date(Date.now() + 45 * 86400000), progress: 42, status: "on_track" as const, owner: "Dr. Marcus Chen" },
+  { id: 203, userId: 2, type: "Data governance", title: "NIH Genomic Data Sharing (GDS) certification", dueDate: new Date(Date.now() + 4 * 86400000), progress: 15, status: "attention" as const, owner: "Dr. Marcus Chen" },
+  // User 3: Dr. Sarah Jenkins
+  { id: 301, userId: 3, type: "Regulatory filing", title: "FDA Investigational New Drug (IND) Annual Safety Update", dueDate: new Date(Date.now() + 6 * 86400000), progress: 55, status: "due_soon" as const, owner: "Dr. Sarah Jenkins" },
+  { id: 302, userId: 3, type: "Funding report", title: "NIH R21 Translational Neurotherapeutics milestone report", dueDate: new Date(Date.now() + 58 * 86400000), progress: 30, status: "on_track" as const, owner: "Dr. Sarah Jenkins" },
+  { id: 303, userId: 3, type: "Ethics review", title: "IACUC Triennial Animal Care & Use Protocol Renewal", dueDate: new Date(Date.now() + 2 * 86400000), progress: 18, status: "attention" as const, owner: "Dr. Sarah Jenkins" },
 ];
 
 export const demoActivities = [
+  // User 1
   { id: 1, userId: 1, kind: "flagged", title: "Retraction signal caught: STAP Stem Cell Study", description: "Retraction Watch identified direct retraction notice for 10.1038/nature13358 (Obokata et al. 2014). Paper quarantined.", tone: "danger", createdAt: new Date() },
   { id: 2, userId: 1, kind: "escalation", title: "Propagation risk routed to PI: Lin et al. (2015)", description: "Semantic Scholar 1-hop graph found reference to retracted DOI 10.1038/nature13358. Escalated for human claim evaluation.", tone: "warning", createdAt: new Date() },
   { id: 3, userId: 1, kind: "scan", title: "Guardian full desk sweep completed", description: "Scanned 5 citations using Crossref, Retraction Watch, and Semantic Scholar graph traversal. Strands Agent trace recorded.", tone: "neutral", createdAt: new Date() },
+  // User 2
+  { id: 201, userId: 2, kind: "flagged", title: "Retraction caught: Cancer Genomic Signatures", description: "Retraction Watch confirmed direct retraction for 10.1126/science.1129064 (Potti et al. 2006). Quarantined from oncology grant drafts.", tone: "danger", createdAt: new Date() },
+  { id: 202, userId: 2, kind: "escalation", title: "Propagation risk routed to PI: Baggerly et al. (2008)", description: "Citation graph identified 2nd-order reference to retracted signature paper. Escalated to Dr. Chen.", tone: "warning", createdAt: new Date() },
+  { id: 203, userId: 2, kind: "scan", title: "Oncology bibliography sweep completed", description: "Autonomous sweep across 4 oncology citations completed without interruption.", tone: "neutral", createdAt: new Date() },
+  // User 3
+  { id: 301, userId: 3, kind: "flagged", title: "Retraction caught: Hydroxychloroquine COVID-19 Registry", description: "Retraction Watch confirmed direct retraction for 10.1016/S0140-6736(20)31180-6 (Mehra et al. 2020). Paper quarantined.", tone: "danger", createdAt: new Date() },
+  { id: 302, userId: 3, kind: "escalation", title: "Propagation risk routed to PI: Cardiovascular COVID-19", description: "Citation graph detected foundation dependency on retracted Surgisphere database. Escalated for domain review.", tone: "warning", createdAt: new Date() },
+  { id: 303, userId: 3, kind: "scan", title: "Neurotherapeutics literature sweep completed", description: "Autonomous sweep completed across 3 tracked citations.", tone: "neutral", createdAt: new Date() },
 ];
 
 export async function ensureSeedData() {
   try {
-    const [existing] = await db.select().from(users).where(eq(users.email, "elena.rossi@example.org")).limit(1);
-    if (existing) return existing.id;
-    const [user] = await db.insert(users).values({ name: "Elena Rossi", email: "elena.rossi@example.org", role: "PI" }).returning();
-    await db.insert(preferences).values({ userId: user.id });
-    await db.insert(citations).values(demoCitations);
-    await db.insert(deadlines).values(demoDeadlines);
-    await db.insert(activities).values(demoActivities);
-    return user.id;
+    for (const persona of demoPersonas) {
+      const [existing] = await db.select().from(users).where(eq(users.email, persona.email)).limit(1);
+      if (!existing) {
+        const [user] = await db.insert(users).values({
+          name: persona.name,
+          email: persona.email,
+          role: persona.role,
+        }).returning();
+        await db.insert(preferences).values({ userId: user.id });
+      }
+    }
+    const existingCitations = await db.select().from(citations).limit(1);
+    if (existingCitations.length === 0) {
+      await db.insert(citations).values(demoCitations);
+      await db.insert(deadlines).values(demoDeadlines);
+      await db.insert(activities).values(demoActivities);
+    }
+    return 1;
   } catch (_error) {
     return 1;
   }

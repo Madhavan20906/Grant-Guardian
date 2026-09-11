@@ -8,7 +8,9 @@
     "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck",
     "test": "pnpm -r --if-present run test",
     "test:python": "python agent-service/test_agent_service.py",
-    "test:all": "pnpm test && pnpm run test:python"
+    "test:all": "pnpm test && pnpm run test:python",
+    "verify:bedrock": "node scripts/verify-bedrock.mjs",
+    "prewarm:strands": "node scripts/prewarm-strands.mjs"
   },
   "private": true,
   "dependencies": {

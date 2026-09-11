@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ShieldAlert, CheckCircle2, AlertTriangle, GitFork, ArrowRight, ExternalLink, Info, Activity, RefreshCw } from 'lucide-react';
+import { usePersona } from '../context/persona-context';
 
 export interface GraphNode {
   id: string;
@@ -110,10 +111,29 @@ export function CitationGraph({
   onSelectNode?: (node: GraphNode) => void;
   compact?: boolean;
 }) {
+  const { activePersona } = usePersona();
   const [activeId, setActiveId] = useState<string>(selectedNodeId || 'lin2015');
   const [animating, setAnimating] = useState(false);
 
-  const selected = DEFAULT_NODES.find((n) => n.id === activeId) || DEFAULT_NODES[1];
+  const currentNodes: GraphNode[] = [
+    {
+      id: 'grant',
+      label: `${activePersona.workspace || 'NSF Proposal'} (${activePersona.lab})`,
+      sublabel: `Active Research Grant · PI: ${activePersona.title}`,
+      authors: `${activePersona.name.split(' ').slice(-1)[0]} Lab`,
+      year: 2026,
+      venue: 'Proposal Workspace',
+      doi: `PROPOSAL-2026-${activePersona.slug.toUpperCase()}`,
+      status: 'grant_root',
+      hop: 0,
+      claimsCount: 3,
+      relationship: 'RESEARCH ROOT',
+      evidence: `Active lab submission workspace for ${activePersona.name}`,
+    },
+    ...DEFAULT_NODES.slice(1),
+  ];
+
+  const selected = currentNodes.find((n) => n.id === activeId) || currentNodes[1];
 
   const handleSelect = (node: GraphNode) => {
     setActiveId(node.id);
@@ -170,7 +190,7 @@ export function CitationGraph({
             <div className="flex justify-center w-full">
               <button
                 type="button"
-                onClick={() => handleSelect(DEFAULT_NODES[0])}
+                onClick={() => handleSelect(currentNodes[0])}
                 className={`group relative flex items-center gap-3 rounded-xl border-2 px-4 py-2.5 shadow-sm transition-all ${
                   activeId === 'grant'
                     ? 'border-blue-600 bg-blue-500/15 ring-2 ring-blue-500/20'
@@ -186,7 +206,7 @@ export function CitationGraph({
                     Your Grant Proposal
                   </div>
                   <div className="text-[12px] font-bold text-[hsl(var(--foreground))]">
-                    NSF Materials Proposal (2026)
+                    {currentNodes[0].label}
                   </div>
                 </div>
               </button>
@@ -215,7 +235,7 @@ export function CitationGraph({
               {/* Lin et al. */}
               <button
                 type="button"
-                onClick={() => handleSelect(DEFAULT_NODES[1])}
+                onClick={() => handleSelect(currentNodes[1])}
                 className={`group relative flex flex-col rounded-xl border-2 p-3 text-left shadow-sm transition-all ${
                   activeId === 'lin2015'
                     ? 'border-amber-500 bg-amber-500/15 ring-2 ring-amber-500/20'
@@ -240,7 +260,7 @@ export function CitationGraph({
               {/* Jumper et al. */}
               <button
                 type="button"
-                onClick={() => handleSelect(DEFAULT_NODES[3])}
+                onClick={() => handleSelect(currentNodes[3])}
                 className={`group relative flex flex-col rounded-xl border-2 p-3 text-left shadow-sm transition-all ${
                   activeId === 'jumper2021'
                     ? 'border-emerald-500 bg-emerald-500/15 ring-2 ring-emerald-500/20'
@@ -279,7 +299,7 @@ export function CitationGraph({
               {/* Obokata et al. RETRACTED */}
               <button
                 type="button"
-                onClick={() => handleSelect(DEFAULT_NODES[2])}
+                onClick={() => handleSelect(currentNodes[2])}
                 className={`group relative flex flex-col rounded-xl border-2 p-3 text-left shadow-sm transition-all ${
                   activeId === 'obokata2014'
                     ? 'border-red-500 bg-red-500/15 ring-2 ring-red-500/20'
@@ -304,7 +324,7 @@ export function CitationGraph({
               {/* Recommended Alternative */}
               <button
                 type="button"
-                onClick={() => handleSelect(DEFAULT_NODES[4])}
+                onClick={() => handleSelect(currentNodes[4])}
                 className={`group relative flex flex-col rounded-xl border-2 border-dashed p-3 text-left shadow-sm transition-all ${
                   activeId === 'alt2019'
                     ? 'border-purple-500 bg-purple-500/15 ring-2 ring-purple-500/20'

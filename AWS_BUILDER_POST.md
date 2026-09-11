@@ -13,12 +13,13 @@ Every year, thousands of published scientific papers are retracted due to data f
 
 **Grant Guardian** is an autonomous, safety-first research integrity agent built with **Amazon Bedrock**, the **Python Strands SDK**, **Express/TypeScript**, and **AWS AgentCore**.
 
-Unlike naive LLM wrappers that hallucinate retraction claims or invent citations, Grant Guardian implements a strict **Safety Boundary Architecture**:
-1. **Strands Agent as Core Decision Engine**: The agent dynamically orchestrates specialized tools (`crossref_lookup`, `retraction_watch_lookup`, `semantic_scholar_graph`, `check_reference_retractions`, and `escalate_to_human`), and its structured tool execution trace directly feeds the deterministic safety policy.
-2. **Live Evidence-Based Propagation Traversal**: References are queried against live Retraction Watch data—transforming propagation detection from a static demo into a generalized research-integrity engine.
-3. **Autonomous Background Watch Mode**: Routine literature sweeps run silently. Guardian starts on server boot, staying completely quiet on clean runs and interrupting the researcher only when verified risks emerge.
-4. **Interactive Human Decision Inbox**: Ambiguous second-order risks are never auto-decided. The agent presents findings to the PI with three distinct options: `[Mark Relevant]`, `[Mark Not Relevant]`, or `[Defer]`, permanently storing researcher rationale.
-5. **53 Automated Adversarial & Safety Tests**: Rigorous CI test suite (43 TypeScript tests + 10 Python Strands tests) proving dynamic tool branching, Bedrock transcript replay, structural prompt injection immunity, and proof-of-restraint invariants.
+Unlike naive LLM wrappers that hallucinate retraction claims or invent citations, Grant Guardian implements a strict **Safety Boundary Architecture** verified by **53 automated tests**:
+1. **53 Automated Tests & Verifiable Reliability Invariants**: Fully passing test suite (43 TypeScript + 10 Python Strands tests). Specifically verifies **Adversarial Prompt Injection Immunity** (malicious strings in literature titles cannot trick the system into clearing retracted works) and **Mathematical Proof of Restraint** (the agent is architecturally prevented from auto-quarantining 2nd-order citations without human PI review).
+2. **Strands Agent as Core Decision Engine**: The agent dynamically orchestrates specialized tools (`crossref_lookup`, `retraction_watch_lookup`, `semantic_scholar_graph`, `check_reference_retractions`, and `escalate_to_human`), and its structured tool execution trace directly feeds the deterministic safety policy.
+3. **Live Evidence-Based Propagation Traversal & 20-Benchmark Registry**: Expanded benchmark dataset of 20 high-profile retracted papers across diverse scientific domains (stem cells, infectious disease, oncology, physics, social science) backed by live OpenAlex query fallback and Crossref `update-to` / `is-retracted-by` relation inspections.
+4. **Multi-Tenant Persona Architecture**: Native support for multiple seeded laboratory personas (`Dr. Elena Rossi` / Materials Lab, `Dr. Marcus Chen` / Neural Interfaces, `Dr. Sarah Jenkins` / Genomic Medicine) with dynamic workspace routing, citation topologies, and compliance registers.
+5. **Honest Graceful Degradation**: If AWS Bedrock or the Strands Agent Core is offline, the system transparently surfaces a local safety badge and executes local deterministic policies without failing or hallucinating.
+6. **Interactive Human Decision Inbox & Autonomous Background Watch**: Ambiguous second-order risks are escalated directly to the PI with `[Mark Relevant]`, `[Mark Not Relevant]`, or `[Defer]` controls, while morning autonomous sweeps run silently on clean runs.
 
 ---
 

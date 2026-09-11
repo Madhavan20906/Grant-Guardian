@@ -44,10 +44,12 @@ import { CitationGraph } from '@/components/citation-graph';
 import { BlastRadius } from '@/components/blast-radius';
 import { InvestigationWorkspace } from '@/components/investigation-workspace';
 import { ClaimMonitor } from '@/components/claim-monitor';
+import { usePersona } from '@/context/persona-context';
 
 export default function Overview() {
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
+  const { activePersona } = usePersona();
   const overviewQuery = useGetGuardianOverview();
   const citationsQuery = useListCitations();
   const deadlinesQuery = useListDeadlines();
@@ -60,6 +62,7 @@ export default function Overview() {
   const [sweepResult, setSweepResult] = useState<{ silent: boolean; summary: string } | null>(null);
   const [selectedCitationId, setSelectedCitationId] = useState<number | null>(null);
   const [showMorningBrief, setShowMorningBrief] = useState(true);
+  const [showStrandsInfo, setShowStrandsInfo] = useState(false);
   const [activeViewTab, setActiveViewTab] = useState<'attention' | 'graph' | 'claims' | 'blast'>('attention');
   const [isSubmittingJudgment, setIsSubmittingJudgment] = useState(false);
 
@@ -186,26 +189,47 @@ export default function Overview() {
                 <span className="size-1.5 rounded-full bg-emerald-400 animate-ping" />
                 WATCHING
               </span>
-              <span
-                className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[9px] font-extrabold border ${
+              <button
+                type="button"
+                onClick={() => setShowStrandsInfo(!showStrandsInfo)}
+                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[9px] font-extrabold border transition-all cursor-pointer ${
                   strandsStatusQuery.data?.available
-                    ? 'bg-purple-500/25 text-purple-300 border-purple-500/50'
-                    : 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                    ? 'bg-purple-500/25 text-purple-300 border-purple-500/50 hover:bg-purple-500/35'
+                    : 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30'
                 }`}
                 data-testid="badge-strands-mode"
+                title="Click to view runtime orchestration & degradation status"
               >
                 <Cpu size={10} />
                 {strandsStatusQuery.data?.available
                   ? `STRANDS AGENTCORE LIVE (${strandsStatusQuery.data.tools} TOOLS)`
-                  : 'STRANDS FALLBACK ACTIVE'}
-              </span>
+                  : 'HONEST DEGRADATION: LOCAL SAFETY ACTIVE'}
+              </button>
             </div>
             <h1 className="mt-2 text-[26px] md:text-[32px] font-serif font-bold tracking-tight text-[hsl(var(--sidebar-foreground))]">
-              Good morning, Elena.
+              Good morning, {activePersona.name.split(' ')[0]}.
             </h1>
             <p className="mt-1 text-[13px] text-[hsl(var(--sidebar-foreground)/.75)]">
-              Guardian checked <strong className="text-white">48 sources</strong> overnight. 1 direct retraction was quarantined, and 1 downstream dependency requires your domain review.
+              Guardian monitored tracked literature for <strong className="text-white">{activePersona.lab}</strong>. Direct retractions are quarantined automatically, and ambiguous propagation risks are routed for your domain judgment.
             </p>
+            {showStrandsInfo && (
+              <div className="mt-3 rounded-xl border border-purple-500/30 bg-purple-950/40 p-3.5 text-[11px] text-purple-200 shadow-md">
+                <div className="flex items-center justify-between font-bold text-white mb-1">
+                  <span className="flex items-center gap-1.5">
+                    <ShieldCheck size={14} className="text-purple-400" />
+                    {strandsStatusQuery.data?.available
+                      ? 'Strands AgentCore Active (AWS Bedrock Orchestration)'
+                      : 'Honest Graceful Degradation Active (Local Safety Guardrail)'}
+                  </span>
+                  <button type="button" onClick={() => setShowStrandsInfo(false)} className="text-purple-400 hover:text-white text-xs">✕</button>
+                </div>
+                <p className="text-[10.5px] leading-relaxed text-purple-300/90">
+                  {strandsStatusQuery.data?.available
+                    ? `Strands Agent (FastAPI on :8010) is actively dispatching dynamic tool traversals across Crossref, Retraction Watch, and Semantic Scholar with ${strandsStatusQuery.data.tools} registered agent tools.`
+                    : 'The Python Strands service is currently offline or unreachable. Rather than guessing or halting, Grant Guardian cleanly falls back to its deterministic safety policy (classifyDecision)—guaranteeing 100% research safety and transparently labeling all provider traces.'}
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
@@ -545,7 +569,7 @@ export default function Overview() {
           </div>
 
           <span className="text-[10px] gg-mono text-[hsl(var(--muted-foreground))]">
-            Single-Tenant Workspace: Dr. Elena Rossi
+            Workspace: {activePersona.title} ({activePersona.lab})
           </span>
         </div>
 

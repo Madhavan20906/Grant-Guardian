@@ -1,7 +1,7 @@
 import { desc, eq } from "drizzle-orm";
 import { db } from "@workspace/db";
 import { activities, citations, deadlines, drafts, preferences } from "@workspace/db/schema";
-import { demoActivities, demoCitations, demoDeadlines, ensureSeedData } from "@workspace/db/seed";
+import { demoActivities, demoCitations, demoDeadlines, demoPersonas, ensureSeedData, type PersonaProfile } from "@workspace/db/seed";
 import { logger } from "./logger";
 
 export interface CitationRecord {
@@ -84,13 +84,31 @@ class GuardianStore {
 
   private initialized: Promise<number> | null = null;
 
-  async getUserId(): Promise<number> {
+  getPersonas(): PersonaProfile[] {
+    return demoPersonas;
+  }
+
+  async getUserId(identifier?: string | number): Promise<number> {
     try {
-      return await (this.initialized ??= ensureSeedData());
+      await (this.initialized ??= ensureSeedData());
     } catch (err) {
-      logger.warn({ err }, "Database seed/user check failed; using fallback userId = 1");
-      return 1;
+      logger.warn({ err }, "Database seed/user check failed; using local persona mapping");
     }
+    if (identifier === undefined || identifier === null) return 1;
+    if (typeof identifier === "number" && !isNaN(identifier)) {
+      const match = demoPersonas.find(p => p.id === identifier);
+      return match ? match.id : 1;
+    }
+    const clean = String(identifier).trim().toLowerCase();
+    const numeric = parseInt(clean, 10);
+    if (!isNaN(numeric)) {
+      const match = demoPersonas.find(p => p.id === numeric);
+      if (match) return match.id;
+    }
+    const matched = demoPersonas.find(
+      p => p.slug.toLowerCase() === clean || p.name.toLowerCase().includes(clean)
+    );
+    return matched ? matched.id : 1;
   }
 
   async getOverview(userId: number) {
