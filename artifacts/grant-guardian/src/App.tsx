@@ -19,6 +19,7 @@ import {
 
 import { setBaseUrl } from '@workspace/api-client-react';
 import { PersonaProvider } from '@/context/persona-context';
+import { ThemeProvider } from '@/context/theme-context';
 
 const apiBase = (import.meta.env.VITE_API_URL as string | undefined) ?? '';
 setBaseUrl(apiBase || null);
@@ -49,16 +50,18 @@ function RoutedErrorBoundary({ children }: { children: ReactNode }) {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <PersonaProvider>
-          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
-            <Router />
-          </WouterRouter>
-          <Toaster />
-        </PersonaProvider>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <PersonaProvider>
+            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+              <Router />
+            </WouterRouter>
+            <Toaster />
+          </PersonaProvider>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }
 

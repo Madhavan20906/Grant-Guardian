@@ -21,12 +21,15 @@ import {
   Settings2,
   ShieldCheck,
   Sparkles,
+  Sun,
+  Moon,
   Users,
   X,
   XCircle,
 } from 'lucide-react';
 import type { Activity, Citation, Deadline } from '@workspace/api-client-react';
 import { usePersona } from '@/context/persona-context';
+import { useTheme } from '@/context/theme-context';
 
 export const cx = (...items: Array<string | false | null | undefined>) => items.filter(Boolean).join(' ');
 
@@ -141,6 +144,37 @@ export function PersonaSwitcher() {
   );
 }
 
+export function ThemeToggle({ compact = false }: { compact?: boolean }) {
+  const { theme, toggleTheme } = useTheme();
+  return (
+    <button
+      type="button"
+      onClick={toggleTheme}
+      className={cx(
+        'flex items-center justify-center rounded-full transition-all shadow-xs',
+        compact
+          ? 'size-7 p-1 text-[hsl(var(--sidebar-foreground))] border border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar-accent))] hover:bg-[hsl(var(--sidebar-accent)/.8)]'
+          : 'gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold text-[hsl(var(--foreground))] border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:bg-[hsl(var(--muted))]'
+      )}
+      data-testid="button-theme-toggle"
+      title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+      aria-label="Toggle color theme"
+    >
+      {theme === 'dark' ? (
+        <>
+          <Sun size={14} className="text-amber-400" />
+          {!compact && <span className="hidden xl:inline text-[10px] text-[hsl(var(--muted-foreground))]">Light</span>}
+        </>
+      ) : (
+        <>
+          <Moon size={14} className="text-indigo-600 dark:text-indigo-400" />
+          {!compact && <span className="hidden xl:inline text-[10px] text-[hsl(var(--muted-foreground))]">Dark</span>}
+        </>
+      )}
+    </button>
+  );
+}
+
 export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [location] = useLocation();
   const { activePersona } = usePersona();
@@ -179,7 +213,10 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
                 {activePersona.role} · {activePersona.lab.split('&')[0]}
               </div>
             </div>
-            <Link href="/settings" className="ml-auto text-[hsl(var(--sidebar-foreground)/.45)] hover:text-[hsl(var(--sidebar-foreground))]" data-testid="link-profile-settings"><Settings2 size={15} /></Link>
+            <div className="ml-auto flex items-center gap-1.5">
+              <ThemeToggle compact />
+              <Link href="/settings" className="text-[hsl(var(--sidebar-foreground)/.45)] hover:text-[hsl(var(--sidebar-foreground))]" data-testid="link-profile-settings"><Settings2 size={15} /></Link>
+            </div>
           </div>
         </div>
       </aside>
@@ -200,6 +237,7 @@ export function TopBar({ onMenu }: { onMenu: () => void }) {
       </div>
       <div className="flex items-center gap-3">
         <PersonaSwitcher />
+        <ThemeToggle />
         <div className="hidden items-center gap-2 rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-3 py-1.5 text-[10px] text-[hsl(var(--muted-foreground))] lg:flex"><span className="size-1.5 rounded-full bg-[hsl(var(--accent-foreground))]" />All systems nominal</div>
         <button type="button" onClick={() => setLocation('/activity')} className="relative rounded-lg p-2 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))]" aria-label="Open notifications" data-testid="button-open-notifications"><Bell size={17} /><span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-[hsl(var(--destructive))]" /></button>
         <div className="flex size-8 items-center justify-center rounded-full bg-purple-600 text-[10px] font-bold text-white md:hidden">
