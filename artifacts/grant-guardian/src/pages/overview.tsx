@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import {
   ArrowRight,
+  ArrowUpRight,
   CheckCircle2,
   Clock3,
   FileWarning,
