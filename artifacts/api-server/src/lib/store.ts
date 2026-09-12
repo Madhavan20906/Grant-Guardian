@@ -1,8 +1,26 @@
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { db } from "@workspace/db";
-import { activities, citations, deadlines, drafts, preferences } from "@workspace/db/schema";
+import { activities, citations, deadlines, drafts, preferences, users } from "@workspace/db/schema";
 import { demoActivities, demoCitations, demoDeadlines, demoPersonas, ensureSeedData, type PersonaProfile } from "@workspace/db/seed";
+import { hashPassword } from "./auth";
 import { logger } from "./logger";
+
+export interface UserRecord {
+  id: number;
+  email: string;
+  name: string;
+  role: string;
+  passwordHash?: string | null;
+  salt?: string | null;
+  title: string;
+  labName: string;
+  institution: string;
+  focus: string;
+  proposalName: string;
+  initials: string;
+  tenantSlug: string;
+  createdAt: Date;
+}
 
 export interface CitationRecord {
   id: number;
@@ -62,7 +80,26 @@ export interface PreferencesRecord {
   deadlineReminders: boolean;
 }
 
+const DEFAULT_DEMO_HASH = hashPassword("Guardian#2026", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
+
 class GuardianStore {
+  private memoryUsers: UserRecord[] = demoPersonas.map((p) => ({
+    id: p.id,
+    email: p.email.toLowerCase(),
+    name: p.name,
+    role: p.role,
+    passwordHash: DEFAULT_DEMO_HASH.hash,
+    salt: DEFAULT_DEMO_HASH.salt,
+    title: p.title,
+    labName: p.lab,
+    institution: p.institution || "Research University & Institute",
+    focus: p.focus,
+    proposalName: p.proposalName || "Active Research Grant Proposal",
+    initials: p.initials,
+    tenantSlug: p.slug,
+    createdAt: new Date(),
+  }));
+
   private memoryCitations: CitationRecord[] = demoCitations.map(c => ({
     ...c,
     judgment: (c as any).judgment ?? "pending",
@@ -75,38 +112,304 @@ class GuardianStore {
   private memoryDeadlines: DeadlineRecord[] = [...demoDeadlines];
   private memoryActivities: ActivityRecord[] = [...demoActivities];
   private memoryDrafts: DraftRecord[] = [];
-  private memoryPreferences: PreferencesRecord = {
-    userId: 1,
-    weeklyDeskNote: true,
-    highRiskInterrupts: true,
-    deadlineReminders: true,
-  };
+  private memoryPreferences: PreferencesRecord[] = [
+    { userId: 1, weeklyDeskNote: true, highRiskInterrupts: true, deadlineReminders: true },
+    { userId: 2, weeklyDeskNote: true, highRiskInterrupts: true, deadlineReminders: true },
+    { userId: 3, weeklyDeskNote: true, highRiskInterrupts: true, deadlineReminders: true },
+    { userId: 4, weeklyDeskNote: true, highRiskInterrupts: true, deadlineReminders: true },
+  ];
 
   private initialized: Promise<number> | null = null;
 
-  getPersonas(): PersonaProfile[] {
-    return demoPersonas;
-  }
-
-  async getUserId(identifier?: string | number): Promise<number> {
+  async ensureReady(): Promise<void> {
     try {
       await (this.initialized ??= ensureSeedData());
     } catch (err) {
-      logger.warn({ err }, "Database seed/user check failed; using local persona mapping");
+      logger.warn({ err }, "Database initialization warning; in-memory store active");
     }
+  }
+
+  getPersonas(): PersonaProfile[] {
+    return this.memoryUsers.map((u) => ({
+      id: u.id,
+      slug: u.tenantSlug,
+      name: u.name,
+      email: u.email,
+      role: u.role,
+      title: u.title,
+      lab: u.labName,
+      institution: u.institution,
+      proposalName: u.proposalName,
+      initials: u.initials,
+      focus: u.focus,
+    }));
+  }
+
+  async listTenants(): Promise<UserRecord[]> {
+    await this.ensureReady();
+    try {
+      const rows = await db.select().from(users).orderBy(users.id);
+      if (rows.length > 0) {
+        return rows.map((r: any) => ({
+          id: r.id,
+          email: r.email,
+          name: r.name,
+          role: r.role,
+          title: r.title ?? "Dr.",
+          labName: r.labName ?? "Research Laboratory",
+          institution: r.institution ?? "Research Institution",
+          focus: r.focus ?? "Scientific Research",
+          proposalName: r.proposalName ?? "Active Research Proposal",
+          initials: r.initials ?? "PI",
+          tenantSlug: r.tenantSlug ?? `user-${r.id}`,
+          createdAt: r.createdAt ?? new Date(),
+        }));
+      }
+    } catch {
+      // Fallback to memory
+    }
+    return [...this.memoryUsers];
+  }
+
+  async getUserById(id: number): Promise<UserRecord | null> {
+    await this.ensureReady();
+    try {
+      const [row] = await db.select().from(users).where(eq(users.id, id)).limit(1);
+      if (row) {
+        return {
+          id: row.id,
+          email: row.email,
+          name: row.name,
+          role: row.role,
+          passwordHash: row.passwordHash,
+          salt: row.salt,
+          title: row.title ?? "Dr.",
+          labName: row.labName ?? "Research Laboratory",
+          institution: row.institution ?? "Research Institution",
+          focus: row.focus ?? "Scientific Research",
+          proposalName: row.proposalName ?? "Active Research Proposal",
+          initials: row.initials ?? "PI",
+          tenantSlug: row.tenantSlug ?? `user-${row.id}`,
+          createdAt: row.createdAt ?? new Date(),
+        };
+      }
+    } catch {
+      // Fallback to memory
+    }
+    return this.memoryUsers.find((u) => u.id === id) ?? null;
+  }
+
+  async getUserByEmail(email: string): Promise<UserRecord | null> {
+    await this.ensureReady();
+    const cleanEmail = email.trim().toLowerCase();
+    try {
+      const [row] = await db.select().from(users).where(eq(users.email, cleanEmail)).limit(1);
+      if (row) {
+        return {
+          id: row.id,
+          email: row.email,
+          name: row.name,
+          role: row.role,
+          passwordHash: row.passwordHash,
+          salt: row.salt,
+          title: row.title ?? "Dr.",
+          labName: row.labName ?? "Research Laboratory",
+          institution: row.institution ?? "Research Institution",
+          focus: row.focus ?? "Scientific Research",
+          proposalName: row.proposalName ?? "Active Research Proposal",
+          initials: row.initials ?? "PI",
+          tenantSlug: row.tenantSlug ?? `user-${row.id}`,
+          createdAt: row.createdAt ?? new Date(),
+        };
+      }
+    } catch {
+      // Fallback to memory
+    }
+    return this.memoryUsers.find((u) => u.email.toLowerCase() === cleanEmail) ?? null;
+  }
+
+  async createUser(data: {
+    name: string;
+    email: string;
+    passwordHash: string;
+    salt: string;
+    role?: string;
+    title?: string;
+    labName?: string;
+    institution?: string;
+    focus?: string;
+    proposalName?: string;
+    initials?: string;
+    tenantSlug?: string;
+    starterTemplate?: string;
+  }): Promise<UserRecord> {
+    await this.ensureReady();
+    const cleanEmail = data.email.trim().toLowerCase();
+    const cleanName = data.name.trim();
+    const title = data.title?.trim() || "Dr.";
+    const labName = data.labName?.trim() || `${cleanName.split(" ").pop() || "Research"} Lab`;
+    const institution = data.institution?.trim() || "Research University";
+    const focus = data.focus?.trim() || "Grant-Funded Research";
+    const proposalName = data.proposalName?.trim() || "Active Grant Proposal";
+    const initials = data.initials?.trim() || cleanName.split(" ").map(w => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "PI";
+    const tenantSlug = data.tenantSlug?.trim().toLowerCase() || cleanEmail.split("@")[0].replace(/[^a-z0-9]/g, "-");
+
+    const newId = this.memoryUsers.length > 0 ? Math.max(...this.memoryUsers.map((u) => u.id)) + 1 : 1;
+    const userRecord: UserRecord = {
+      id: newId,
+      email: cleanEmail,
+      name: cleanName,
+      role: data.role || "PI",
+      passwordHash: data.passwordHash,
+      salt: data.salt,
+      title,
+      labName,
+      institution,
+      focus,
+      proposalName,
+      initials,
+      tenantSlug,
+      createdAt: new Date(),
+    };
+
+    try {
+      const [inserted] = await db
+        .insert(users)
+        .values({
+          name: userRecord.name,
+          email: userRecord.email,
+          role: userRecord.role,
+          passwordHash: userRecord.passwordHash,
+          salt: userRecord.salt,
+          title: userRecord.title,
+          labName: userRecord.labName,
+          institution: userRecord.institution,
+          focus: userRecord.focus,
+          proposalName: userRecord.proposalName,
+          initials: userRecord.initials,
+          tenantSlug: userRecord.tenantSlug,
+        })
+        .returning();
+      if (inserted) {
+        userRecord.id = inserted.id;
+      }
+      await db.insert(preferences).values({ userId: userRecord.id });
+    } catch (err) {
+      logger.warn({ err, email: cleanEmail }, "Database user insertion failed; storing in memory");
+    }
+
+    this.memoryUsers.push(userRecord);
+    this.memoryPreferences.push({
+      userId: userRecord.id,
+      weeklyDeskNote: true,
+      highRiskInterrupts: true,
+      deadlineReminders: true,
+    });
+
+    // Populate starter template if requested
+    if (data.starterTemplate === "biomaterials") {
+      const cloned = demoCitations.filter(c => c.userId === 1).map((c, i) => ({
+        ...c,
+        id: this.memoryCitations.length + i + 1,
+        userId: userRecord.id,
+      }));
+      this.memoryCitations.push(...cloned);
+    } else if (data.starterTemplate === "oncology") {
+      const cloned = demoCitations.filter(c => c.userId === 2).map((c, i) => ({
+        ...c,
+        id: this.memoryCitations.length + i + 1,
+        userId: userRecord.id,
+      }));
+      this.memoryCitations.push(...cloned);
+    }
+
+    // Add initial welcome activity
+    await this.addActivity({
+      userId: userRecord.id,
+      kind: "scan",
+      title: "New Research Tenant Initialized",
+      description: `Tenant workspace initialized for ${title} ${cleanName} (${labName} · ${institution}).`,
+      tone: "neutral",
+    });
+
+    return userRecord;
+  }
+
+  async updateUserProfile(
+    id: number,
+    data: {
+      name?: string;
+      title?: string;
+      labName?: string;
+      institution?: string;
+      focus?: string;
+      proposalName?: string;
+      initials?: string;
+    }
+  ): Promise<UserRecord | null> {
+    await this.ensureReady();
+    try {
+      const [updated] = await db
+        .update(users)
+        .set({
+          ...(data.name ? { name: data.name.trim() } : {}),
+          ...(data.title ? { title: data.title.trim() } : {}),
+          ...(data.labName ? { labName: data.labName.trim() } : {}),
+          ...(data.institution ? { institution: data.institution.trim() } : {}),
+          ...(data.focus ? { focus: data.focus.trim() } : {}),
+          ...(data.proposalName ? { proposalName: data.proposalName.trim() } : {}),
+          ...(data.initials ? { initials: data.initials.trim().toUpperCase() } : {}),
+        })
+        .where(eq(users.id, id))
+        .returning();
+      if (updated) {
+        const mem = this.memoryUsers.find(u => u.id === id);
+        if (mem) {
+          Object.assign(mem, {
+            name: updated.name,
+            title: updated.title,
+            labName: updated.labName,
+            institution: updated.institution,
+            focus: updated.focus,
+            proposalName: updated.proposalName,
+            initials: updated.initials,
+          });
+        }
+        return this.getUserById(id);
+      }
+    } catch (err) {
+      logger.warn({ err, id }, "Database unavailable for updateUserProfile; updating in-memory store");
+    }
+
+    const mem = this.memoryUsers.find(u => u.id === id);
+    if (mem) {
+      if (data.name) mem.name = data.name.trim();
+      if (data.title) mem.title = data.title.trim();
+      if (data.labName) mem.labName = data.labName.trim();
+      if (data.institution) mem.institution = data.institution.trim();
+      if (data.focus) mem.focus = data.focus.trim();
+      if (data.proposalName) mem.proposalName = data.proposalName.trim();
+      if (data.initials) mem.initials = data.initials.trim().toUpperCase();
+      return mem;
+    }
+    return null;
+  }
+
+  async getUserId(identifier?: string | number): Promise<number> {
+    await this.ensureReady();
     if (identifier === undefined || identifier === null) return 1;
     if (typeof identifier === "number" && !isNaN(identifier)) {
-      const match = demoPersonas.find(p => p.id === identifier);
-      return match ? match.id : 1;
+      const match = this.memoryUsers.find(p => p.id === identifier);
+      return match ? match.id : identifier;
     }
     const clean = String(identifier).trim().toLowerCase();
     const numeric = parseInt(clean, 10);
     if (!isNaN(numeric)) {
-      const match = demoPersonas.find(p => p.id === numeric);
+      const match = this.memoryUsers.find(p => p.id === numeric);
       if (match) return match.id;
     }
-    const matched = demoPersonas.find(
-      p => p.slug.toLowerCase() === clean || p.name.toLowerCase().includes(clean)
+    const matched = this.memoryUsers.find(
+      p => p.tenantSlug.toLowerCase() === clean || p.name.toLowerCase().includes(clean) || p.email.toLowerCase() === clean
     );
     return matched ? matched.id : 1;
   }
@@ -331,15 +634,17 @@ class GuardianStore {
     } catch (err) {
       logger.warn({ err, operation: "getPreferences" }, "Database unavailable for preferences; using in-memory store");
     }
-    return this.memoryPreferences;
+    const mem = this.memoryPreferences.find(p => p.userId === userId);
+    return mem || { userId, weeklyDeskNote: true, highRiskInterrupts: true, deadlineReminders: true };
   }
 
   async updatePreferences(userId: number, data: { weeklyDeskNote?: boolean; highRiskInterrupts?: boolean; deadlineReminders?: boolean }): Promise<PreferencesRecord> {
+    const current = await this.getPreferences(userId);
     const updated = {
       userId,
-      weeklyDeskNote: data.weeklyDeskNote ?? this.memoryPreferences.weeklyDeskNote,
-      highRiskInterrupts: data.highRiskInterrupts ?? this.memoryPreferences.highRiskInterrupts,
-      deadlineReminders: data.deadlineReminders ?? this.memoryPreferences.deadlineReminders,
+      weeklyDeskNote: data.weeklyDeskNote ?? current.weeklyDeskNote,
+      highRiskInterrupts: data.highRiskInterrupts ?? current.highRiskInterrupts,
+      deadlineReminders: data.deadlineReminders ?? current.deadlineReminders,
     };
 
     try {
@@ -353,15 +658,19 @@ class GuardianStore {
         .where(eq(preferences.userId, userId))
         .returning();
       if (row) {
-        this.memoryPreferences = row as PreferencesRecord;
-        return this.memoryPreferences;
+        return row as PreferencesRecord;
       }
     } catch (err) {
       logger.warn({ err, operation: "updatePreferences" }, "Database unavailable for updatePreferences; updating in-memory store");
     }
 
-    this.memoryPreferences = updated;
-    return this.memoryPreferences;
+    const idx = this.memoryPreferences.findIndex(p => p.userId === userId);
+    if (idx >= 0) {
+      this.memoryPreferences[idx] = updated;
+    } else {
+      this.memoryPreferences.push(updated);
+    }
+    return updated;
   }
 
   async importCitations(userId: number, dois: string[]): Promise<CitationRecord[]> {
@@ -372,13 +681,17 @@ class GuardianStore {
       let exists = false;
 
       try {
-        const [existing] = await db.select().from(citations).where(eq(citations.doi, normalizedDoi)).limit(1);
+        const [existing] = await db
+          .select()
+          .from(citations)
+          .where(and(eq(citations.userId, userId), eq(citations.doi, normalizedDoi)))
+          .limit(1);
         if (existing) {
           exists = true;
         }
       } catch (err) {
         logger.warn({ err, doi: normalizedDoi, operation: "importCitations.check" }, "Database unavailable for import deduplication; checking memory");
-        exists = this.memoryCitations.some(c => c.doi.toLowerCase() === normalizedDoi.toLowerCase());
+        exists = this.memoryCitations.some(c => c.userId === userId && c.doi.toLowerCase() === normalizedDoi.toLowerCase());
       }
 
       if (exists) continue;

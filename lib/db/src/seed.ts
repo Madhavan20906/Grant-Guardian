@@ -12,6 +12,8 @@ export interface PersonaProfile {
   role: string;
   title: string;
   lab: string;
+  institution: string;
+  proposalName: string;
   initials: string;
   focus: string;
 }
@@ -25,6 +27,8 @@ export const demoPersonas: PersonaProfile[] = [
     role: "PI",
     title: "Dr. Elena Rossi",
     lab: "Materials Science & Biomaterials Lab",
+    institution: "Institute for Bioengineering",
+    proposalName: "NSF CAREER Proposal (Biomaterials)",
     initials: "ER",
     focus: "Tissue Engineering & Regenerative Scaffolds",
   },
@@ -36,6 +40,8 @@ export const demoPersonas: PersonaProfile[] = [
     role: "PI",
     title: "Dr. Marcus Chen",
     lab: "Computational Oncology & Genomics Lab",
+    institution: "Comprehensive Cancer Center",
+    proposalName: "NIH R01 Proposal (Computational Oncology)",
     initials: "MC",
     focus: "Cancer Biomarkers & Clinical Microarrays",
   },
@@ -47,6 +53,8 @@ export const demoPersonas: PersonaProfile[] = [
     role: "Assoc. Prof",
     title: "Dr. Sarah Jenkins",
     lab: "Neurobiology & Molecular Therapeutics Lab",
+    institution: "School of Medicine & Health Sciences",
+    proposalName: "NIH R21 Proposal (Translational Neuro)",
     initials: "SJ",
     focus: "Translational Medicine & COVID-19 Therapeutics",
   },
@@ -58,6 +66,8 @@ export const demoPersonas: PersonaProfile[] = [
     role: "PI",
     title: "First-Time PI (Blank State)",
     lab: "Your Laboratory / New Proposal",
+    institution: "Your Research Institution",
+    proposalName: "Custom Grant Proposal",
     initials: "PI",
     focus: "Custom Grant Literature & Deadlines",
   },
@@ -614,6 +624,13 @@ export async function ensureSeedData() {
           name: persona.name,
           email: persona.email,
           role: persona.role,
+          title: persona.title,
+          labName: persona.lab,
+          institution: persona.institution,
+          focus: persona.focus,
+          proposalName: persona.proposalName,
+          initials: persona.initials,
+          tenantSlug: persona.slug,
         }).returning();
         await db.insert(preferences).values({ userId: user.id });
       }

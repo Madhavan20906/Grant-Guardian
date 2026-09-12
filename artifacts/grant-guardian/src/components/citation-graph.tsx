@@ -29,12 +29,12 @@ export interface GraphEdge {
 const DEFAULT_NODES: GraphNode[] = [
   {
     id: 'grant',
-    label: 'NSF CAREER Proposal (Materials Lab)',
-    sublabel: 'Active Research Grant · PI: Dr. Elena Rossi',
-    authors: 'Rossi Lab',
+    label: 'Active Research Proposal',
+    sublabel: 'Active Research Grant Workspace',
+    authors: 'Active Research Lab',
     year: 2026,
-    venue: 'NSF Proposal 26-904',
-    doi: 'PROPOSAL-2026-NSF-MAT',
+    venue: 'Grant Proposal Workspace',
+    doi: 'PROPOSAL-ACTIVE-WORKSPACE',
     status: 'grant_root',
     hop: 0,
     claimsCount: 3,

@@ -11,7 +11,9 @@ import {
   Sparkles,
   Layers,
   ExternalLink,
+  UserPlus,
 } from 'lucide-react';
+import { useAuth } from '@/context/auth-context';
 import { usePersona } from '@/context/persona-context';
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -25,7 +27,7 @@ interface OnboardingEmptyStateProps {
 }
 
 export function OnboardingEmptyState({ onImportClick }: OnboardingEmptyStateProps) {
-  const { selectPersona } = usePersona();
+  const { selectPersona, openAuthModal } = useAuth();
   const queryClient = useQueryClient();
   const [quickDoi, setQuickDoi] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -209,11 +211,23 @@ export function OnboardingEmptyState({ onImportClick }: OnboardingEmptyStateProp
 
       {/* Or Explore with Seeded Lab Personas */}
       <div className="pt-4 border-t border-[hsl(var(--border))] space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-            Or Explore Pre-Configured Laboratory Demos
-          </h3>
-          <span className="text-[11px] text-[hsl(var(--muted-foreground))]">Multi-Persona Switcher</span>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+              Multi-Tenant Sandboxes & Custom Labs
+            </h3>
+            <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
+              Explore field-specific templates or register an isolated workspace for your own proposal.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={openAuthModal}
+            className="flex items-center gap-1.5 rounded-lg border border-purple-500/40 bg-purple-500/10 px-3 py-1.5 text-xs font-bold text-purple-600 dark:text-purple-400 hover:bg-purple-500/20 transition-all self-start sm:self-auto"
+          >
+            <UserPlus size={13} />
+            Create Your Lab Account
+          </button>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

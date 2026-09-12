@@ -12,19 +12,39 @@ import { draftWithAgent, parseDoisFromContent, runGuardianAgent, runStrandsServi
 import { getWatchState, runAutonomousSweep } from "../lib/autonomous-watch";
 import { guardianStore, type DeadlineRecord } from "../lib/store";
 
+import { verifySessionToken } from "../lib/auth";
+
 const router: IRouter = Router();
 
-const resolveUserId = async (req: { query?: Record<string, any>; headers?: Record<string, any> }) => {
+const resolveUser = async (req: { query?: Record<string, any>; headers?: Record<string, any> }) => {
+  const authHeader = req.headers?.authorization;
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    const token = authHeader.slice(7).trim();
+    const payload = verifySessionToken(token);
+    if (payload) {
+      const user = await guardianStore.getUserById(payload.sub);
+      if (user) {
+        return { userId: user.id, user };
+      }
+    }
+  }
   const param = req.query?.user ?? req.headers?.["x-user-id"];
-  return guardianStore.getUserId(typeof param === "string" ? param : typeof param === "number" ? param : undefined);
+  const userId = await guardianStore.getUserId(typeof param === "string" ? param : typeof param === "number" ? param : undefined);
+  const user = await guardianStore.getUserById(userId);
+  return { userId, user };
+};
+
+const resolveUserId = async (req: { query?: Record<string, any>; headers?: Record<string, any> }) => {
+  const { userId } = await resolveUser(req);
+  return userId;
 };
 
 const daysLeft = (date: Date) => Math.ceil((date.getTime() - Date.now()) / 86_400_000);
-const deadlineDto = (item: DeadlineRecord) => ({
+const deadlineDto = (item: DeadlineRecord, defaultOwner?: string) => ({
   ...item,
   dueDate: item.dueDate.toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }),
   daysLeft: daysLeft(item.dueDate),
-  owner: item.owner ?? "Dr. Elena Rossi",
+  owner: item.owner || defaultOwner || "Principal Investigator",
 });
 
 router.get("/guardian/personas", (_req, res) => {
@@ -53,9 +73,10 @@ router.get("/guardian/citations", async (req, res, next) => {
 
 router.get("/guardian/deadlines", async (req, res, next) => {
   try {
-    const userId = await resolveUserId(req);
+    const { userId, user } = await resolveUser(req);
     const rows = await guardianStore.getDeadlines(userId);
-    return res.json(ListDeadlinesResponse.parse(rows.map(deadlineDto)));
+    const defaultOwner = user ? `${user.title} ${user.name}` : undefined;
+    return res.json(ListDeadlinesResponse.parse(rows.map(item => deadlineDto(item, defaultOwner))));
   } catch (error) {
     return next(error);
   }

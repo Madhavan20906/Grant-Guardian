@@ -24,12 +24,17 @@ import {
   Sun,
   Moon,
   Users,
+  UserPlus,
+  LogIn,
+  LogOut,
   X,
   XCircle,
 } from 'lucide-react';
 import type { Activity, Citation, Deadline } from '@workspace/api-client-react';
+import { useAuth } from '@/context/auth-context';
 import { usePersona } from '@/context/persona-context';
 import { useTheme } from '@/context/theme-context';
+import { AuthModal } from './auth-modal';
 
 export const cx = (...items: Array<string | false | null | undefined>) => items.filter(Boolean).join(' ');
 
@@ -59,7 +64,7 @@ const navItems = [
 ];
 
 export function PersonaSwitcher() {
-  const { activePersona, personas, selectPersona } = usePersona();
+  const { user, isAuthenticated, selectPersona, tenants, openAuthModal, logout } = useAuth();
   const [open, setOpen] = useState(false);
 
   return (
@@ -67,53 +72,128 @@ export function PersonaSwitcher() {
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 rounded-full border border-purple-500/35 bg-purple-500/10 px-3 py-1.5 text-[11px] font-semibold text-purple-700 dark:text-purple-300 hover:bg-purple-500/20 transition-all"
+        className="flex items-center gap-2 rounded-full border border-purple-500/35 bg-purple-500/10 px-3 py-1.5 text-[11px] font-semibold text-purple-700 dark:text-purple-300 hover:bg-purple-500/20 transition-all shadow-xs"
         data-testid="button-persona-switcher"
-        title="Switch active research persona"
+        title="Account & Tenant Workspace Menu"
       >
         <span className="flex size-4 items-center justify-center rounded-full bg-purple-600 text-[9px] font-extrabold text-white">
-          {activePersona.initials}
+          {user.initials}
         </span>
-        <span className="hidden sm:inline font-bold">{activePersona.title}</span>
-        <span className="hidden xl:inline text-[10px] opacity-75 font-normal">· {activePersona.lab.split('&')[0]}</span>
+        <span className="hidden sm:inline font-bold">{user.title} {user.name}</span>
+        <span className="hidden xl:inline text-[10px] opacity-75 font-normal">· {user.labName.split('&')[0]}</span>
+        {isAuthenticated && (
+          <span className="hidden 2xl:inline rounded bg-emerald-500/20 px-1 py-0.2 text-[9px] text-emerald-500 font-extrabold">
+            AUTH
+          </span>
+        )}
         <ChevronDown size={13} className={cx('transition-transform duration-200', open && 'rotate-180')} />
       </button>
 
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full mt-2 z-50 w-72 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-2 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
-            <div className="px-3 py-2 border-b border-[hsl(var(--border))] mb-1.5">
-              <div className="flex items-center justify-between text-[10px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-                <span>Research Personas</span>
-                <span className="rounded bg-purple-500/20 px-1 text-purple-400">Multi-Tenant</span>
+          <div className="absolute right-0 top-full mt-2 z-50 w-80 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+            {/* Active Tenant Profile Summary */}
+            <div className="rounded-xl border border-purple-500/30 bg-purple-500/10 p-3 mb-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-purple-400">
+                  Active Tenant Workspace
+                </span>
+                <span className="rounded-full bg-purple-500/20 px-1.5 py-0.5 text-[9px] font-bold text-purple-300">
+                  {isAuthenticated ? 'Authenticated' : 'Sandbox Mode'}
+                </span>
               </div>
-              <p className="mt-0.5 text-[10px] text-[hsl(var(--muted-foreground))]">
-                Select persona or pass <code className="text-purple-400">?user=slug</code>
-              </p>
+              <div className="mt-2 flex items-center gap-2.5">
+                <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-purple-600 text-xs font-black text-white">
+                  {user.initials}
+                </div>
+                <div className="min-w-0">
+                  <div className="text-xs font-bold text-[hsl(var(--foreground))] truncate">
+                    {user.title} {user.name}
+                  </div>
+                  <div className="text-[11px] text-[hsl(var(--muted-foreground))] truncate">
+                    {user.labName}
+                  </div>
+                  <div className="text-[10px] text-purple-400 truncate">
+                    {user.institution}
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="space-y-1">
-              {personas.map((p) => {
-                const selected = p.slug === activePersona.slug;
+
+            {/* Quick Actions */}
+            <div className="space-y-1 mb-2 pb-2 border-b border-[hsl(var(--border))]">
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  openAuthModal();
+                }}
+                className="w-full flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition-colors text-left"
+              >
+                <UserPlus size={14} className="text-purple-500 shrink-0" />
+                <span>Create New Lab Account</span>
+              </button>
+              <Link
+                href="/settings"
+                onClick={() => setOpen(false)}
+                className="w-full flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition-colors text-left"
+              >
+                <Settings2 size={14} className="text-purple-500 shrink-0" />
+                <span>Lab & Profile Settings</span>
+              </Link>
+              {isAuthenticated ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false);
+                    logout();
+                  }}
+                  className="w-full flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-500/10 transition-colors text-left"
+                >
+                  <LogOut size={14} className="shrink-0" />
+                  <span>Sign Out of Account</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false);
+                    openAuthModal();
+                  }}
+                  className="w-full flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-purple-600 dark:text-purple-400 hover:bg-purple-500/10 transition-colors text-left"
+                >
+                  <LogIn size={14} className="shrink-0" />
+                  <span>Sign In to Institutional Account</span>
+                </button>
+              )}
+            </div>
+
+            {/* Switch Personas / Evaluation Tenants */}
+            <div className="px-2 py-1 text-[10px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+              Switch Research Workspace
+            </div>
+            <div className="space-y-1 max-h-48 overflow-y-auto">
+              {tenants.map((p) => {
+                const selected = p.tenantSlug === user.tenantSlug;
                 return (
                   <button
-                    key={p.slug}
+                    key={p.tenantSlug || p.id}
                     type="button"
                     onClick={() => {
-                      selectPersona(p.slug);
+                      selectPersona(p.tenantSlug || p.id);
                       setOpen(false);
                     }}
                     className={cx(
-                      'w-full flex items-start gap-2.5 rounded-lg p-2 text-left transition-colors',
+                      'w-full flex items-start gap-2 rounded-lg p-2 text-left transition-colors',
                       selected
                         ? 'bg-purple-500/15 text-purple-300 font-bold border border-purple-500/30'
                         : 'hover:bg-[hsl(var(--muted))] text-[hsl(var(--foreground))]'
                     )}
-                    data-testid={`option-persona-${p.slug}`}
                   >
                     <div
                       className={cx(
-                        'flex size-7 shrink-0 items-center justify-center rounded-full text-[10px] font-bold mt-0.5',
+                        'flex size-6 shrink-0 items-center justify-center rounded-full text-[9px] font-bold mt-0.5',
                         selected
                           ? 'bg-purple-600 text-white'
                           : 'bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]'
@@ -123,14 +203,11 @@ export function PersonaSwitcher() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between text-[11px] font-bold leading-tight">
-                        <span>{p.title}</span>
-                        {selected && <Check size={13} className="text-purple-400 shrink-0" />}
+                        <span>{p.title} {p.name}</span>
+                        {selected && <Check size={12} className="text-purple-400 shrink-0" />}
                       </div>
                       <div className="text-[10px] text-[hsl(var(--muted-foreground))] truncate">
-                        {p.lab}
-                      </div>
-                      <div className="text-[9px] text-[hsl(var(--muted-foreground)/.7)] truncate italic">
-                        {p.focus}
+                        {p.labName}
                       </div>
                     </div>
                   </button>
@@ -251,7 +328,16 @@ export function TopBar({ onMenu }: { onMenu: () => void }) {
 export function PageFrame({ children }: { children: ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const toggleSidebar = () => setSidebarOpen((current) => !current);
-  return <div className="min-h-[100dvh] bg-[hsl(var(--background))] text-[hsl(var(--foreground))]"><Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} /><div className="md:pl-[248px]"><TopBar onMenu={toggleSidebar} /><main className="mx-auto max-w-[1440px] px-5 py-7 md:px-9 md:py-9">{children}</main></div></div>;
+  return (
+    <div className="min-h-[100dvh] bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+      <AuthModal />
+      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <div className="md:pl-[248px]">
+        <TopBar onMenu={toggleSidebar} />
+        <main className="mx-auto max-w-[1440px] px-5 py-7 md:px-9 md:py-9">{children}</main>
+      </div>
+    </div>
+  );
 }
 
 export function SectionHeading({ eyebrow, title, description, action }: { eyebrow: string; title: string; description?: string; action?: ReactNode }) {

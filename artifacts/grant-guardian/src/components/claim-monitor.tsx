@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { AlertTriangle, CheckCircle2, ShieldAlert, Sparkles, ArrowRight, FileText, Check } from 'lucide-react';
+import { useAuth } from '@/context/auth-context';
 
 export interface GrantClaim {
   id: string;
@@ -71,6 +72,7 @@ const DEFAULT_CLAIMS: GrantClaim[] = [
 ];
 
 export function ClaimMonitor() {
+  const { user } = useAuth();
   const [claims, setClaims] = useState<GrantClaim[]>(DEFAULT_CLAIMS);
   const [selectedClaimId, setSelectedClaimId] = useState<string>('claim-2');
 
@@ -97,7 +99,7 @@ export function ClaimMonitor() {
               Grant Claim Dependency Map
             </h3>
             <span className="rounded bg-blue-500/15 px-2 py-0.5 text-[9px] gg-mono font-extrabold text-blue-700 dark:text-blue-300">
-              NSF CAREER Proposal
+              {user.proposalName}
             </span>
           </div>
           <p className="mt-1 text-[11px] text-[hsl(var(--muted-foreground))]">

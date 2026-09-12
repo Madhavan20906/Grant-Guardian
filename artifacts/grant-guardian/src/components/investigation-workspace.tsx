@@ -22,6 +22,7 @@ import {
   UserCheck,
 } from 'lucide-react';
 import type { Citation } from '@workspace/api-client-react';
+import { useAuth } from '@/context/auth-context';
 import { CitationGraph } from './citation-graph';
 import { BlastRadius } from './blast-radius';
 
@@ -38,6 +39,7 @@ export function InvestigationWorkspace({
   onJudgment,
   isSubmitting = false,
 }: InvestigationWorkspaceProps) {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'overview' | 'matrix' | 'graph' | 'agent' | 'decision'>('overview');
   const [notes, setNotes] = useState('');
   const [showWhyAlert, setShowWhyAlert] = useState(true);
@@ -160,7 +162,7 @@ export function InvestigationWorkspace({
                     Guardian detected a 2nd-order propagation relationship:
                   </p>
                   <div className="font-mono text-[10px] bg-[hsl(var(--card))] p-3 rounded-lg border border-amber-500/20 space-y-1">
-                    <div>Your proposal: NSF CAREER (Materials Lab)</div>
+                    <div>Your proposal: {user.proposalName} ({user.labName})</div>
                     <div className="text-amber-600 font-bold">  ↓ cites</div>
                     <div>Paper A: Lin et al., Cell Stem Cell (2015)</div>
                     <div className="text-red-600 font-bold">  ↓ relies on (Sec 3.2)</div>

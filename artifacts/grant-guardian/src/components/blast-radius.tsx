@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ShieldAlert, AlertTriangle, CheckCircle2, GitFork, HelpCircle, Layers, ArrowRight } from 'lucide-react';
+import { useAuth } from '@/context/auth-context';
 
 export interface AffectedItem {
   id: string;
@@ -11,16 +12,17 @@ export interface AffectedItem {
 }
 
 export function BlastRadius() {
+  const { user } = useAuth();
   const [showCounterfactual, setShowCounterfactual] = useState(false);
 
   const affectedItems: AffectedItem[] = [
     {
       id: 'prop-nsf',
-      name: 'NSF CAREER Proposal (Section 3.2)',
+      name: `${user.proposalName} (Section 3.2)`,
       type: 'grant',
       status: 'review_required',
       detail: 'Direct citation of Lin et al. (2015)',
-      rationale: 'Hypothesis in Aim 2 relies on tissue scaffold protocol cited from Lin et al. Human scientific read required.',
+      rationale: 'Hypothesis in Aim 2 relies on protocol cited from intermediate reference. Human scientific read required.',
     },
     {
       id: 'paper-x',

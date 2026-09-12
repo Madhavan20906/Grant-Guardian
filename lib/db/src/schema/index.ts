@@ -5,6 +5,15 @@ export const users = pgTable("users", {
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
   role: text("role").notNull().default("researcher"),
+  passwordHash: text("password_hash"),
+  salt: text("salt"),
+  title: text("title").notNull().default("Dr."),
+  labName: text("lab_name").notNull().default("Research Laboratory"),
+  institution: text("institution").notNull().default("University Research Institute"),
+  focus: text("focus").notNull().default("General Research & Grant Development"),
+  proposalName: text("proposal_name").notNull().default("Active Research Grant"),
+  initials: text("initials").notNull().default("PI"),
+  tenantSlug: text("tenant_slug"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
