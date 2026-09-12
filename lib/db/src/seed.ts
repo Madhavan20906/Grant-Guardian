@@ -50,6 +50,17 @@ export const demoPersonas: PersonaProfile[] = [
     initials: "SJ",
     focus: "Translational Medicine & COVID-19 Therapeutics",
   },
+  {
+    id: 4,
+    slug: "new-lab",
+    name: "New Researcher (Blank Lab)",
+    email: "new.pi@example.org",
+    role: "PI",
+    title: "First-Time PI (Blank State)",
+    lab: "Your Laboratory / New Proposal",
+    initials: "PI",
+    focus: "Custom Grant Literature & Deadlines",
+  },
 ];
 
 export const demoCitations = [

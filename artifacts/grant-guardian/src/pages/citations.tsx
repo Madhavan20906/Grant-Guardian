@@ -37,6 +37,7 @@ import {
 import { InvestigationWorkspace } from '@/components/investigation-workspace';
 import { CitationGraph } from '@/components/citation-graph';
 import { BlastRadius } from '@/components/blast-radius';
+import { OnboardingEmptyState } from '@/components/onboarding-empty-state';
 
 export default function Citations() {
   const query = useListCitations();
@@ -295,22 +296,9 @@ export default function Citations() {
             </div>
 
             {rawCitations.length === 0 ? (
-              <EmptyBlock
-                title="No citations tracked yet"
-                detail="Register your proposal's bibliography using the DOI input above or import BibTeX to start autonomous integrity monitoring."
-                action={
-                  <Button
-                    variant="primary"
-                    onClick={() => {
-                      const input = document.querySelector('input[placeholder*="DOI"]') as HTMLInputElement;
-                      input?.focus();
-                    }}
-                    testId="button-focus-import"
-                  >
-                    Register First DOI
-                  </Button>
-                }
-              />
+              <div className="p-4 md:p-6">
+                <OnboardingEmptyState />
+              </div>
             ) : citations.length ? (
               citations.map((citation: Citation) => (
                 <CitationRow key={citation.id} citation={citation} onSelect={() => setSelected(citation.id)} />

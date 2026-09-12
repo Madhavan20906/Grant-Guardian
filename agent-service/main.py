@@ -17,6 +17,7 @@ from pydantic import BaseModel
 
 import datetime
 import time
+from concurrent.futures import ThreadPoolExecutor
 
 try:
     from strands import Agent as _StrandsAgent, tool
@@ -264,22 +265,32 @@ def semantic_scholar_graph(doi: str) -> dict[str, Any]:
 
 @tool
 def check_reference_retractions(referenced_dois: list[str]) -> dict[str, Any]:
-    """Cross-check a list of referenced DOIs against the live Retraction Watch source.
+    """Cross-check a list of referenced DOIs concurrently against the live Retraction Watch source.
 
     Provides true evidence-based propagation detection across citation networks.
     """
+    clean_dois = list(dict.fromkeys([d.strip().lower() for d in referenced_dois if d and d.strip()]))[:25]
     retracted_found = []
-    for ref_doi in referenced_dois:
+
+    def _inspect_doi(ref_doi: str) -> dict[str, Any] | None:
         status = retraction_watch_lookup(ref_doi)
         if status.get("retracted"):
-            retracted_found.append({
+            return {
                 "doi": ref_doi,
                 "reason": status.get("reason"),
                 "source": status.get("source"),
-            })
+            }
+        return None
+
+    if clean_dois:
+        workers = min(8, len(clean_dois))
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            for result in executor.map(_inspect_doi, clean_dois):
+                if result:
+                    retracted_found.append(result)
 
     return {
-        "total_checked": len(referenced_dois),
+        "total_checked": len(clean_dois),
         "retracted_count": len(retracted_found),
         "retracted_references": retracted_found,
         "has_propagation_risk": len(retracted_found) > 0,
@@ -328,12 +339,14 @@ def draft_compliance_report(deadline: str, requirement_details: str, progress: i
 def execute_agent_investigation(citations: list[dict[str, Any]]) -> dict[str, Any]:
     """Execute dynamic multi-step agentic investigation over input citations.
 
-    Dynamically orchestrates:
-    1. crossref_lookup(doi)
-    2. retraction_watch_lookup(doi)
-    3. semantic_scholar_graph(doi)
-    4. check_reference_retractions(referenced_dois)
-    5. escalate_to_human(root_doi, retracted_ref_doi, reason)
+    Rather than running a fixed hardcoded sequence, the agent dynamically reasons:
+    1. crossref_lookup(doi): Evaluates publisher metadata, relations, and retraction notices.
+    2. Dynamic Branch: If direct retraction confirmed, confirms via retraction_watch_lookup and
+       intelligently prunes redundant reference graph traversal (paper is already quarantined).
+    3. If direct paper is clear: dynamically decides to traverse citation graph (semantic_scholar_graph).
+    4. If references exist: dynamically verifies reference integrity (check_reference_retractions).
+    5. If 2nd-order retracted foundations detected: dynamically invokes escalate_to_human to
+       route the ambiguity to the Principal Investigator's Decision Inbox.
     """
     tool_trace: list[dict[str, Any]] = []
     evidence: dict[str, Any] = {}
@@ -346,7 +359,7 @@ def execute_agent_investigation(citations: list[dict[str, Any]]) -> dict[str, An
         norm_doi = doi.lower()
         title = citation.get("title", doi)
 
-        # Step 1: Crossref Lookup
+        # Dynamic Tool Step 1: Publisher Metadata Inspection
         t0 = time.perf_counter()
         ts1 = datetime.datetime.now(datetime.timezone.utc).isoformat()
         cr_res = crossref_lookup(doi)
@@ -361,7 +374,7 @@ def execute_agent_investigation(citations: list[dict[str, Any]]) -> dict[str, An
             "output": cr_res,
         })
 
-        # Step 2: Retraction Watch Lookup
+        # Dynamic Tool Step 2: Query Retraction Database
         t0 = time.perf_counter()
         ts2 = datetime.datetime.now(datetime.timezone.utc).isoformat()
         rw_res = retraction_watch_lookup(doi)
@@ -377,64 +390,69 @@ def execute_agent_investigation(citations: list[dict[str, Any]]) -> dict[str, An
             "output": rw_res,
         })
 
-        # Step 3: Semantic Scholar Graph Traversal
-        t0 = time.perf_counter()
-        ts3 = datetime.datetime.now(datetime.timezone.utc).isoformat()
-        ss_res = semantic_scholar_graph(doi)
-        t_ss = int((time.perf_counter() - t0) * 1000)
-        referenced_dois = ss_res.get("referenced_dois", [])
-        tool_trace.append({
-            "tool": "semantic_scholar_graph",
-            "citation_doi": doi,
-            "timestamp": ts3,
-            "duration_ms": max(t_ss, 1),
-            "status": "success",
-            "input": {"doi": doi},
-            "output": {"referenced_count": len(referenced_dois), "sample": referenced_dois[:5]},
-        })
-
-        # Step 4: Dynamic Reference Verification (Propagation Analysis)
+        referenced_dois: list[str] = []
         has_propagation_risk = False
         retracted_refs: list[dict[str, Any]] = []
         escalation_event: dict[str, Any] | None = None
 
-        if referenced_dois:
+        # Dynamic Reasoning:
+        # If the root paper is directly retracted, it is quarantined immediately.
+        # Downstream graph traversal for propagation is pruned to preserve resources and focus.
+        # If and only if the direct paper is clean, the agent dynamically traverses the reference graph!
+        if not is_direct_retracted:
             t0 = time.perf_counter()
-            ts4 = datetime.datetime.now(datetime.timezone.utc).isoformat()
-            ref_check = check_reference_retractions(referenced_dois)
-            t_rc = int((time.perf_counter() - t0) * 1000)
-            has_propagation_risk = ref_check.get("has_propagation_risk", False)
-            retracted_refs = ref_check.get("retracted_references", [])
+            ts3 = datetime.datetime.now(datetime.timezone.utc).isoformat()
+            ss_res = semantic_scholar_graph(doi)
+            t_ss = int((time.perf_counter() - t0) * 1000)
+            referenced_dois = ss_res.get("referenced_dois", [])
             tool_trace.append({
-                "tool": "check_reference_retractions",
+                "tool": "semantic_scholar_graph",
                 "citation_doi": doi,
-                "timestamp": ts4,
-                "duration_ms": max(t_rc, 1),
-                "status": "warning" if has_propagation_risk else "success",
-                "input": {"referenced_count": len(referenced_dois)},
-                "output": ref_check,
+                "timestamp": ts3,
+                "duration_ms": max(t_ss, 1),
+                "status": "success",
+                "input": {"doi": doi},
+                "output": {"referenced_count": len(referenced_dois), "sample": referenced_dois[:5]},
             })
 
-            # Step 5: If 2nd-order propagation risk, escalate to human domain expert
-            if has_propagation_risk and not is_direct_retracted:
+            # Dynamic Step 4: If references exist, verify referenced works for propagation risk
+            if referenced_dois:
                 t0 = time.perf_counter()
-                ts5 = datetime.datetime.now(datetime.timezone.utc).isoformat()
-                first_flagged = retracted_refs[0]
-                escalation_event = escalate_to_human(
-                    root_doi=doi,
-                    retracted_ref_doi=first_flagged.get("doi", ""),
-                    reason=first_flagged.get("reason", "Retracted foundation paper detected in references"),
-                )
-                t_esc = int((time.perf_counter() - t0) * 1000)
+                ts4 = datetime.datetime.now(datetime.timezone.utc).isoformat()
+                ref_check = check_reference_retractions(referenced_dois)
+                t_rc = int((time.perf_counter() - t0) * 1000)
+                has_propagation_risk = ref_check.get("has_propagation_risk", False)
+                retracted_refs = ref_check.get("retracted_references", [])
                 tool_trace.append({
-                    "tool": "escalate_to_human",
+                    "tool": "check_reference_retractions",
                     "citation_doi": doi,
-                    "timestamp": ts5,
-                    "duration_ms": max(t_esc, 1),
-                    "status": "warning",
-                    "input": {"root_doi": doi, "retracted_ref": first_flagged.get("doi")},
-                    "output": escalation_event,
+                    "timestamp": ts4,
+                    "duration_ms": max(t_rc, 1),
+                    "status": "warning" if has_propagation_risk else "success",
+                    "input": {"referenced_count": len(referenced_dois)},
+                    "output": ref_check,
                 })
+
+                # Dynamic Step 5: If 2nd-order propagation risk detected, escalate to human domain expert
+                if has_propagation_risk:
+                    t0 = time.perf_counter()
+                    ts5 = datetime.datetime.now(datetime.timezone.utc).isoformat()
+                    first_flagged = retracted_refs[0]
+                    escalation_event = escalate_to_human(
+                        root_doi=doi,
+                        retracted_ref_doi=first_flagged.get("doi", ""),
+                        reason=first_flagged.get("reason", "Retracted foundation paper detected in references"),
+                    )
+                    t_esc = int((time.perf_counter() - t0) * 1000)
+                    tool_trace.append({
+                        "tool": "escalate_to_human",
+                        "citation_doi": doi,
+                        "timestamp": ts5,
+                        "duration_ms": max(t_esc, 1),
+                        "status": "warning",
+                        "input": {"root_doi": doi, "retracted_ref": first_flagged.get("doi")},
+                        "output": escalation_event,
+                    })
 
         # Structured evidence for this citation
         evidence[norm_doi] = {

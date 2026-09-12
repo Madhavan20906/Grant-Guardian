@@ -48,6 +48,17 @@ export const PERSONAS: Persona[] = [
     role: 'Associate Professor',
     workspace: 'NIH R21 Proposal (Genomics Lab)',
   },
+  {
+    id: 4,
+    slug: 'new-lab',
+    name: 'New Researcher',
+    title: 'First-Time PI (Blank State)',
+    lab: 'Your Laboratory / Blank Workspace',
+    initials: 'PI',
+    focus: 'Custom Grant Literature & Deadlines',
+    role: 'Principal Investigator',
+    workspace: 'New Grant Workspace (Unseeded)',
+  },
 ];
 
 interface PersonaContextValue {

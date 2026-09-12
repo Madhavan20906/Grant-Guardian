@@ -44,6 +44,7 @@ import { CitationGraph } from '@/components/citation-graph';
 import { BlastRadius } from '@/components/blast-radius';
 import { InvestigationWorkspace } from '@/components/investigation-workspace';
 import { ClaimMonitor } from '@/components/claim-monitor';
+import { OnboardingEmptyState } from '@/components/onboarding-empty-state';
 import { usePersona } from '@/context/persona-context';
 
 export default function Overview() {
@@ -105,6 +106,13 @@ export default function Overview() {
   const citations = Array.isArray(citationsQuery.data) ? citationsQuery.data : [];
   const deadlines = Array.isArray(deadlinesQuery.data) ? deadlinesQuery.data : [];
   const activity = Array.isArray(activityQuery.data) ? activityQuery.data : [];
+
+  const monitoredCount = citations.length;
+  const clearCount = citations.filter((c: Citation) => c.status === 'clear').length;
+  const retractedCount = citations.filter((c: Citation) => c.status === 'retracted').length;
+  const propagationCount = citations.filter(
+    (c: Citation) => c.status === 'propagation' || c.risk === 'high' || c.risk === 'medium'
+  ).length;
 
   const selectedCitation = citations.find((c: Citation) => c.id === selectedCitationId) || citations[1] || null;
 
@@ -249,7 +257,7 @@ export default function Overview() {
         {/* 2. FOUR CORE STAT STATUS BAR (What is safe? What requires me?) */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6 pt-5 border-t border-[hsl(var(--sidebar-border))]">
           <div className="rounded-xl bg-[hsl(var(--sidebar-accent)/.6)] p-3 border border-[hsl(var(--sidebar-border))]">
-            <div className="gg-mono text-[24px] font-extrabold text-white">48</div>
+            <div className="gg-mono text-[24px] font-extrabold text-white">{monitoredCount}</div>
             <div className="text-[10px] uppercase font-bold tracking-wider text-[hsl(var(--sidebar-foreground)/.7)]">
               MONITORED
             </div>
@@ -257,7 +265,7 @@ export default function Overview() {
           </div>
 
           <div className="rounded-xl bg-emerald-500/10 p-3 border border-emerald-500/20">
-            <div className="gg-mono text-[24px] font-extrabold text-emerald-400">46</div>
+            <div className="gg-mono text-[24px] font-extrabold text-emerald-400">{clearCount}</div>
             <div className="text-[10px] uppercase font-bold tracking-wider text-emerald-300">
               CLEAR
             </div>
@@ -265,7 +273,7 @@ export default function Overview() {
           </div>
 
           <div className="rounded-xl bg-red-500/15 p-3 border border-red-500/30">
-            <div className="gg-mono text-[24px] font-extrabold text-red-400">1</div>
+            <div className="gg-mono text-[24px] font-extrabold text-red-400">{retractedCount}</div>
             <div className="text-[10px] uppercase font-bold tracking-wider text-red-300">
               RETRACTED
             </div>
@@ -273,7 +281,7 @@ export default function Overview() {
           </div>
 
           <div className="rounded-xl bg-amber-500/15 p-3 border border-amber-500/30">
-            <div className="gg-mono text-[24px] font-extrabold text-amber-400">1</div>
+            <div className="gg-mono text-[24px] font-extrabold text-amber-400">{propagationCount}</div>
             <div className="text-[10px] uppercase font-bold tracking-wider text-amber-300">
               NEEDS YOUR REVIEW
             </div>
@@ -350,8 +358,12 @@ export default function Overview() {
         </div>
       )}
 
-      {/* 3. GUARDIAN MORNING BRIEF CARD (Expandable / Dismissable) */}
-      {showMorningBrief && (
+      {citations.length === 0 ? (
+        <OnboardingEmptyState />
+      ) : (
+        <>
+          {/* 3. GUARDIAN MORNING BRIEF CARD (Expandable / Dismissable) */}
+          {showMorningBrief && (
         <div className="rounded-xl border border-blue-500/30 bg-blue-500/5 p-5 shadow-sm space-y-3" data-testid="card-morning-brief">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -741,6 +753,8 @@ export default function Overview() {
           </div>
         </div>
       </section>
+      </>
+      )}
 
       {/* Investigation Drawer Modal */}
       {selectedCitation && selectedCitationId && (
