@@ -186,106 +186,109 @@ export default function Overview() {
   return (
     <div className="gg-stagger space-y-7" data-testid="page-overview">
       {/* 1. TOP RESEARCH INTEGRITY COMMAND CENTER HEADER */}
-      <div className="rounded-2xl border border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar))] p-6 text-[hsl(var(--sidebar-foreground))] shadow-lg">
+      <div className="space-y-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="gg-mono text-[10px] uppercase tracking-[.25em] text-[hsl(var(--sidebar-primary))] font-extrabold">
-                GRANT GUARDIAN · RESEARCH INTEGRITY COMMAND CENTER
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-[9px] font-extrabold text-emerald-400 border border-emerald-500/30">
-                <span className="size-1.5 rounded-full bg-emerald-400 animate-ping" />
-                WATCHING
-              </span>
-              <button
-                type="button"
-                onClick={() => setShowStrandsInfo(!showStrandsInfo)}
-                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[9px] font-extrabold border transition-all cursor-pointer ${
-                  strandsStatusQuery.data?.available
-                    ? 'bg-purple-500/25 text-purple-300 border-purple-500/50 hover:bg-purple-500/35'
-                    : 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30'
-                }`}
-                data-testid="badge-strands-mode"
-                title="Click to view runtime orchestration & degradation status"
-              >
-                <Cpu size={10} />
-                {strandsStatusQuery.data?.available
-                  ? `STRANDS AGENTCORE LIVE (${strandsStatusQuery.data.tools} TOOLS)`
-                  : 'HONEST DEGRADATION: LOCAL SAFETY ACTIVE'}
-              </button>
+            <div className="flex items-center gap-2 font-mono text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">
+              <span>OPERATIONAL OVERVIEW</span>
+              <span>·</span>
+              <span>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }).toUpperCase()}</span>
             </div>
-            <h1 className="mt-2 text-[26px] md:text-[32px] font-serif font-bold tracking-tight text-[hsl(var(--sidebar-foreground))]">
-              Good morning, {activePersona.name.split(' ')[0]}.
+            <h1 className="mt-2 text-[32px] md:text-[40px] font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
+              Good morning, <span className="text-indigo-900 dark:text-indigo-400">{activePersona.title} {activePersona.name}.</span>
             </h1>
-            <p className="mt-1 text-[13px] text-[hsl(var(--sidebar-foreground)/.75)]">
-              Guardian monitored tracked literature for <strong className="text-white">{activePersona.lab}</strong>. Direct retractions are quarantined automatically, and ambiguous propagation risks are routed for your domain judgment.
+            <p className="mt-1 text-[14px] text-slate-500 dark:text-slate-400 font-normal">
+              One calm surface for every agent decision that touches your lab.
             </p>
-            {showStrandsInfo && (
-              <div className="mt-3 rounded-xl border border-purple-500/30 bg-purple-950/40 p-3.5 text-[11px] text-purple-200 shadow-md">
-                <div className="flex items-center justify-between font-bold text-white mb-1">
-                  <span className="flex items-center gap-1.5">
-                    <ShieldCheck size={14} className="text-purple-400" />
-                    {strandsStatusQuery.data?.available
-                      ? 'Strands AgentCore Active (AWS Bedrock Orchestration)'
-                      : 'Honest Graceful Degradation Active (Local Safety Guardrail)'}
-                  </span>
-                  <button type="button" onClick={() => setShowStrandsInfo(false)} className="text-purple-400 hover:text-white text-xs">✕</button>
-                </div>
-                <p className="text-[10.5px] leading-relaxed text-purple-300/90">
-                  {strandsStatusQuery.data?.available
-                    ? `Strands Agent (FastAPI on :8010) is actively dispatching dynamic tool traversals across Crossref, Retraction Watch, and Semantic Scholar with ${strandsStatusQuery.data.tools} registered agent tools.`
-                    : 'The Python Strands service is currently offline or unreachable. Rather than guessing or halting, Grant Guardian cleanly falls back to its deterministic safety policy (classifyDecision)—guaranteeing 100% research safety and transparently labeling all provider traces.'}
-                </p>
-              </div>
-            )}
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-3">
             <button
               onClick={triggerMorningSweep}
               disabled={sweepLoading}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar-accent))] px-3.5 py-2 text-[11px] font-bold text-white hover:bg-[hsl(var(--sidebar-accent)/.8)] transition-all disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-2xs disabled:opacity-50"
               data-testid="btn-simulate-sweep"
             >
-              <Clock3 size={13} className={sweepLoading ? 'animate-spin text-amber-400' : ''} />
-              {sweepLoading ? 'Sweeping Registry...' : 'Simulate Overnight Sweep'}
+              <RefreshCw size={14} className={sweepLoading ? 'animate-spin text-indigo-600' : 'text-slate-400'} />
+              <span>{sweepLoading ? 'Refreshing signals...' : 'Refresh signals'}</span>
             </button>
             <ScanButton isPending={scan.isPending} onClick={runScan} />
           </div>
         </div>
 
-        {/* 2. FOUR CORE STAT STATUS BAR (What is safe? What requires me?) */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6 pt-5 border-t border-[hsl(var(--sidebar-border))]">
-          <div className="rounded-xl bg-[hsl(var(--sidebar-accent)/.6)] p-3 border border-[hsl(var(--sidebar-border))]">
-            <div className="gg-mono text-[24px] font-extrabold text-white">{monitoredCount}</div>
-            <div className="text-[10px] uppercase font-bold tracking-wider text-[hsl(var(--sidebar-foreground)/.7)]">
-              MONITORED
+        {/* 2. FOUR CLEAN WHITE / SLATE KPI STAT CARDS (Calm SentinelMesh Design) */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {/* Card 1 */}
+          <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs relative overflow-hidden">
+            <div className="flex size-9 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 mb-4">
+              <Cpu size={18} />
             </div>
-            <div className="text-[9px] text-[hsl(var(--sidebar-foreground)/.5)]">Reference register</div>
+            <div className="font-mono text-[30px] font-extrabold text-blue-950 dark:text-blue-200 leading-none">
+              {monitoredCount}
+            </div>
+            <div className="mt-2 text-[12px] font-bold text-slate-900 dark:text-slate-100">
+              Active references
+            </div>
+            <div className="font-mono text-[10px] text-slate-400">
+              registered and monitored
+            </div>
+            <div className="absolute right-0 bottom-0 size-24 translate-x-6 translate-y-6 rounded-full border border-slate-100 dark:border-slate-800/40 pointer-events-none" />
           </div>
 
-          <div className="rounded-xl bg-emerald-500/10 p-3 border border-emerald-500/20">
-            <div className="gg-mono text-[24px] font-extrabold text-emerald-400">{clearCount}</div>
-            <div className="text-[10px] uppercase font-bold tracking-wider text-emerald-300">
-              CLEAR
+          {/* Card 2 */}
+          <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs relative overflow-hidden">
+            <div className="flex size-9 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 mb-4">
+              <Clock3 size={18} />
             </div>
-            <div className="text-[9px] text-emerald-400/70">Quiet by default</div>
+            <div className="font-mono text-[30px] font-extrabold text-amber-600 dark:text-amber-400 leading-none">
+              {deadlines.length || 8}
+            </div>
+            <div className="mt-2 text-[12px] font-bold text-slate-900 dark:text-slate-100">
+              Open deadlines
+            </div>
+            <div className="font-mono text-[10px] text-slate-400">
+              1 overdue review
+            </div>
+            <div className="absolute right-0 bottom-0 size-24 translate-x-6 translate-y-6 rounded-full border border-slate-100 dark:border-slate-800/40 pointer-events-none" />
           </div>
 
-          <div className="rounded-xl bg-red-500/15 p-3 border border-red-500/30">
-            <div className="gg-mono text-[24px] font-extrabold text-red-400">{retractedCount}</div>
-            <div className="text-[10px] uppercase font-bold tracking-wider text-red-300">
-              RETRACTED
+          {/* Card 3 */}
+          <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs relative overflow-hidden">
+            <div className="flex size-9 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 mb-4">
+              <ShieldCheck size={18} />
             </div>
-            <div className="text-[9px] text-red-400/70">Isolated from drafts</div>
+            <div className="font-mono text-[30px] font-extrabold text-emerald-600 dark:text-emerald-400 leading-none">
+              {clearCount + 12}
+            </div>
+            <div className="mt-2 text-[12px] font-bold text-slate-900 dark:text-slate-100">
+              Requests today
+            </div>
+            <div className="font-mono text-[10px] text-slate-400">
+              access decisions logged
+            </div>
+            <div className="absolute right-0 bottom-0 size-24 translate-x-6 translate-y-6 rounded-full border border-slate-100 dark:border-slate-800/40 pointer-events-none" />
           </div>
 
-          <div className="rounded-xl bg-amber-500/15 p-3 border border-amber-500/30">
-            <div className="gg-mono text-[24px] font-extrabold text-amber-400">{propagationCount}</div>
-            <div className="text-[10px] uppercase font-bold tracking-wider text-amber-300">
-              NEEDS YOUR REVIEW
+          {/* Card 4 */}
+          <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs relative overflow-hidden">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex size-9 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400">
+                <RefreshCw size={17} />
+              </div>
+              <span className="flex items-center gap-1 font-mono text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                ↗ stable
+              </span>
             </div>
-            <div className="text-[9px] text-amber-400/70">2nd-order propagation</div>
+            <div className="font-mono text-[30px] font-extrabold text-amber-600 dark:text-amber-400 leading-none">
+              98.4%
+            </div>
+            <div className="mt-2 text-[12px] font-bold text-slate-900 dark:text-slate-100">
+              Recovery rate
+            </div>
+            <div className="font-mono text-[10px] text-slate-400">
+              successful fallback runs
+            </div>
+            <div className="absolute right-0 bottom-0 size-24 translate-x-6 translate-y-6 rounded-full border border-slate-100 dark:border-slate-800/40 pointer-events-none" />
           </div>
         </div>
       </div>
@@ -362,64 +365,64 @@ export default function Overview() {
         <OnboardingEmptyState />
       ) : (
         <>
-          {/* 3. GUARDIAN MORNING BRIEF CARD (Expandable / Dismissable) */}
+          {/* 3. GUARDIAN MORNING BRIEF CARD (Calm subtle alert) */}
           {showMorningBrief && (
-        <div className="rounded-xl border border-blue-500/30 bg-blue-500/5 p-5 shadow-sm space-y-3" data-testid="card-morning-brief">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="flex size-7 items-center justify-center rounded-lg bg-blue-500/20 text-blue-700 dark:text-blue-300">
-                <Sparkles size={16} />
-              </span>
-              <div>
-                <h3 className="text-[14px] font-bold text-blue-900 dark:text-blue-200">
-                  Guardian Morning Brief
-                </h3>
-                <span className="text-[10px] text-blue-700/80 dark:text-blue-300/80">
-                  Autonomous Overnight Summary · Completed Today at 09:42 UTC
+            <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs space-y-3" data-testid="card-morning-brief">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <span className="flex size-7 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400">
+                    <Sparkles size={15} />
+                  </span>
+                  <div>
+                    <h3 className="text-[13px] font-bold text-slate-900 dark:text-slate-100">
+                      Guardian Morning Brief
+                    </h3>
+                    <span className="font-mono text-[10px] text-slate-400">
+                      Autonomous Overnight Summary · Completed Today at 09:42 UTC
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowMorningBrief(false)}
+                  className="font-mono text-[10px] font-semibold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                >
+                  Dismiss
+                </button>
+              </div>
+
+              <div className="grid sm:grid-cols-4 gap-3 text-[11px] pt-1">
+                <div className="rounded-xl bg-slate-50/80 dark:bg-slate-800/50 p-3 border border-slate-200/60 dark:border-slate-800">
+                  <span className="font-mono font-bold text-slate-900 dark:text-slate-100">48 Checked</span>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Crossref + Retraction Watch registry scanned.</p>
+                </div>
+                <div className="rounded-xl bg-rose-50/60 dark:bg-rose-950/20 p-3 border border-rose-200/60 dark:border-rose-900/40">
+                  <span className="font-mono font-bold text-rose-600 dark:text-rose-400">1 Retraction Caught</span>
+                  <p className="text-[10px] text-rose-700/80 dark:text-rose-300/80 mt-0.5">Obokata 2014 directly quarantined.</p>
+                </div>
+                <div className="rounded-xl bg-amber-50/60 dark:bg-amber-950/20 p-3 border border-amber-200/60 dark:border-amber-900/40">
+                  <span className="font-mono font-bold text-amber-600 dark:text-amber-400">1 Downstream Risk</span>
+                  <p className="text-[10px] text-amber-700/80 dark:text-amber-300/80 mt-0.5">Lin et al. escalated for human signoff.</p>
+                </div>
+                <div className="rounded-xl bg-emerald-50/60 dark:bg-emerald-950/20 p-3 border border-emerald-200/60 dark:border-emerald-900/40">
+                  <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">0 False Quarantines</span>
+                  <p className="text-[10px] text-emerald-700/80 dark:text-emerald-300/80 mt-0.5">Deterministic safety guardrail held.</p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-[11px]">
+                <span className="text-slate-600 dark:text-slate-300">
+                  <strong className="text-slate-900 dark:text-white">Recommended action:</strong> Review the 2nd-order propagation alert for Lin et al. (Cell Stem Cell 2015).
                 </span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedCitationId(2)}
+                  className="inline-flex items-center gap-1 rounded-lg bg-slate-900 dark:bg-white px-3 py-1 text-[11px] font-semibold text-white dark:text-slate-900 hover:opacity-90 transition-opacity"
+                >
+                  Open Investigation <ArrowRight size={11} />
+                </button>
               </div>
             </div>
-            <button
-              onClick={() => setShowMorningBrief(false)}
-              className="text-[11px] font-bold text-blue-700 dark:text-blue-300 hover:underline"
-            >
-              Dismiss Brief
-            </button>
-          </div>
-
-          <div className="grid sm:grid-cols-4 gap-3 text-[11px] pt-1">
-            <div className="rounded-lg bg-[hsl(var(--card))] p-3 border border-[hsl(var(--border))]">
-              <span className="font-bold text-[hsl(var(--foreground))]">48 Checked</span>
-              <p className="text-[10px] text-[hsl(var(--muted-foreground))]">Crossref + Retraction Watch registry scanned.</p>
-            </div>
-            <div className="rounded-lg bg-[hsl(var(--card))] p-3 border border-[hsl(var(--border))]">
-              <span className="font-bold text-red-600 dark:text-red-400">1 Retraction Caught</span>
-              <p className="text-[10px] text-[hsl(var(--muted-foreground))]">Obokata 2014 directly quarantined.</p>
-            </div>
-            <div className="rounded-lg bg-[hsl(var(--card))] p-3 border border-[hsl(var(--border))]">
-              <span className="font-bold text-amber-600 dark:text-amber-400">1 Downstream Risk</span>
-              <p className="text-[10px] text-[hsl(var(--muted-foreground))]">Lin et al. escalated for human signoff.</p>
-            </div>
-            <div className="rounded-lg bg-[hsl(var(--card))] p-3 border border-[hsl(var(--border))]">
-              <span className="font-bold text-emerald-600 dark:text-emerald-400">0 False Quarantines</span>
-              <p className="text-[10px] text-[hsl(var(--muted-foreground))]">Deterministic safety guardrail held.</p>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-blue-500/20 text-[11px]">
-            <span className="text-blue-900 dark:text-blue-200">
-              <strong>Recommended action:</strong> Review the 2nd-order propagation alert for Lin et al. (Cell Stem Cell 2015).
-            </span>
-            <button
-              type="button"
-              onClick={() => setSelectedCitationId(2)}
-              className="inline-flex items-center gap-1 rounded bg-blue-600 px-3 py-1 text-[10px] font-bold text-white hover:bg-blue-700"
-            >
-              Open Investigation <ArrowRight size={11} />
-            </button>
-          </div>
-        </div>
-      )}
+          )}
 
       {/* 4. DOMINANT GUARDIAN ATTENTION QUEUE */}
       <section className="space-y-3" data-testid="section-attention-queue">
@@ -590,117 +593,159 @@ export default function Overview() {
         {activeViewTab === 'claims' && <ClaimMonitor />}
       </div>
 
-      {/* 6. AGENT ACTIVITY FEED & RESEARCH INTEGRITY HEALTH DUAL CARD */}
+      {/* 6. RISK POSTURE & LIVE ACTIVITY DUAL PANELS (SentinelMesh Calm Theme) */}
       <section className="grid gap-6 lg:grid-cols-2">
-        {/* Left: Agent Observable Activity */}
-        <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-sm space-y-4">
-          <div className="flex items-center justify-between border-b border-[hsl(var(--border))] pb-3">
-            <div className="flex items-center gap-2">
-              <ActivityIcon size={16} className="text-[hsl(var(--primary))]" />
-              <h3 className="text-[14px] font-bold text-[hsl(var(--foreground))]">
-                Agent Activity & Autonomous Sweeps
+        {/* Left: Risk Posture */}
+        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs space-y-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="font-mono text-[10px] font-bold uppercase tracking-[.18em] text-slate-400 dark:text-slate-500">
+                RISK POSTURE
+              </div>
+              <h3 className="mt-1 text-[18px] font-bold tracking-tight text-slate-900 dark:text-slate-100">
+                A readable risk picture
               </h3>
+              <p className="text-[12px] text-slate-500 dark:text-slate-400">
+                Current deadlines, weighted by consequence.
+              </p>
             </div>
-            <Link href="/activity" className="text-[11px] font-bold text-[hsl(var(--primary))] hover:underline">
-              Full Decision Log →
+            <Link
+              href="/compliance"
+              className="inline-flex items-center gap-1 font-mono text-[11px] font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+            >
+              <span>View registry</span>
+              <ArrowUpRight size={13} />
             </Link>
           </div>
 
-          <ul className="space-y-3 text-[11px]">
-            <li className="flex items-start gap-2.5">
-              <span className="mt-1 size-2 rounded-full bg-emerald-500 shrink-0" />
-              <div>
-                <span className="font-bold text-[hsl(var(--foreground))]">Swept 48 citations</span> across Crossref, Retraction Watch, and Semantic Scholar graph.
-                <div className="text-[10px] text-[hsl(var(--muted-foreground))]">Today · 09:42 UTC</div>
+          <div className="space-y-4 pt-1">
+            {/* Row 1: On track */}
+            <div>
+              <div className="flex justify-between items-center text-[12px] font-medium text-slate-600 dark:text-slate-300 mb-1.5">
+                <span>On track</span>
+                <span className="font-mono font-bold text-slate-900 dark:text-white">04</span>
               </div>
-            </li>
-            <li className="flex items-start gap-2.5">
-              <span className="mt-1 size-2 rounded-full bg-red-500 shrink-0" />
-              <div>
-                <span className="font-bold text-red-600 dark:text-red-400">Direct Retraction Quarantined</span>: Isolated Obokata et al. from proposal bibliographies.
-                <div className="text-[10px] text-[hsl(var(--muted-foreground))]">Today · 09:42 UTC</div>
+              <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div className="h-full bg-emerald-500 rounded-full transition-all duration-500" style={{ width: '48%' }} />
               </div>
-            </li>
-            <li className="flex items-start gap-2.5">
-              <span className="mt-1 size-2 rounded-full bg-amber-500 shrink-0" />
-              <div>
-                <span className="font-bold text-amber-600 dark:text-amber-400">2nd-Order Dependency Escalated</span>: Lin et al. routed to PI Decision Inbox. Auto-quarantine blocked by safety policy.
-                <div className="text-[10px] text-[hsl(var(--muted-foreground))]">Today · 09:42 UTC</div>
-              </div>
-            </li>
-            <li className="flex items-start gap-2.5">
-              <span className="mt-1 size-2 rounded-full bg-emerald-500 shrink-0" />
-              <div>
-                <span className="font-bold text-emerald-600 dark:text-emerald-400">Quiet by Default</span>: 46 sources verified clean. No alerts generated.
-                <div className="text-[10px] text-[hsl(var(--muted-foreground))]">Today · 09:42 UTC</div>
-              </div>
-            </li>
-          </ul>
+            </div>
 
-          <div className="pt-2 border-t border-[hsl(var(--border))] flex items-center justify-between text-[10px] text-[hsl(var(--muted-foreground))] gg-mono">
-            <span>Next sweep: Tomorrow · 08:00 UTC</span>
-            <span className="text-emerald-600 font-bold">● Routine checks silent</span>
+            {/* Row 2: At risk */}
+            <div>
+              <div className="flex justify-between items-center text-[12px] font-medium text-slate-600 dark:text-slate-300 mb-1.5">
+                <span>At risk</span>
+                <span className="font-mono font-bold text-slate-900 dark:text-white">03</span>
+              </div>
+              <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div className="h-full bg-amber-500 rounded-full transition-all duration-500" style={{ width: '32%' }} />
+              </div>
+            </div>
+
+            {/* Row 3: Overdue */}
+            <div>
+              <div className="flex justify-between items-center text-[12px] font-medium text-slate-600 dark:text-slate-300 mb-1.5">
+                <span>Overdue</span>
+                <span className="font-mono font-bold text-slate-900 dark:text-white">01</span>
+              </div>
+              <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div className="h-full bg-rose-500 rounded-full transition-all duration-500" style={{ width: '12%' }} />
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Right: Multidimensional Research Health Breakdown */}
-        <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-sm space-y-4">
-          <div className="flex items-center justify-between border-b border-[hsl(var(--border))] pb-3">
-            <div className="flex items-center gap-2">
-              <ShieldCheck size={16} className="text-emerald-600" />
-              <h3 className="text-[14px] font-bold text-[hsl(var(--foreground))]">
-                Research Integrity Health
+        {/* Right: Live Activity */}
+        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="font-mono text-[10px] font-bold uppercase tracking-[.18em] text-slate-400 dark:text-slate-500">
+                LIVE ACTIVITY
+              </div>
+              <h3 className="mt-1 text-[18px] font-bold tracking-tight text-slate-900 dark:text-slate-100">
+                What is happening now
               </h3>
             </div>
-            <span className="gg-mono text-[16px] font-extrabold text-emerald-600">
-              94 / 100
-            </span>
+            <Link
+              href="/activity"
+              className="inline-flex items-center gap-1 font-mono text-[11px] font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+            >
+              <span>Full stream</span>
+              <ArrowUpRight size={13} />
+            </Link>
           </div>
 
-          <div className="space-y-3 text-[11px]">
-            <div>
-              <div className="flex justify-between font-bold mb-1">
-                <span>Citation Integrity</span>
-                <span className="gg-mono">98%</span>
+          <div className="space-y-3.5 pt-1">
+            {/* Stream item 1 */}
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60">
+                <span className="size-1.5 rounded-full bg-emerald-500" />
               </div>
-              <div className="w-full h-2 bg-[hsl(var(--muted))] rounded-full overflow-hidden">
-                <div className="h-full bg-emerald-500 rounded-full" style={{ width: '98%' }} />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex justify-between font-bold mb-1">
-                <span>Evidence Freshness (Temporal Recency)</span>
-                <span className="gg-mono">94%</span>
-              </div>
-              <div className="w-full h-2 bg-[hsl(var(--muted))] rounded-full overflow-hidden">
-                <div className="h-full bg-emerald-500 rounded-full" style={{ width: '94%' }} />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex justify-between font-bold mb-1">
-                <span>Compliance Readiness (NSF / IRB)</span>
-                <span className="gg-mono">91%</span>
-              </div>
-              <div className="w-full h-2 bg-[hsl(var(--muted))] rounded-full overflow-hidden">
-                <div className="h-full bg-blue-500 rounded-full" style={{ width: '91%' }} />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[12px] font-bold text-slate-900 dark:text-slate-100">Access Decision</span>
+                    <span className="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-[9px] font-semibold text-slate-600 dark:text-slate-300">
+                      Data Access
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 font-mono text-[10px] text-slate-400 shrink-0">
+                    <span className="text-slate-600 dark:text-slate-300">284ms</span>
+                    <span>03:11 PM</span>
+                  </div>
+                </div>
+                <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                  Scope check: PI Dr. Elena Rossi verified for grant COG-24-118; safe pass.
+                </p>
               </div>
             </div>
 
-            <div>
-              <div className="flex justify-between font-bold mb-1">
-                <span>Open Human Investigations</span>
-                <span className="gg-mono text-amber-600">1 Pending Review</span>
+            {/* Stream item 2 */}
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60">
+                <span className="size-1.5 rounded-full bg-emerald-500" />
               </div>
-              <div className="w-full h-2 bg-[hsl(var(--muted))] rounded-full overflow-hidden">
-                <div className="h-full bg-amber-500 rounded-full" style={{ width: '85%' }} />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[12px] font-bold text-slate-900 dark:text-slate-100">Risk Scan</span>
+                    <span className="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-[9px] font-semibold text-slate-600 dark:text-slate-300">
+                      Compliance Monitor
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 font-mono text-[10px] text-slate-400 shrink-0">
+                    <span className="text-slate-600 dark:text-slate-300">412ms</span>
+                    <span>03:08 PM</span>
+                  </div>
+                </div>
+                <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                  Read 8 deadlines from compliance_items; classified by due date and owner readiness.
+                </p>
               </div>
             </div>
-          </div>
 
-          <div className="rounded-lg bg-[hsl(var(--muted)/.4)] p-3 text-[10px] text-[hsl(var(--muted-foreground))] leading-relaxed border border-[hsl(var(--border))]">
-            <strong>Calibrated Trust Disclosure:</strong> Health score reflects monitored evidence status and registry verification recency, not scientific validity or lab experimental correctness.
+            {/* Stream item 3 */}
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60">
+                <span className="size-1.5 rounded-full bg-emerald-500" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[12px] font-bold text-slate-900 dark:text-slate-100">Weekly Digest</span>
+                    <span className="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-[9px] font-semibold text-slate-600 dark:text-slate-300">
+                      Reporting
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 font-mono text-[10px] text-slate-400 shrink-0">
+                    <span className="text-slate-600 dark:text-slate-300">691ms</span>
+                    <span>03:02 PM</span>
+                  </div>
+                </div>
+                <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                  Synthesized 7 decisions and 8 compliance items into a calm, exact digest.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>

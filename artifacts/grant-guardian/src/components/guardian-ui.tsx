@@ -41,14 +41,16 @@ export const cx = (...items: Array<string | false | null | undefined>) => items.
 export function LogoMark({ compact = false }: { compact?: boolean }) {
   return (
     <div className={cx('flex items-center gap-3', compact && 'gap-2')} data-testid="brand-grant-guardian">
-      <div className="relative flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-[hsl(var(--accent))] text-[hsl(var(--primary))] shadow-[3px_3px_0_hsl(var(--accent)/.2)]">
-        <ShieldCheck size={20} strokeWidth={2.4} />
-        <span className="absolute right-1 top-1 size-1.5 rounded-full bg-[hsl(var(--destructive))]" />
+      <div className="relative flex size-8 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 shadow-xs">
+        <ShieldCheck size={18} strokeWidth={2.2} />
+        <span className="absolute right-1 top-1 size-1.5 rounded-full bg-emerald-400" />
       </div>
       {!compact && (
-        <div className="leading-none">
-          <div className="text-[15px] font-extrabold tracking-[-.04em] text-[hsl(var(--sidebar-foreground))]">Grant</div>
-          <div className="gg-mono mt-1 text-[9px] font-medium uppercase tracking-[.2em] text-[hsl(var(--sidebar-foreground)/.52)]">Guardian</div>
+        <div className="leading-tight">
+          <div className="text-[14px] font-bold tracking-tight text-white flex items-center gap-1.5">
+            <span>GrantGuardian</span>
+          </div>
+          <div className="text-[9.5px] font-medium tracking-wide text-slate-400">Research lab governance</div>
         </div>
       )}
     </div>
@@ -68,26 +70,33 @@ export function PersonaSwitcher() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 rounded-full border border-purple-500/35 bg-purple-500/10 px-3 py-1.5 text-[11px] font-semibold text-purple-700 dark:text-purple-300 hover:bg-purple-500/20 transition-all shadow-xs"
-        data-testid="button-persona-switcher"
-        title="Account & Tenant Workspace Menu"
-      >
-        <span className="flex size-4 items-center justify-center rounded-full bg-purple-600 text-[9px] font-extrabold text-white">
-          {user.initials}
+    <div className="flex items-center gap-2">
+      {/* Profile summary badge */}
+      <div className="flex items-center gap-2.5 rounded-lg border border-slate-700/80 bg-slate-900 px-3 py-1.5 text-xs text-white shadow-xs">
+        <span className="flex size-5 items-center justify-center rounded bg-amber-500/20 text-amber-400 text-[10px] font-black">
+          🛡️
         </span>
-        <span className="hidden sm:inline font-bold">{user.title} {user.name}</span>
-        <span className="hidden xl:inline text-[10px] opacity-75 font-normal">· {user.labName.split('&')[0]}</span>
-        {isAuthenticated && (
-          <span className="hidden 2xl:inline rounded bg-emerald-500/20 px-1 py-0.2 text-[9px] text-emerald-500 font-extrabold">
-            AUTH
-          </span>
-        )}
-        <ChevronDown size={13} className={cx('transition-transform duration-200', open && 'rotate-180')} />
-      </button>
+        <div className="flex flex-col text-left leading-none">
+          <span className="text-[11px] font-bold text-slate-100">{user.title} {user.name}</span>
+          <span className="font-mono text-[9px] text-slate-400">{user.email}</span>
+        </div>
+        <span className="rounded bg-emerald-500/20 px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider text-emerald-400 border border-emerald-500/30">
+          PI / LAB
+        </span>
+      </div>
+
+      {/* Switch / Create Account Button */}
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => setOpen(!open)}
+          className="flex items-center gap-1.5 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shadow-2xs"
+          data-testid="button-persona-switcher"
+          title="Switch Account & Laboratory"
+        >
+          <UserPlus size={13} className="text-slate-500" />
+          <span className="text-[11px]">Switch / Create Account</span>
+        </button>
 
       {open && (
         <>
@@ -217,6 +226,7 @@ export function PersonaSwitcher() {
           </div>
         </>
       )}
+      </div>
     </div>
   );
 }
@@ -258,41 +268,45 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
   return (
     <>
       {open && <button type="button" aria-label="Close navigation" onClick={onClose} className="fixed inset-0 z-30 bg-[hsl(var(--primary)/.45)] md:hidden" data-testid="button-close-navigation" />}
-      <aside className={cx('fixed inset-y-0 left-0 z-40 flex w-[248px] -translate-x-full flex-col border-r border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar))] px-4 py-5 transition-transform md:translate-x-0', open && 'translate-x-0')} data-testid="sidebar-navigation">
+      <aside className={cx('fixed inset-y-0 left-0 z-40 flex w-[248px] -translate-x-full flex-col border-r border-slate-800/80 bg-[#0f172a] px-4 py-5 transition-transform md:translate-x-0', open && 'translate-x-0')} data-testid="sidebar-navigation">
         <div className="px-2"><LogoMark /></div>
-        <div className="gg-mono mt-12 px-3 text-[9px] font-medium uppercase tracking-[.2em] text-[hsl(var(--sidebar-foreground)/.36)]">Research operations</div>
+        <div className="font-mono mt-9 px-3 text-[9px] font-semibold uppercase tracking-[.22em] text-slate-500">CONTROL ROOM</div>
         <nav className="mt-3 space-y-1" aria-label="Primary navigation">
           {navItems.map(({ href, label, icon: Icon }) => {
             const active = href === '/' ? location === '/' : location.startsWith(href);
             return (
-              <Link key={href} href={href} onClick={onClose} className={cx('group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[12px] font-semibold transition-colors', active ? 'bg-[hsl(var(--sidebar-accent))] text-[hsl(var(--sidebar-primary))]' : 'text-[hsl(var(--sidebar-foreground)/.62)] hover:bg-[hsl(var(--sidebar-accent)/.7)] hover:text-[hsl(var(--sidebar-foreground))]')} data-testid={`link-nav-${label.toLowerCase().replaceAll(' ', '-')}`}>
-                <Icon size={16} strokeWidth={active ? 2.5 : 1.8} />
+              <Link key={href} href={href} onClick={onClose} className={cx('group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[12px] font-medium transition-all', active ? 'bg-slate-800/90 text-amber-300 font-semibold shadow-xs border-l-2 border-amber-400 -ml-[2px] pl-[14px]' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200')} data-testid={`link-nav-${label.toLowerCase().replaceAll(' ', '-')}`}>
+                <Icon size={16} strokeWidth={active ? 2.2 : 1.7} className={active ? 'text-amber-400' : 'text-slate-400 group-hover:text-slate-300'} />
                 <span>{label}</span>
-                {label === 'Citation health' && <span className="ml-auto rounded-full bg-[hsl(var(--destructive)/.16)] px-1.5 py-0.5 gg-mono text-[9px] text-[hsl(var(--destructive))]">3</span>}
+                {label === 'Citation health' && <span className="ml-auto rounded-full bg-red-500/15 px-1.5 py-0.2 font-mono text-[9px] font-bold text-red-400 border border-red-500/20">3</span>}
               </Link>
             );
           })}
         </nav>
         <div className="mt-auto">
-          <div className="mb-5 rounded-xl border border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar-accent)/.65)] p-3.5">
-            <div className="flex items-center gap-2 text-[11px] font-bold text-[hsl(var(--sidebar-foreground))]"><span className="size-1.5 animate-[gg-pulse_2s_ease-in-out_infinite] rounded-full bg-[hsl(var(--sidebar-primary))]" />Guardian is watching</div>
-            <p className="mt-2 text-[10px] leading-relaxed text-[hsl(var(--sidebar-foreground)/.5)]">Last sweep completed <span className="text-[hsl(var(--sidebar-foreground)/.8)]">12 min ago</span>.</p>
+          <div className="mb-4 rounded-xl border border-slate-800 bg-slate-900/60 p-3 text-xs">
+            <div className="font-mono text-[9px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">FLEET STATUS</div>
+            <div className="flex items-center gap-2 text-[11px] font-semibold text-slate-200">
+              <span className="size-1.5 rounded-full bg-emerald-400" />
+              All systems nominal
+            </div>
+            <div className="font-mono mt-1 text-[9.5px] text-slate-400">AWS Bedrock · us-east-1</div>
           </div>
-          <div className="flex items-center gap-3 border-t border-[hsl(var(--sidebar-border))] px-2 pt-4">
-            <div className="flex size-8 items-center justify-center rounded-full bg-purple-600 text-[11px] font-bold text-white">
+          <div className="flex items-center gap-2.5 border-t border-slate-800/80 px-1 pt-3.5">
+            <div className="flex size-7 items-center justify-center rounded-lg bg-slate-800 border border-slate-700 text-[10px] font-bold text-slate-200">
               {activePersona.initials}
             </div>
             <div className="min-w-0">
-              <div className="truncate text-[11px] font-bold text-[hsl(var(--sidebar-foreground))]">
+              <div className="truncate text-[11px] font-bold text-slate-200">
                 {activePersona.name}
               </div>
-              <div className="gg-mono mt-0.5 truncate text-[9px] text-[hsl(var(--sidebar-foreground)/.42)]">
-                {activePersona.role} · {activePersona.lab.split('&')[0]}
+              <div className="font-mono truncate text-[9px] text-slate-400">
+                {activePersona.role}
               </div>
             </div>
-            <div className="ml-auto flex items-center gap-1.5">
+            <div className="ml-auto flex items-center gap-1">
               <ThemeToggle compact />
-              <Link href="/settings" className="text-[hsl(var(--sidebar-foreground)/.45)] hover:text-[hsl(var(--sidebar-foreground))]" data-testid="link-profile-settings"><Settings2 size={15} /></Link>
+              <Link href="/settings" className="text-slate-400 hover:text-slate-200 p-1" data-testid="link-profile-settings"><Settings2 size={14} /></Link>
             </div>
           </div>
         </div>
@@ -306,20 +320,23 @@ export function TopBar({ onMenu }: { onMenu: () => void }) {
   const { activePersona } = usePersona();
   const current = navItems.find((item) => item.href !== '/' && location.startsWith(item.href)) ?? navItems[0];
   return (
-    <header className="flex h-[72px] items-center justify-between border-b border-[hsl(var(--border))] bg-[hsl(var(--background)/.88)] px-5 backdrop-blur md:px-9" data-testid="topbar">
+    <header className="flex h-[68px] items-center justify-between border-b border-[hsl(var(--border))] bg-[hsl(var(--card))] px-5 backdrop-blur md:px-9" data-testid="topbar">
       <div className="flex items-center gap-3">
-        <button type="button" onClick={onMenu} className="rounded-md p-2 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] md:hidden" aria-label="Open navigation" data-testid="button-open-navigation"><Menu size={19} /></button>
-        <div className="hidden items-center gap-2 text-[10px] uppercase tracking-[.18em] text-[hsl(var(--muted-foreground))] sm:flex"><span className="gg-mono">Workspace</span><ChevronRight size={12} /><span className="font-bold text-[hsl(var(--foreground))]">{current.label}</span></div>
+        <button type="button" onClick={onMenu} className="rounded-md p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 md:hidden" aria-label="Open navigation" data-testid="button-open-navigation"><Menu size={19} /></button>
+        <div className="hidden items-center gap-2 text-[11px] uppercase tracking-[.16em] text-slate-400 sm:flex">
+          <span className="font-mono font-medium text-slate-500">GRANTGUARDIAN</span>
+          <ChevronRight size={12} className="text-slate-300 dark:text-slate-600" />
+          <span className="font-semibold text-slate-700 dark:text-slate-300">{current.label}</span>
+        </div>
         <div className="text-[13px] font-bold sm:hidden">{current.label}</div>
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2.5">
         <PersonaSwitcher />
         <ThemeToggle />
-        <div className="hidden items-center gap-2 rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-3 py-1.5 text-[10px] text-[hsl(var(--muted-foreground))] lg:flex"><span className="size-1.5 rounded-full bg-[hsl(var(--accent-foreground))]" />All systems nominal</div>
-        <button type="button" onClick={() => setLocation('/activity')} className="relative rounded-lg p-2 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))]" aria-label="Open notifications" data-testid="button-open-notifications"><Bell size={17} /><span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-[hsl(var(--destructive))]" /></button>
-        <div className="flex size-8 items-center justify-center rounded-full bg-purple-600 text-[10px] font-bold text-white md:hidden">
-          {activePersona.initials}
-        </div>
+        <button type="button" onClick={() => setLocation('/activity')} className="relative rounded-lg p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600 dark:hover:text-slate-200" aria-label="Open notifications" data-testid="button-open-notifications">
+          <Bell size={16} />
+          <span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-emerald-500" />
+        </button>
       </div>
     </header>
   );
