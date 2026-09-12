@@ -32,8 +32,9 @@ COPY artifacts/ ./artifacts/
 COPY agent-service/ ./agent-service/
 
 # 4. Install Node dependencies and build all packages (libraries, frontend, and API server)
+ENV NODE_OPTIONS="--max-old-space-size=2048"
 RUN pnpm install --frozen-lockfile || pnpm install
-RUN pnpm run build
+RUN pnpm run typecheck:libs && pnpm -C artifacts/grant-guardian build && pnpm -C artifacts/api-server build
 
 # 5. Copy startup script
 COPY start.sh ./
