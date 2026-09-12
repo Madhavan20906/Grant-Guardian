@@ -386,7 +386,60 @@ class TestStrandsAgentService(unittest.TestCase):
             self.assertIsInstance(call_args[0], StrandsAgent)
             self.assertIn("10.1038/nature13358", call_args[1])
 
+    def test_batch_scan_preserves_cross_citation_memory(self):
+        """Verify single agent instance retains cross-citation memory across batch scans."""
+        orig_ss = semantic_scholar_graph._tool_func
+        try:
+            semantic_scholar_graph._tool_func = lambda doi: {
+                "doi": doi,
+                "referenced_dois": ["10.1038/nature13358"],
+                "total_references": 1,
+                "provider_status": "healthy",
+            }
+            # Batch scan: Citation 1 is directly retracted; Citation 2 references Citation 1
+            payload = {
+                "citations": [
+                    {"doi": "10.1038/nature13358", "title": "STAP Stem Cell Paper"},
+                    {"doi": "10.1016/j.stem.2015.01.002", "title": "Downstream Study Citing STAP"},
+                ]
+            }
+            response = client.post("/scan", json=payload)
+            self.assertEqual(response.status_code, 200)
+            data = response.json()
+            # Verify result summary contains cross-citation memory alert
+            self.assertIn("Cross-citation memory alert", data["result"])
+            self.assertIn("10.1038/nature13358", data["result"])
+        finally:
+            semantic_scholar_graph._tool_func = orig_ss
+
+    def test_tool_docstrings_enforce_negative_scoping(self):
+        """Verify tool docstrings contain explicit negative constraints to prevent mis-selection."""
+        tools = [
+            crossref_lookup,
+            retraction_watch_lookup,
+            semantic_scholar_graph,
+            check_reference_retractions,
+            escalate_to_human,
+            draft_compliance_report,
+        ]
+        for t in tools:
+            doc = t.__doc__ or ""
+            name = t.tool_name if hasattr(t, "tool_name") else t.__name__
+            if name == "crossref_lookup":
+                self.assertIn("NEGATIVE CONSTRAINT", doc)
+            elif name == "retraction_watch_lookup":
+                self.assertIn("NEGATIVE CONSTRAINT", doc)
+            elif name == "semantic_scholar_graph":
+                self.assertIn("STRICT CONSTRAINT", doc)
+            elif name == "check_reference_retractions":
+                self.assertIn("NEGATIVE CONSTRAINT", doc)
+            elif name == "escalate_to_human":
+                self.assertIn("NEGATIVE CONSTRAINT", doc)
+            elif name == "draft_compliance_report":
+                self.assertIn("STRICT NEGATIVE CONSTRAINT", doc)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
+
 
