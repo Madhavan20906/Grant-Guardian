@@ -119,14 +119,14 @@ export default function Settings() {
             <div className="border-b border-[hsl(var(--border))] px-5 py-4 flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2">
-                  <Building2 size={16} className="text-purple-500" />
+                  <Building2 size={16} className="text-slate-700 dark:text-slate-300" />
                   <h2 className="text-[13px] font-bold">Research Laboratory & Tenant Profile</h2>
                 </div>
                 <p className="mt-1 text-[10px] text-[hsl(var(--muted-foreground))]">
                   All proposal labels, compliance monitors, and citation blast radii dynamically adapt to this identity.
                 </p>
               </div>
-              <span className="rounded-full border border-purple-500/30 bg-purple-500/10 px-2.5 py-0.5 text-[10px] font-extrabold uppercase text-purple-400">
+              <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-extrabold uppercase text-emerald-600 dark:text-emerald-400 font-mono">
                 {isAuthenticated ? 'Authenticated Account' : 'Evaluation Mode'}
               </span>
             </div>

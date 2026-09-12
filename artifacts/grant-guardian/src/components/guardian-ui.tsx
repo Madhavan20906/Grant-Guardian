@@ -101,29 +101,29 @@ export function PersonaSwitcher() {
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full mt-2 z-50 w-80 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+          <div className="absolute right-0 top-full mt-2 z-50 w-80 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
             {/* Active Tenant Profile Summary */}
-            <div className="rounded-xl border border-purple-500/30 bg-purple-500/10 p-3 mb-2.5">
+            <div className="rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-3 mb-2.5">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-extrabold uppercase tracking-wider text-purple-400">
-                  Active Tenant Workspace
+                <span className="font-mono text-[9px] font-bold uppercase tracking-wider text-slate-500">
+                  Active Workspace
                 </span>
-                <span className="rounded-full bg-purple-500/20 px-1.5 py-0.5 text-[9px] font-bold text-purple-300">
+                <span className="font-mono rounded-md bg-emerald-500/15 border border-emerald-500/20 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-600 dark:text-emerald-400">
                   {isAuthenticated ? 'Authenticated' : 'Sandbox Mode'}
                 </span>
               </div>
-              <div className="mt-2 flex items-center gap-2.5">
-                <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-purple-600 text-xs font-black text-white">
+              <div className="mt-2.5 flex items-center gap-2.5">
+                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-slate-900 dark:bg-white text-xs font-black text-white dark:text-slate-900">
                   {user.initials}
                 </div>
                 <div className="min-w-0">
-                  <div className="text-xs font-bold text-[hsl(var(--foreground))] truncate">
+                  <div className="text-[12px] font-bold text-slate-900 dark:text-white truncate">
                     {user.title} {user.name}
                   </div>
-                  <div className="text-[11px] text-[hsl(var(--muted-foreground))] truncate">
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
                     {user.labName}
                   </div>
-                  <div className="text-[10px] text-purple-400 truncate">
+                  <div className="font-mono text-[9.5px] text-slate-400 dark:text-slate-500 truncate">
                     {user.institution}
                   </div>
                 </div>
@@ -131,24 +131,24 @@ export function PersonaSwitcher() {
             </div>
 
             {/* Quick Actions */}
-            <div className="space-y-1 mb-2 pb-2 border-b border-[hsl(var(--border))]">
+            <div className="space-y-1 mb-2 pb-2 border-b border-slate-100 dark:border-slate-800">
               <button
                 type="button"
                 onClick={() => {
                   setOpen(false);
                   openAuthModal();
                 }}
-                className="w-full flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition-colors text-left"
+                className="w-full flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left"
               >
-                <UserPlus size={14} className="text-purple-500 shrink-0" />
+                <UserPlus size={14} className="text-slate-500 shrink-0" />
                 <span>Create New Lab Account</span>
               </button>
               <Link
                 href="/settings"
                 onClick={() => setOpen(false)}
-                className="w-full flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition-colors text-left"
+                className="w-full flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left"
               >
-                <Settings2 size={14} className="text-purple-500 shrink-0" />
+                <Settings2 size={14} className="text-slate-500 shrink-0" />
                 <span>Lab & Profile Settings</span>
               </Link>
               {isAuthenticated ? (
@@ -158,7 +158,7 @@ export function PersonaSwitcher() {
                     setOpen(false);
                     logout();
                   }}
-                  className="w-full flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-500/10 transition-colors text-left"
+                  className="w-full flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors text-left"
                 >
                   <LogOut size={14} className="shrink-0" />
                   <span>Sign Out of Account</span>
@@ -170,16 +170,16 @@ export function PersonaSwitcher() {
                     setOpen(false);
                     openAuthModal();
                   }}
-                  className="w-full flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-purple-600 dark:text-purple-400 hover:bg-purple-500/10 transition-colors text-left"
+                  className="w-full flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left"
                 >
-                  <LogIn size={14} className="shrink-0" />
+                  <LogIn size={14} className="shrink-0 text-slate-500" />
                   <span>Sign In to Institutional Account</span>
                 </button>
               )}
             </div>
 
             {/* Switch Personas / Evaluation Tenants */}
-            <div className="px-2 py-1 text-[10px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+            <div className="px-2 py-1 font-mono text-[9px] font-bold uppercase tracking-wider text-slate-400">
               Switch Research Workspace
             </div>
             <div className="space-y-1 max-h-48 overflow-y-auto">
@@ -196,16 +196,16 @@ export function PersonaSwitcher() {
                     className={cx(
                       'w-full flex items-start gap-2 rounded-lg p-2 text-left transition-colors',
                       selected
-                        ? 'bg-purple-500/15 text-purple-300 font-bold border border-purple-500/30'
-                        : 'hover:bg-[hsl(var(--muted))] text-[hsl(var(--foreground))]'
+                        ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-bold border border-slate-200 dark:border-slate-700'
+                        : 'hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-600 dark:text-slate-300'
                     )}
                   >
                     <div
                       className={cx(
-                        'flex size-6 shrink-0 items-center justify-center rounded-full text-[9px] font-bold mt-0.5',
+                        'flex size-6 shrink-0 items-center justify-center rounded text-[9px] font-bold mt-0.5',
                         selected
-                          ? 'bg-purple-600 text-white'
-                          : 'bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]'
+                          ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
                       )}
                     >
                       {p.initials}
@@ -213,9 +213,9 @@ export function PersonaSwitcher() {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between text-[11px] font-bold leading-tight">
                         <span>{p.title} {p.name}</span>
-                        {selected && <Check size={12} className="text-purple-400 shrink-0" />}
+                        {selected && <Check size={12} className="text-emerald-600 dark:text-emerald-400 shrink-0" />}
                       </div>
-                      <div className="text-[10px] text-[hsl(var(--muted-foreground))] truncate">
+                      <div className="text-[10px] text-slate-400 truncate">
                         {p.labName}
                       </div>
                     </div>

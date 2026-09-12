@@ -100,56 +100,56 @@ export function AuthModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-150">
       <div
-        className="relative w-full max-w-2xl max-h-[92vh] flex flex-col rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-2xl overflow-hidden"
+        className="relative w-full max-w-xl max-h-[92vh] flex flex-col rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-[hsl(var(--border))] px-6 py-4 bg-[hsl(var(--muted)/.3)]">
+        {/* Header - Calm Slate Enterprise Style */}
+        <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 px-6 py-4.5 bg-slate-50/60 dark:bg-slate-900/60">
           <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-purple-600 text-white shadow-md">
-              <ShieldCheck size={20} />
+            <div className="flex size-9 items-center justify-center rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-xs">
+              <ShieldCheck size={18} strokeWidth={2.2} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-[hsl(var(--foreground))]">
-                  Grant Guardian Identity
+                <h2 className="text-[15px] font-bold text-slate-900 dark:text-white leading-none">
+                  GrantGuardian Access
                 </h2>
-                <span className="rounded-full border border-purple-500/40 bg-purple-500/10 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-purple-400">
-                  Multi-Tenant
+                <span className="font-mono rounded bg-slate-200/70 dark:bg-slate-800 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300">
+                  Lab Authority
                 </span>
               </div>
-              <p className="text-xs text-[hsl(var(--muted-foreground))]">
-                Enterprise Cryptographic Authentication & Isolated Research Workspaces
+              <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                Institutional research lab authentication and multi-tenant workspaces.
               </p>
             </div>
           </div>
           <button
             type="button"
             onClick={closeAuthModal}
-            className="rounded-lg p-1 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors"
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
           >
-            <X size={18} />
+            <X size={17} />
           </button>
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="flex border-b border-[hsl(var(--border))] px-6 pt-3 gap-6 text-xs font-semibold">
+        {/* Calm Segmented Tabs */}
+        <div className="border-b border-slate-200/80 dark:border-slate-800 px-6 pt-3 flex gap-6 text-[12px]">
           <button
             type="button"
             onClick={() => {
               setActiveTab('signin');
               setError(null);
             }}
-            className={`pb-3 flex items-center gap-2 border-b-2 transition-colors ${
+            className={`pb-3 flex items-center gap-2 border-b-2 font-medium transition-colors ${
               activeTab === 'signin'
-                ? 'border-purple-600 text-purple-600 dark:text-purple-400 font-bold'
-                : 'border-transparent text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
+                ? 'border-slate-900 dark:border-white text-slate-900 dark:text-white font-bold'
+                : 'border-transparent text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
             }`}
           >
-            <LogIn size={15} />
-            Sign In
+            <LogIn size={14} />
+            <span>Sign in</span>
           </button>
           <button
             type="button"
@@ -157,61 +157,61 @@ export function AuthModal() {
               setActiveTab('register');
               setError(null);
             }}
-            className={`pb-3 flex items-center gap-2 border-b-2 transition-colors ${
+            className={`pb-3 flex items-center gap-2 border-b-2 font-medium transition-colors ${
               activeTab === 'register'
-                ? 'border-purple-600 text-purple-600 dark:text-purple-400 font-bold'
-                : 'border-transparent text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
+                ? 'border-slate-900 dark:border-white text-slate-900 dark:text-white font-bold'
+                : 'border-transparent text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
             }`}
           >
-            <UserPlus size={15} />
-            Create Lab Account (Multi-Tenant)
+            <UserPlus size={14} />
+            <span>Register new laboratory</span>
           </button>
         </div>
 
         {/* Scrollable Form Body */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-6 space-y-5">
           {error && (
-            <div className="flex items-start gap-2.5 rounded-xl border border-red-500/30 bg-red-500/10 p-3.5 text-xs text-red-600 dark:text-red-400">
-              <XCircle size={16} className="shrink-0 mt-0.5" />
+            <div className="flex items-start gap-2.5 rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50/70 dark:bg-rose-950/20 p-3 text-[11px] text-rose-700 dark:text-rose-300">
+              <XCircle size={15} className="shrink-0 mt-0.5 text-rose-500" />
               <div>
-                <span className="font-bold">Authentication Notice:</span> {error}
+                <span className="font-bold">Authentication error:</span> {error}
               </div>
             </div>
           )}
 
           {activeTab === 'signin' ? (
-            <div className="space-y-6">
-              <form onSubmit={handleSignIn} className="space-y-4">
+            <div className="space-y-5">
+              <form onSubmit={handleSignIn} className="space-y-3.5">
                 <div>
-                  <label className="block text-xs font-bold text-[hsl(var(--foreground))] mb-1.5">
+                  <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                     Institutional Email Address
                   </label>
                   <div className="relative">
-                    <Mail size={16} className="absolute left-3 top-2.5 text-[hsl(var(--muted-foreground))]" />
+                    <Mail size={14} className="absolute left-3 top-2.5 text-slate-400" />
                     <input
                       type="email"
                       required
                       placeholder="e.g. pi@university.edu"
                       value={signInEmail}
                       onChange={(e) => setSignInEmail(e.target.value)}
-                      className="w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] pl-9 pr-3 py-2 text-xs text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground)/.6)] focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                      className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 pl-9 pr-3 py-2 text-[12px] text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-slate-900 dark:focus:border-white focus:outline-none focus:ring-1 focus:ring-slate-900 dark:focus:ring-white transition-colors"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-[hsl(var(--foreground))] mb-1.5">
+                  <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                     Password
                   </label>
                   <div className="relative">
-                    <Lock size={16} className="absolute left-3 top-2.5 text-[hsl(var(--muted-foreground))]" />
+                    <Lock size={14} className="absolute left-3 top-2.5 text-slate-400" />
                     <input
                       type="password"
                       required
                       placeholder="••••••••••••"
                       value={signInPassword}
                       onChange={(e) => setSignInPassword(e.target.value)}
-                      className="w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] pl-9 pr-3 py-2 text-xs text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground)/.6)] focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                      className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 pl-9 pr-3 py-2 text-[12px] text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-slate-900 dark:focus:border-white focus:outline-none focus:ring-1 focus:ring-slate-900 dark:focus:ring-white transition-colors"
                     />
                   </div>
                 </div>
@@ -219,47 +219,46 @@ export function AuthModal() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full flex items-center justify-center gap-2 rounded-lg bg-purple-600 px-4 py-2.5 text-xs font-bold text-white shadow-md hover:bg-purple-700 transition-colors disabled:opacity-50"
+                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-slate-900 dark:bg-white px-4 py-2.5 text-[12px] font-bold text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors shadow-xs disabled:opacity-50 mt-1"
                 >
-                  {isLoading ? 'Authenticating...' : 'Sign In to Workspace'}
-                  <ArrowRight size={15} />
+                  {isLoading ? 'Verifying credentials...' : 'Sign in to workspace'}
+                  <ArrowRight size={14} />
                 </button>
               </form>
 
-              {/* Instant 1-Click Evaluation Accounts */}
-              <div className="border-t border-[hsl(var(--border))] pt-5">
-                <div className="flex items-center justify-between mb-3">
+              {/* 1-Click Institutional Demo Workspaces */}
+              <div className="border-t border-slate-100 dark:border-slate-800/80 pt-4">
+                <div className="flex items-center justify-between mb-2.5">
                   <div className="flex items-center gap-1.5">
-                    <Sparkles size={14} className="text-amber-500" />
-                    <span className="text-xs font-bold text-[hsl(var(--foreground))]">
-                      Peer-Review & Judge 1-Click Accounts
+                    <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                      Sandbox & Demo Workspaces
                     </span>
                   </div>
-                  <span className="text-[10px] text-[hsl(var(--muted-foreground))]">
-                    Instant sandbox access
+                  <span className="font-mono text-[10px] text-emerald-600 dark:text-emerald-400">
+                    1-Click Access
                   </span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {tenants.map((t) => (
                     <button
                       key={t.id}
                       type="button"
                       onClick={() => handleDemoClick(t.tenantSlug || t.id)}
                       disabled={isLoading}
-                      className="flex flex-col items-start p-3 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.3)] hover:bg-purple-500/10 hover:border-purple-500/40 text-left transition-all group"
+                      className="flex flex-col items-start p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 hover:bg-slate-100/80 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-left transition-all group"
                     >
                       <div className="flex items-center gap-2 w-full mb-1">
-                        <span className="flex size-5 items-center justify-center rounded-full bg-purple-600 text-[10px] font-black text-white shrink-0">
+                        <span className="flex size-5 items-center justify-center rounded-md bg-slate-200 dark:bg-slate-800 text-[10px] font-bold text-slate-700 dark:text-slate-200 shrink-0">
                           {t.initials}
                         </span>
-                        <span className="text-xs font-bold text-[hsl(var(--foreground))] group-hover:text-purple-600 dark:group-hover:text-purple-400 truncate">
+                        <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white truncate">
                           {t.title} {t.name}
                         </span>
                       </div>
-                      <span className="text-[11px] text-[hsl(var(--muted-foreground))] truncate w-full">
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate w-full">
                         {t.labName}
                       </span>
-                      <span className="text-[10px] text-purple-600/80 dark:text-purple-400/80 italic truncate w-full mt-0.5">
+                      <span className="font-mono text-[9px] text-slate-400 dark:text-slate-500 truncate w-full mt-0.5">
                         {t.focus}
                       </span>
                     </button>
@@ -268,37 +267,37 @@ export function AuthModal() {
               </div>
             </div>
           ) : (
-            <form onSubmit={handleRegister} className="space-y-4">
+            <form onSubmit={handleRegister} className="space-y-3.5">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="sm:col-span-1">
-                  <label className="block text-xs font-bold text-[hsl(var(--foreground))] mb-1.5">
+                  <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
                     Title
                   </label>
                   <select
                     value={regTitle}
                     onChange={(e) => setRegTitle(e.target.value)}
-                    className="w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3 py-2 text-xs text-[hsl(var(--foreground))] focus:border-purple-500 focus:outline-none"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2 text-[12px] text-slate-900 dark:text-slate-100 focus:border-slate-900 dark:focus:border-white focus:outline-none transition-colors"
                   >
                     <option value="Dr.">Dr.</option>
                     <option value="Prof.">Prof.</option>
                     <option value="Assoc. Prof.">Assoc. Prof.</option>
-                    <option value="Postdoc">Postdoc Fellow</option>
+                    <option value="Postdoc">Postdoc</option>
                     <option value="Director">Lab Director</option>
                   </select>
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-bold text-[hsl(var(--foreground))] mb-1.5">
-                    Primary Investigator / Researcher Name
+                  <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Principal Investigator Name
                   </label>
                   <div className="relative">
-                    <User size={15} className="absolute left-3 top-2.5 text-[hsl(var(--muted-foreground))]" />
+                    <User size={14} className="absolute left-3 top-2.5 text-slate-400" />
                     <input
                       type="text"
                       required
                       placeholder="e.g. Alan Turing"
                       value={regName}
                       onChange={(e) => setRegName(e.target.value)}
-                      className="w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] pl-9 pr-3 py-2 text-xs text-[hsl(var(--foreground))] focus:border-purple-500 focus:outline-none"
+                      className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 pl-9 pr-3 py-2 text-[12px] text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-slate-900 dark:focus:border-white focus:outline-none transition-colors"
                     />
                   </div>
                 </div>
@@ -306,24 +305,24 @@ export function AuthModal() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-[hsl(var(--foreground))] mb-1.5">
-                    Laboratory / Group Name
+                  <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Laboratory Name
                   </label>
                   <div className="relative">
-                    <Building2 size={15} className="absolute left-3 top-2.5 text-[hsl(var(--muted-foreground))]" />
+                    <Building2 size={14} className="absolute left-3 top-2.5 text-slate-400" />
                     <input
                       type="text"
                       required
-                      placeholder="e.g. Neural Computation Lab"
+                      placeholder="e.g. Neural Systems Lab"
                       value={regLabName}
                       onChange={(e) => setRegLabName(e.target.value)}
-                      className="w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] pl-9 pr-3 py-2 text-xs text-[hsl(var(--foreground))] focus:border-purple-500 focus:outline-none"
+                      className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 pl-9 pr-3 py-2 text-[12px] text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-slate-900 dark:focus:border-white focus:outline-none transition-colors"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-[hsl(var(--foreground))] mb-1.5">
-                    University / Institute
+                  <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Institution / University
                   </label>
                   <input
                     type="text"
@@ -331,109 +330,109 @@ export function AuthModal() {
                     placeholder="e.g. Cambridge University"
                     value={regInstitution}
                     onChange={(e) => setRegInstitution(e.target.value)}
-                    className="w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3 py-2 text-xs text-[hsl(var(--foreground))] focus:border-purple-500 focus:outline-none"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2 text-[12px] text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-slate-900 dark:focus:border-white focus:outline-none transition-colors"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-[hsl(var(--foreground))] mb-1.5">
-                    Primary Grant Proposal Name
+                  <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Grant Proposal Name
                   </label>
                   <div className="relative">
-                    <FileText size={15} className="absolute left-3 top-2.5 text-[hsl(var(--muted-foreground))]" />
+                    <FileText size={14} className="absolute left-3 top-2.5 text-slate-400" />
                     <input
                       type="text"
                       required
                       placeholder="e.g. NIH R01 / NSF CAREER"
                       value={regProposalName}
                       onChange={(e) => setRegProposalName(e.target.value)}
-                      className="w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] pl-9 pr-3 py-2 text-xs text-[hsl(var(--foreground))] focus:border-purple-500 focus:outline-none"
+                      className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 pl-9 pr-3 py-2 text-[12px] text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-slate-900 dark:focus:border-white focus:outline-none transition-colors"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-[hsl(var(--foreground))] mb-1.5">
-                    Scientific Focus / Field
+                  <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Research Focus Area
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Synthetic Biology & Cellular Logic"
+                    placeholder="e.g. Cellular Logic & Genetics"
                     value={regFocus}
                     onChange={(e) => setRegFocus(e.target.value)}
-                    className="w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3 py-2 text-xs text-[hsl(var(--foreground))] focus:border-purple-500 focus:outline-none"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2 text-[12px] text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-slate-900 dark:focus:border-white focus:outline-none transition-colors"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[hsl(var(--foreground))] mb-1.5">
-                  Institutional Email Address
+                <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Institutional Email
                 </label>
                 <div className="relative">
-                  <Mail size={15} className="absolute left-3 top-2.5 text-[hsl(var(--muted-foreground))]" />
+                  <Mail size={14} className="absolute left-3 top-2.5 text-slate-400" />
                   <input
                     type="email"
                     required
                     placeholder="pi@lab.org"
                     value={regEmail}
                     onChange={(e) => setRegEmail(e.target.value)}
-                    className="w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] pl-9 pr-3 py-2 text-xs text-[hsl(var(--foreground))] focus:border-purple-500 focus:outline-none"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 pl-9 pr-3 py-2 text-[12px] text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-slate-900 dark:focus:border-white focus:outline-none transition-colors"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[hsl(var(--foreground))] mb-1.5">
-                  Password (Enterprise 10/10 Cryptographic Security)
+                <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Security Passphrase
                 </label>
                 <div className="relative">
-                  <Lock size={15} className="absolute left-3 top-2.5 text-[hsl(var(--muted-foreground))]" />
+                  <Lock size={14} className="absolute left-3 top-2.5 text-slate-400" />
                   <input
                     type="password"
                     required
                     placeholder="Create a strong passphrase"
                     value={regPassword}
                     onChange={(e) => setRegPassword(e.target.value)}
-                    className="w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] pl-9 pr-3 py-2 text-xs text-[hsl(var(--foreground))] focus:border-purple-500 focus:outline-none"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 pl-9 pr-3 py-2 text-[12px] text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-slate-900 dark:focus:border-white focus:outline-none transition-colors"
                   />
                 </div>
 
-                {/* Password validation checklist */}
-                <div className="mt-2.5 grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-[11px]">
-                  <div className={`flex items-center gap-1.5 ${passwordChecks.length ? 'text-emerald-500 font-bold' : 'text-[hsl(var(--muted-foreground))]'}`}>
-                    {passwordChecks.length ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
-                    <span>8+ characters</span>
+                {/* Calm password checklist */}
+                <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-[10px] font-mono">
+                  <div className={`flex items-center gap-1.5 ${passwordChecks.length ? 'text-emerald-600 font-semibold' : 'text-slate-400'}`}>
+                    <CheckCircle2 size={11} className={passwordChecks.length ? 'text-emerald-600' : 'text-slate-300'} />
+                    <span>8+ chars</span>
                   </div>
-                  <div className={`flex items-center gap-1.5 ${passwordChecks.uppercase ? 'text-emerald-500 font-bold' : 'text-[hsl(var(--muted-foreground))]'}`}>
-                    {passwordChecks.uppercase ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
-                    <span>Uppercase (A-Z)</span>
+                  <div className={`flex items-center gap-1.5 ${passwordChecks.uppercase ? 'text-emerald-600 font-semibold' : 'text-slate-400'}`}>
+                    <CheckCircle2 size={11} className={passwordChecks.uppercase ? 'text-emerald-600' : 'text-slate-300'} />
+                    <span>Uppercase</span>
                   </div>
-                  <div className={`flex items-center gap-1.5 ${passwordChecks.lowercase ? 'text-emerald-500 font-bold' : 'text-[hsl(var(--muted-foreground))]'}`}>
-                    {passwordChecks.lowercase ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
-                    <span>Lowercase (a-z)</span>
+                  <div className={`flex items-center gap-1.5 ${passwordChecks.lowercase ? 'text-emerald-600 font-semibold' : 'text-slate-400'}`}>
+                    <CheckCircle2 size={11} className={passwordChecks.lowercase ? 'text-emerald-600' : 'text-slate-300'} />
+                    <span>Lowercase</span>
                   </div>
-                  <div className={`flex items-center gap-1.5 ${passwordChecks.number ? 'text-emerald-500 font-bold' : 'text-[hsl(var(--muted-foreground))]'}`}>
-                    {passwordChecks.number ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
-                    <span>Number (0-9)</span>
+                  <div className={`flex items-center gap-1.5 ${passwordChecks.number ? 'text-emerald-600 font-semibold' : 'text-slate-400'}`}>
+                    <CheckCircle2 size={11} className={passwordChecks.number ? 'text-emerald-600' : 'text-slate-300'} />
+                    <span>Number</span>
                   </div>
-                  <div className={`flex items-center gap-1.5 ${passwordChecks.special ? 'text-emerald-500 font-bold' : 'text-[hsl(var(--muted-foreground))]'}`}>
-                    {passwordChecks.special ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
-                    <span>Special character</span>
+                  <div className={`flex items-center gap-1.5 ${passwordChecks.special ? 'text-emerald-600 font-semibold' : 'text-slate-400'}`}>
+                    <CheckCircle2 size={11} className={passwordChecks.special ? 'text-emerald-600' : 'text-slate-300'} />
+                    <span>Special</span>
                   </div>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[hsl(var(--foreground))] mb-1.5">
-                  Initial Workspace Template
+                <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Starter Template
                 </label>
                 <select
                   value={regStarter}
                   onChange={(e) => setRegStarter(e.target.value)}
-                  className="w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3 py-2 text-xs text-[hsl(var(--foreground))] focus:border-purple-500 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2 text-[12px] text-slate-900 dark:text-slate-100 focus:border-slate-900 dark:focus:border-white focus:outline-none transition-colors"
                 >
                   <option value="clean">Blank Workspace (Clean slate for custom grant proposal)</option>
                   <option value="biomaterials">Biomaterials & Regenerative Scaffolds Benchmark</option>
@@ -444,19 +443,19 @@ export function AuthModal() {
               <button
                 type="submit"
                 disabled={isLoading || !isPasswordStrong}
-                className="w-full flex items-center justify-center gap-2 rounded-lg bg-purple-600 px-4 py-2.5 text-xs font-bold text-white shadow-md hover:bg-purple-700 transition-colors disabled:opacity-50 mt-2"
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-slate-900 dark:bg-white px-4 py-2.5 text-[12px] font-bold text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors shadow-xs disabled:opacity-50 mt-2"
               >
-                {isLoading ? 'Creating Tenant Workspace...' : 'Register Lab & Launch Workspace'}
-                <ArrowRight size={15} />
+                {isLoading ? 'Configuring laboratory...' : 'Create laboratory workspace'}
+                <ArrowRight size={14} />
               </button>
             </form>
           )}
         </div>
 
         {/* Footer */}
-        <div className="border-t border-[hsl(var(--border))] px-6 py-3 bg-[hsl(var(--muted)/.2)] text-[10px] text-[hsl(var(--muted-foreground))] flex items-center justify-between">
-          <span>PBKDF2-SHA512 Salted Hashing · Constant-Time Verification · Isolated Multi-Tenancy</span>
-          <span className="font-mono text-purple-500">Grant Guardian v2.4</span>
+        <div className="border-t border-slate-100 dark:border-slate-800/80 px-6 py-3 bg-slate-50/50 dark:bg-slate-900/40 text-[10px] text-slate-400 flex items-center justify-between font-mono">
+          <span>PBKDF2-SHA512 Salted Hashing · Multi-Tenant Isolation</span>
+          <span className="text-slate-500">GrantGuardian v2.4</span>
         </div>
       </div>
     </div>
