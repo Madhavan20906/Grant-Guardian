@@ -1,3 +1,5 @@
+import path from "node:path";
+import fs from "node:fs";
 import express, { type Express } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
@@ -40,6 +42,7 @@ export function isAllowedOrigin(origin?: string): boolean {
     const host = url.hostname;
     if (host === "localhost" || host === "127.0.0.1") return true;
     if (host.endsWith(".replit.dev") || host.endsWith(".repl.co")) return true;
+    if (host.endsWith(".onrender.com") || host.endsWith(".vercel.app")) return true;
   } catch {
     return false;
   }
@@ -71,6 +74,26 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);
+
+// Serve static frontend SPA build in production if available
+const candidateStaticPaths = [
+  path.resolve(process.cwd(), "artifacts/grant-guardian/dist/public"),
+  path.resolve(process.cwd(), "../grant-guardian/dist/public"),
+  path.resolve(process.cwd(), "dist/public"),
+];
+
+const clientDistPath = candidateStaticPaths.find((p) => fs.existsSync(p));
+
+if (clientDistPath) {
+  app.use(express.static(clientDistPath));
+  app.get("*", (req, res, next) => {
+    if (req.path.startsWith("/api")) {
+      return next();
+    }
+    res.sendFile(path.join(clientDistPath, "index.html"));
+  });
+}
+
 app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   const message = error instanceof Error ? error.message : "Unexpected server error";
   res.status(500).json({ error: "Guardian could not complete that operation", detail: process.env.NODE_ENV === "development" ? message : undefined });

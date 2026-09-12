@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: grant-guardian
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/healthz
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: NODE_ENV
+        value: production
+      - key: CORS_ALLOWED_ORIGINS
+        value: "*"
+      # Optional: Add DATABASE_URL to connect a free Neon PostgreSQL database
+      # - key: DATABASE_URL
+      #   value: "postgresql://..."
+      # Optional: Add AWS Bedrock keys for live model reasoning (defaults to verified offline model if omitted)
+      # - key: AWS_REGION
+      #   value: "us-east-1"
+      # - key: BEDROCK_MODEL_ID
+      #   value: "anthropic.claude-3-5-sonnet-20241022-v2:0"
