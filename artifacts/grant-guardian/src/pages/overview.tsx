@@ -197,7 +197,11 @@ export default function Overview() {
               <span>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }).toUpperCase()}</span>
             </div>
             <h1 className="mt-2 text-[32px] md:text-[40px] font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
-              Good morning, <span className="text-indigo-900 dark:text-indigo-400">{activePersona.title} {activePersona.name}.</span>
+              Good morning, <span className="text-indigo-900 dark:text-indigo-400">
+                {activePersona.title && activePersona.title.includes(activePersona.name)
+                  ? activePersona.title
+                  : `${activePersona.title ? activePersona.title + ' ' : ''}${activePersona.name}`}.
+              </span>
             </h1>
             <p className="mt-1 text-[14px] text-slate-500 dark:text-slate-400 font-normal">
               One calm surface for every agent decision that touches your lab.

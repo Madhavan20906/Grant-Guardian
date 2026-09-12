@@ -77,7 +77,9 @@ export function PersonaSwitcher() {
           🛡️
         </span>
         <div className="flex flex-col text-left leading-none">
-          <span className="text-[11px] font-bold text-slate-100">{user.title} {user.name}</span>
+          <span className="text-[11px] font-bold text-slate-100">
+            {user.title && user.title.includes(user.name) ? user.title : `${user.title ? user.title + ' ' : ''}${user.name}`}
+          </span>
           <span className="font-mono text-[9px] text-slate-400">{user.email}</span>
         </div>
         <span className="rounded bg-emerald-500/20 px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider text-emerald-400 border border-emerald-500/30">
@@ -101,7 +103,7 @@ export function PersonaSwitcher() {
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full mt-2 z-50 w-80 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+          <div className="absolute right-0 top-full mt-2.5 z-50 w-84 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
             {/* Active Tenant Profile Summary */}
             <div className="rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-3 mb-2.5">
               <div className="flex items-center justify-between">
@@ -118,7 +120,7 @@ export function PersonaSwitcher() {
                 </div>
                 <div className="min-w-0">
                   <div className="text-[12px] font-bold text-slate-900 dark:text-white truncate">
-                    {user.title} {user.name}
+                    {user.title && user.title.includes(user.name) ? user.title : `${user.title ? user.title + ' ' : ''}${user.name}`}
                   </div>
                   <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
                     {user.labName}
@@ -212,7 +214,7 @@ export function PersonaSwitcher() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between text-[11px] font-bold leading-tight">
-                        <span>{p.title} {p.name}</span>
+                        <span>{p.title && p.title.includes(p.name) ? p.title : `${p.title ? p.title + ' ' : ''}${p.name}`}</span>
                         {selected && <Check size={12} className="text-emerald-600 dark:text-emerald-400 shrink-0" />}
                       </div>
                       <div className="text-[10px] text-slate-400 truncate">
@@ -278,7 +280,11 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
               <Link key={href} href={href} onClick={onClose} className={cx('group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[12px] font-medium transition-all', active ? 'bg-slate-800/90 text-amber-300 font-semibold shadow-xs border-l-2 border-amber-400 -ml-[2px] pl-[14px]' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200')} data-testid={`link-nav-${label.toLowerCase().replaceAll(' ', '-')}`}>
                 <Icon size={16} strokeWidth={active ? 2.2 : 1.7} className={active ? 'text-amber-400' : 'text-slate-400 group-hover:text-slate-300'} />
                 <span>{label}</span>
-                {label === 'Citation health' && <span className="ml-auto rounded-full bg-red-500/15 px-1.5 py-0.2 font-mono text-[9px] font-bold text-red-400 border border-red-500/20">3</span>}
+                {label === 'Citation health' && (
+                  <span className="ml-auto rounded-md bg-amber-500/15 px-1.5 py-0.5 font-mono text-[9px] font-bold text-amber-400 border border-amber-500/20">
+                    3
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -320,7 +326,7 @@ export function TopBar({ onMenu }: { onMenu: () => void }) {
   const { activePersona } = usePersona();
   const current = navItems.find((item) => item.href !== '/' && location.startsWith(item.href)) ?? navItems[0];
   return (
-    <header className="flex h-[68px] items-center justify-between border-b border-[hsl(var(--border))] bg-[hsl(var(--card))] px-5 backdrop-blur md:px-9" data-testid="topbar">
+    <header className="sticky top-0 z-30 flex h-[68px] items-center justify-between border-b border-[hsl(var(--border))] bg-[hsl(var(--card))]/95 px-5 backdrop-blur md:px-9" data-testid="topbar">
       <div className="flex items-center gap-3">
         <button type="button" onClick={onMenu} className="rounded-md p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 md:hidden" aria-label="Open navigation" data-testid="button-open-navigation"><Menu size={19} /></button>
         <div className="hidden items-center gap-2 text-[11px] uppercase tracking-[.16em] text-slate-400 sm:flex">
