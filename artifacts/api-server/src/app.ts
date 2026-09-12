@@ -86,11 +86,12 @@ const clientDistPath = candidateStaticPaths.find((p) => fs.existsSync(p));
 
 if (clientDistPath) {
   app.use(express.static(clientDistPath));
-  app.get("*", (req, res, next) => {
-    if (req.path.startsWith("/api")) {
-      return next();
+  // Express 5 / path-to-regexp v8 uses named wildcards like /{0,} or middleware fallback
+  app.use((req, res, next) => {
+    if (req.method === "GET" && !req.path.startsWith("/api")) {
+      return res.sendFile(path.join(clientDistPath, "index.html"));
     }
-    res.sendFile(path.join(clientDistPath, "index.html"));
+    return next();
   });
 }
 
