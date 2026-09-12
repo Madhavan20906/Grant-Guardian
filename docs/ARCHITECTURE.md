@@ -87,7 +87,7 @@ Grant Guardian is built on a single-tenant mental model for the researcher (a fo
 ---
 
 ## 6. Verifiable Test Suite
-
-The system maintains 53 passing automated tests with zero external API dependencies:
+ 
+The system maintains 59 passing automated tests with zero external API dependencies:
 - **43 TypeScript Tests**: Adversarial prompt injection immunity, route validation, circuit breaker failsafes, proof of restraint, and deterministic decision boundaries.
-- **10 Python Tests**: Dynamic tool selection branching, recorded Bedrock Converse transcript replays, parallel reference checking, and non-submission draft compliance.
+- **16 Python Tests**: Dynamic tool selection branching, recorded Bedrock Converse transcript replays, parallel reference checking, authentic Strands SDK agent orchestration, and non-submission draft compliance.
