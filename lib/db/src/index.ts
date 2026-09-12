@@ -4,7 +4,15 @@ import * as schema from "./schema";
 
 const { Pool } = pg;
 
+const isPostgresUrlConfigured = Boolean(
+  process.env.DATABASE_URL &&
+  !process.env.DATABASE_URL.includes("127.0.0.1:5432") &&
+  !process.env.DATABASE_URL.includes("localhost:5432")
+);
+
 const connectionString = process.env.DATABASE_URL || "postgres://postgres:postgres@127.0.0.1:5432/grant_guardian";
+
+export const isDatabaseConfigured = isPostgresUrlConfigured;
 
 export const pool = new Pool({
   connectionString,

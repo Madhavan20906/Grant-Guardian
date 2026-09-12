@@ -1,5 +1,5 @@
 import { and, desc, eq } from "drizzle-orm";
-import { db } from "@workspace/db";
+import { db, isDatabaseConfigured } from "@workspace/db";
 import { activities, citations, deadlines, drafts, preferences, users } from "@workspace/db/schema";
 import { demoActivities, demoCitations, demoDeadlines, demoPersonas, ensureSeedData, type PersonaProfile } from "@workspace/db/seed";
 import { hashPassword } from "./auth";
@@ -122,6 +122,9 @@ class GuardianStore {
   private initialized: Promise<number> | null = null;
 
   async ensureReady(): Promise<void> {
+    if (!isDatabaseConfigured) {
+      return;
+    }
     try {
       await (this.initialized ??= ensureSeedData());
     } catch (err) {
@@ -146,6 +149,9 @@ class GuardianStore {
   }
 
   async listTenants(): Promise<UserRecord[]> {
+    if (!isDatabaseConfigured) {
+      return [...this.memoryUsers];
+    }
     await this.ensureReady();
     try {
       const rows = await db.select().from(users).orderBy(users.id);
@@ -172,6 +178,9 @@ class GuardianStore {
   }
 
   async getUserById(id: number): Promise<UserRecord | null> {
+    if (!isDatabaseConfigured) {
+      return this.memoryUsers.find((u) => u.id === id) ?? null;
+    }
     await this.ensureReady();
     try {
       const [row] = await db.select().from(users).where(eq(users.id, id)).limit(1);
@@ -415,6 +424,22 @@ class GuardianStore {
   }
 
   async getOverview(userId: number) {
+    const userCitations = this.memoryCitations.filter(c => c.userId === userId);
+    const userDeadlines = this.memoryDeadlines.filter(d => d.userId === userId);
+    const userActivities = this.memoryActivities.filter(a => a.userId === userId);
+    const last = userActivities[0]?.createdAt;
+    const memoryOverview = {
+      citationsTracked: userCitations.length,
+      issuesFound: userCitations.filter(item => item.risk !== "low").length,
+      deadlinesTracked: userDeadlines.length,
+      pendingJudgments: userCitations.filter(item => item.status === "propagation").length,
+      lastScan: last ? last.toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }) : "Not scanned yet",
+    };
+
+    if (!isDatabaseConfigured) {
+      return memoryOverview;
+    }
+
     try {
       const [sourceRows, deadlineRows, issueRows, pendingRows] = await Promise.all([
         db.select().from(citations).where(eq(citations.userId, userId)),
@@ -422,31 +447,24 @@ class GuardianStore {
         db.select().from(citations).where(eq(citations.userId, userId)),
         db.select().from(activities).where(eq(activities.userId, userId)).orderBy(desc(activities.createdAt)),
       ]);
-      const last = pendingRows[0]?.createdAt;
+      const lastRow = pendingRows[0]?.createdAt;
       return {
         citationsTracked: sourceRows.length,
         issuesFound: issueRows.filter(item => item.risk !== "low").length,
         deadlinesTracked: deadlineRows.length,
         pendingJudgments: issueRows.filter(item => item.status === "propagation").length,
-        lastScan: last ? last.toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }) : "Not scanned yet",
+        lastScan: lastRow ? lastRow.toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }) : "Not scanned yet",
       };
     } catch (err) {
       logger.warn({ err, operation: "getOverview" }, "Database unavailable for overview; using in-memory store");
-      const userCitations = this.memoryCitations.filter(c => c.userId === userId);
-      const userDeadlines = this.memoryDeadlines.filter(d => d.userId === userId);
-      const userActivities = this.memoryActivities.filter(a => a.userId === userId);
-      const last = userActivities[0]?.createdAt;
-      return {
-        citationsTracked: userCitations.length,
-        issuesFound: userCitations.filter(item => item.risk !== "low").length,
-        deadlinesTracked: userDeadlines.length,
-        pendingJudgments: userCitations.filter(item => item.status === "propagation").length,
-        lastScan: last ? last.toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }) : "Not scanned yet",
-      };
+      return memoryOverview;
     }
   }
 
   async getCitations(userId: number): Promise<CitationRecord[]> {
+    if (!isDatabaseConfigured) {
+      return this.memoryCitations.filter(c => c.userId === userId);
+    }
     try {
       const rows = await db
         .select()
@@ -461,6 +479,9 @@ class GuardianStore {
   }
 
   async getDeadlines(userId: number): Promise<DeadlineRecord[]> {
+    if (!isDatabaseConfigured) {
+      return this.memoryDeadlines.filter(d => d.userId === userId);
+    }
     try {
       const rows = await db
         .select()
@@ -475,6 +496,9 @@ class GuardianStore {
   }
 
   async getDeadlineById(id: number, userId: number): Promise<DeadlineRecord | null> {
+    if (!isDatabaseConfigured) {
+      return this.memoryDeadlines.find(d => d.id === id && d.userId === userId) ?? null;
+    }
     try {
       const [row] = await db
         .select()
@@ -492,6 +516,11 @@ class GuardianStore {
   }
 
   async getActivities(userId: number, limit = 100): Promise<ActivityRecord[]> {
+    if (!isDatabaseConfigured) {
+      return this.memoryActivities
+        .filter(a => a.userId === userId)
+        .slice(0, limit);
+    }
     try {
       const rows = await db
         .select()
@@ -519,6 +548,11 @@ class GuardianStore {
       createdAt: data.createdAt ?? new Date(),
     };
 
+    if (!isDatabaseConfigured) {
+      this.memoryActivities.unshift(record);
+      return record;
+    }
+
     try {
       const [inserted] = await db
         .insert(activities)
@@ -528,11 +562,12 @@ class GuardianStore {
           title: data.title,
           description: data.description,
           tone: data.tone,
-          createdAt: record.createdAt,
+          createdAt: data.createdAt ?? new Date(),
         })
         .returning();
       if (inserted) {
-        record.id = inserted.id;
+        this.memoryActivities.unshift(inserted as ActivityRecord);
+        return inserted as ActivityRecord;
       }
     } catch (err) {
       logger.warn({ err, operation: "addActivity" }, "Database unavailable for addActivity; persisted in memory only");
@@ -543,6 +578,9 @@ class GuardianStore {
   }
 
   async getDrafts(userId: number, limit = 25): Promise<DraftRecord[]> {
+    if (!isDatabaseConfigured) {
+      return this.memoryDrafts.filter(d => d.userId === userId).slice(0, limit);
+    }
     try {
       const rows = await db
         .select()
@@ -560,17 +598,19 @@ class GuardianStore {
   async updateDraftStatus(id: number, userId: number, status: string): Promise<DraftRecord | null> {
     let updatedRecord: DraftRecord | null = null;
 
-    try {
-      const [updated] = await db
-        .update(drafts)
-        .set({ status })
-        .where(eq(drafts.id, id))
-        .returning();
-      if (updated && updated.userId === userId) {
-        updatedRecord = updated as DraftRecord;
+    if (isDatabaseConfigured) {
+      try {
+        const [updated] = await db
+          .update(drafts)
+          .set({ status })
+          .where(eq(drafts.id, id))
+          .returning();
+        if (updated && updated.userId === userId) {
+          updatedRecord = updated as DraftRecord;
+        }
+      } catch (err) {
+        logger.warn({ err, id, operation: "updateDraftStatus" }, "Database unavailable for updateDraftStatus; updating in-memory store");
       }
-    } catch (err) {
-      logger.warn({ err, id, operation: "updateDraftStatus" }, "Database unavailable for updateDraftStatus; updating in-memory store");
     }
 
     const memTarget = this.memoryDrafts.find(d => d.id === id);
@@ -595,6 +635,11 @@ class GuardianStore {
       createdAt: new Date(),
     };
 
+    if (!isDatabaseConfigured) {
+      this.memoryDrafts.unshift(record);
+      return record;
+    }
+
     try {
       const [inserted] = await db
         .insert(drafts)
@@ -618,6 +663,9 @@ class GuardianStore {
   }
 
   async findDraftByDeadline(deadlineId: number): Promise<boolean> {
+    if (!isDatabaseConfigured) {
+      return this.memoryDrafts.some(d => d.deadlineId === deadlineId);
+    }
     try {
       const found = await db.select().from(drafts).where(eq(drafts.deadlineId, deadlineId)).limit(1);
       return found.length > 0;
@@ -628,11 +676,13 @@ class GuardianStore {
   }
 
   async getPreferences(userId: number): Promise<PreferencesRecord> {
-    try {
-      const [row] = await db.select().from(preferences).where(eq(preferences.userId, userId));
-      if (row) return row as PreferencesRecord;
-    } catch (err) {
-      logger.warn({ err, operation: "getPreferences" }, "Database unavailable for preferences; using in-memory store");
+    if (isDatabaseConfigured) {
+      try {
+        const [row] = await db.select().from(preferences).where(eq(preferences.userId, userId));
+        if (row) return row as PreferencesRecord;
+      } catch (err) {
+        logger.warn({ err, operation: "getPreferences" }, "Database unavailable for preferences; using in-memory store");
+      }
     }
     const mem = this.memoryPreferences.find(p => p.userId === userId);
     return mem || { userId, weeklyDeskNote: true, highRiskInterrupts: true, deadlineReminders: true };
