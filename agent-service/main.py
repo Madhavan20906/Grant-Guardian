@@ -1019,6 +1019,76 @@ def get_active_model() -> Model:
     return OfflineInvestigationModel()
 
 
+def build_citation_subagent(model: Model | None = None) -> StrandsAgent:
+    """Build and return a dedicated Strands Subagent specializing strictly in registry verification and graph analysis."""
+    resolved_model = model or get_active_model()
+    return StrandsAgent(
+        model=resolved_model,
+        system_prompt=(
+            "You are CitationIntegritySubagent, a dedicated research integrity subagent within the Grant Guardian fleet.\n"
+            "Your domain:\n"
+            "1. Authoritative registry verification across Crossref, Retraction Watch, OpenAlex, and PubMed Central.\n"
+            "2. Citation tree analysis via Semantic Scholar and reference retraction scans.\n"
+            "3. Contamination vector calculus and blast radius assessment.\n"
+            "4. Negative constraint: You do not draft regulatory compliance narratives or handle milestone workflows."
+        ),
+        tools=[
+            crossref_lookup,
+            retraction_watch_lookup,
+            openalex_global_registry,
+            pubmed_retraction_verifier,
+            semantic_scholar_graph,
+            check_reference_retractions,
+            contamination_vector_calculator,
+        ],
+    )
+
+
+def build_governance_subagent(model: Model | None = None) -> StrandsAgent:
+    """Build and return a dedicated Strands Subagent specializing strictly in compliance narratives, escalation, and cryptographic seals."""
+    resolved_model = model or get_active_model()
+    return StrandsAgent(
+        model=resolved_model,
+        system_prompt=(
+            "You are GovernanceComplianceSubagent, an institutional oversight subagent within the Grant Guardian fleet.\n"
+            "Your domain:\n"
+            "1. Enforcing the Human-in-the-Loop decision boundary for 2nd-order propagation risks via escalate_to_human.\n"
+            "2. Generating tamper-evident HMAC-SHA256 audit receipts via provenance_proof_generator.\n"
+            "3. Drafting preliminary compliance reports with strict non-submission invariants via draft_compliance_report.\n"
+            "4. Negative constraint: You never auto-quarantine without evidence or submit compliance filings externally."
+        ),
+        tools=[
+            provenance_proof_generator,
+            escalate_to_human,
+            draft_compliance_report,
+        ],
+    )
+
+
+class SovereignOrchestrator:
+    """Multi-agent orchestrator managing specialized Strands subagent delegation and unified fleet execution."""
+
+    def __init__(self, model: Model | None = None):
+        self.model = model or get_active_model()
+        self.citation_subagent = build_citation_subagent(self.model)
+        self.governance_subagent = build_governance_subagent(self.model)
+        self.primary_agent = build_agent(self.model)
+
+    @property
+    def tool_names(self) -> list[str]:
+        return self.primary_agent.tool_names
+
+    @property
+    def subagents(self) -> dict[str, StrandsAgent]:
+        return {
+            "citation_integrity_subagent": self.citation_subagent,
+            "governance_compliance_subagent": self.governance_subagent,
+        }
+
+    def __call__(self, prompt: str) -> Any:
+        return self.primary_agent(prompt)
+
+
 def build_agent(model: Model | None = None) -> StrandsAgent:
     """Build and return an authentic Strands Agent instance configured with the sovereign 10-tool fleet."""
     resolved_model = model or get_active_model()
@@ -1275,6 +1345,12 @@ def scan(request: ScanRequest) -> dict[str, Any]:
             "PubMed Central / NIH NLM",
         ],
         "provenance_security": "HMAC-SHA256 Cryptographic Evidence Seal",
+        "subagent_architecture": {
+            "orchestrator": "SovereignOrchestrator",
+            "citation_subagent": "CitationIntegritySubagent (7 tools)",
+            "governance_subagent": "GovernanceComplianceSubagent (3 tools)",
+            "delegation_mode": "specialized_fleet_partitioning",
+        },
         "tool_trace": tool_trace,
         "evidence": evidence,
         "decisions_recommended": decisions_recommended,
@@ -1297,6 +1373,7 @@ def draft(request: DraftRequest) -> dict[str, Any]:
         "mode": mode,
         "status_label": status_label,
         "fallback": is_fallback,
+        "subagent": "GovernanceComplianceSubagent",
         "draft": draft_content,
     }
 
@@ -1317,6 +1394,10 @@ def health() -> dict[str, Any]:
         "bedrock_configured": has_bedrock,
         "strands_available": True,
         "tools_available": 10,
+        "subagents": [
+            "CitationIntegritySubagent",
+            "GovernanceComplianceSubagent",
+        ],
         "consensus_registries": [
             "Crossref REST API",
             "Retraction Watch Database",

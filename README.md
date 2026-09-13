@@ -169,9 +169,9 @@ docker run -p 8010:8010 \
 
 ---
 
-## 📊 Safety & Verification Evaluation Matrix (88/88 Automated Tests Passing)
+## 📊 Safety & Verification Evaluation Matrix (89/89 Automated Tests Passing)
 
-Safety is enforced by test, not just by design. The combined test suite includes 88 tests (65 TypeScript tests + 23 Python Strands service tests) proving deterministic invariants across adversarial, propagation, multi-registry consensus, and cryptographic provenance scenarios:
+Safety is enforced by test, not just by design. The combined test suite includes 89 tests (65 TypeScript tests + 24 Python Strands service tests) proving deterministic invariants across adversarial, propagation, multi-registry consensus, specialized subagent delegation, and cryptographic provenance scenarios:
 
 | Scenario | Ground Truth / Evidence | Agent Action | Deterministic Invariant | Status |
 |:---|:---|:---|:---|:---:|
@@ -187,6 +187,7 @@ Safety is enforced by test, not just by design. The combined test suite includes
 | **10. 4-Way Multi-Registry Consensus** | Validates concurrent verification across Crossref, Retraction Watch, OpenAlex, and PubMed Central | `MULTI_REGISTRY_CONSENSUS` | Establishes multi-database agreement before clearing any citation | **PASS ✓** |
 | **11. Contamination Vector Calculus** | Quantifies proposal section vulnerability weight and cascade depth (CSI: 0.00-1.00) | `VECTOR_CALCULUS` | Computes structural blast radius and vetted clean alternative paper | **PASS ✓** |
 | **12. Cryptographic Provenance Proof** | Generates NIST SP 800-92 compliant HMAC-SHA256 signature and Merkle leaf hash | `HMAC_SHA256_SEAL` | Tamper-evident audit receipt attached to every completed investigation | **PASS ✓** |
+| **13. Specialized Subagent Partitioning** | Partitions research tools (`CitationIntegritySubagent`) from governance tools (`GovernanceComplianceSubagent`) | `SUBAGENT_DELEGATION` | Structurally prevents cross-domain tool misuse under sovereign orchestration | **PASS ✓** |
 
 ---
 
@@ -201,7 +202,7 @@ Provision PostgreSQL and set `DATABASE_URL` (optional; if unprovisioned, the bui
 # 1. Install dependencies
 pnpm install
 
-# 2. Run all 88 automated tests (65 TypeScript + 23 Python)
+# 2. Run all 89 automated tests (65 TypeScript + 24 Python)
 pnpm run test:all
 
 # 3. Typecheck and build production artifacts
@@ -217,7 +218,7 @@ pnpm dev
 # 65 TypeScript adversarial, multi-tenant & route tests (with fast-failover)
 pnpm test
 
-# 23 Python Strands service, dynamic branching, 10-tool fleet, multi-registry consensus & Bedrock trace replay tests
+# 24 Python Strands service, dynamic branching, 10-tool fleet, subagents & Bedrock trace replay tests
 pnpm run test:python
 ```
 
@@ -225,12 +226,12 @@ pnpm run test:python
 
 ## 📁 Monorepo Layout
 
-- `agent-service/`: Python 3.11 Strands Agent microservice powered by AWS Bedrock / AgentCore with 10 specialized scientific tools and recorded transcript replay tests.
+- `agent-service/`: Python 3.11 Strands Agent microservice powered by AWS Bedrock / AgentCore with 10 specialized scientific tools, `SovereignOrchestrator`, 2 partitioned subagents, and recorded transcript replay tests.
 - `artifacts/api-server/`: Node.js / Express backend with deterministic safety guardrails (`classifyDecision()`), PostgreSQL Drizzle ORM store with fast connection fallback, and autonomous watch engine.
 - `artifacts/grant-guardian/`: React 18 + Vite frontend with Tailwind CSS, Lucide icons, live Strands Agent status banners, First-Time Onboarding empty state, and human-in-the-loop decision drawers.
 - `lib/db/`: Database schemas, migrations, seed datasets, and multi-tenant persona profiles.
 - `docs/`: Standalone architecture diagram (`architecture-diagram.svg`), architecture specification (`ARCHITECTURE.md`), and timestamped video walkthrough script (`DEMO_VIDEO_SCRIPT.md`).
-- `.github/workflows/`: CI workflow running automated build and all 88 tests on Node.js and Python 3.11.
+- `.github/workflows/`: CI workflow running automated build and all 89 tests on Node.js and Python 3.11.
 
 ---
 

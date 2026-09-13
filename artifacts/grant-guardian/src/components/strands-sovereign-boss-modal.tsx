@@ -409,6 +409,9 @@ export function StrandsSovereignBossModal({ isOpen, onClose }: StrandsSovereignB
                 <span className="rounded bg-emerald-100 dark:bg-emerald-950/60 px-2 py-0.5 font-mono text-[9px] font-bold text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                   10/10 Tools Operational
                 </span>
+                <span className="rounded bg-slate-100 dark:bg-slate-800 px-2 py-0.5 font-mono text-[9px] font-bold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                  2 Specialized Subagents
+                </span>
               </div>
 
               <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
@@ -416,7 +419,7 @@ export function StrandsSovereignBossModal({ isOpen, onClose }: StrandsSovereignB
               </h2>
 
               <p className="text-xs text-slate-500 dark:text-slate-400 max-w-2xl font-normal leading-relaxed">
-                Operated via the genuine Python Strands Agent framework. Multi-registry consensus, contamination vector calculus, and NIST SP 800-92 cryptographic audit receipts.
+                Operated via the genuine Python Strands Agent framework. Multi-registry consensus, contamination vector calculus, and NIST SP 800-92 cryptographic audit receipts partitioned across specialized Citation and Governance subagents.
               </p>
             </div>
 

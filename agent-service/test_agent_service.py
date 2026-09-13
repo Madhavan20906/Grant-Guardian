@@ -29,6 +29,9 @@ from main import (
     escalate_to_human,
     draft_compliance_report,
     build_agent,
+    build_citation_subagent,
+    build_governance_subagent,
+    SovereignOrchestrator,
     KNOWN_RETRACTED_DOIS,
 )
 
@@ -49,6 +52,8 @@ class TestStrandsAgentService(unittest.TestCase):
             self.assertTrue(data["strands_available"])
             self.assertEqual(data["tools_available"], 10)
             self.assertEqual(len(data["consensus_registries"]), 4)
+            self.assertIn("CitationIntegritySubagent", data["subagents"])
+            self.assertIn("GovernanceComplianceSubagent", data["subagents"])
             self.assertIn("HMAC-SHA256", data["provenance_security"])
 
     def test_authentic_strands_agent_instantiation(self):
@@ -72,6 +77,19 @@ class TestStrandsAgentService(unittest.TestCase):
             "draft_compliance_report",
         }
         self.assertEqual(set(agent.tool_names), expected_tools)
+
+    def test_specialized_subagent_delegation_architecture(self):
+        """Architecture Test: Verify specialized Strands subagents and SovereignOrchestrator."""
+        orchestrator = SovereignOrchestrator()
+        self.assertIsInstance(orchestrator.citation_subagent, StrandsAgent)
+        self.assertIsInstance(orchestrator.governance_subagent, StrandsAgent)
+        self.assertEqual(len(orchestrator.citation_subagent.tool_names), 7)
+        self.assertEqual(len(orchestrator.governance_subagent.tool_names), 3)
+
+        # Citation subagent must NOT have compliance drafting tool
+        self.assertNotIn("draft_compliance_report", orchestrator.citation_subagent.tool_names)
+        # Governance subagent must NOT have raw registry crawl tools
+        self.assertNotIn("crossref_lookup", orchestrator.governance_subagent.tool_names)
 
     def test_retraction_watch_known_retracted_benchmark(self):
         """Verify known benchmark DOI returns confirmed retraction details with transparent labeling."""
