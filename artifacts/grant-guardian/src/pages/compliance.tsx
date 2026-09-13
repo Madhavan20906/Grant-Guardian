@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FileText, Sparkles, X } from 'lucide-react';
+import { FileText, Plus, Sparkles, X } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { getListActivityQueryKey, getListDeadlinesQueryKey, useDraftComplianceReport, useListDeadlines, type Deadline } from '@workspace/api-client-react';
 import { Button, DeadlineRow, Drawer, EmptyBlock, ErrorBlock, LoadingBlock, SectionHeading, StatusPill } from '@/components/guardian-ui';
@@ -10,8 +10,18 @@ export default function Compliance() {
   const draftMutation = useDraftComplianceReport();
   const [draft, setDraft] = useState<{ id: number; deadlineId: number; title: string; status: string; body: string } | null>(null);
   const [draftError, setDraftError] = useState('');
+  const [showAddModal, setShowAddModal] = useState(false);
+
+  // New Deadline form state
+  const [newTitle, setNewTitle] = useState('');
+  const [newType, setNewType] = useState('Regulatory filing');
+  const [newDays, setNewDays] = useState('21');
+  const [newProgress, setNewProgress] = useState('25');
+  const [isAdding, setIsAdding] = useState(false);
+
   const deadlines = Array.isArray(query.data) ? query.data : [];
   const attention = deadlines.filter((deadline: Deadline) => deadline.status === 'attention').length;
+
   const draftReport = (id: number) => {
     setDraftError('');
     draftMutation.mutate({ id }, {
@@ -25,55 +35,99 @@ export default function Compliance() {
       onError: () => setDraftError('The report could not be drafted. Try again in a moment.'),
     });
   };
+
+  const handleCreateDeadline = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTitle.trim()) return;
+    setIsAdding(true);
+    try {
+      const days = parseInt(newDays, 10) || 14;
+      const dueDate = new Date(Date.now() + days * 86400000).toISOString();
+      const res = await fetch('/api/guardian/deadlines', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: newTitle.trim(),
+          type: newType,
+          dueDate,
+          progress: parseInt(newProgress, 10) || 10,
+        }),
+      });
+      if (res.ok) {
+        setNewTitle('');
+        setShowAddModal(false);
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: getListDeadlinesQueryKey() }),
+          queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() }),
+        ]);
+      }
+    } catch {
+      // error handled gracefully
+    } finally {
+      setIsAdding(false);
+    }
+  };
+
   return (
-    <div className="gg-stagger">
+    <div className="gg-stagger space-y-6">
       <SectionHeading
         eyebrow="Compliance desk"
         title="Keep the paperwork moving."
         description="Guardian tracks the dates that can quietly derail a grant. When a deadline needs shape, it can make the first draft for you."
         action={
-          <div className="flex items-center gap-2 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-3 py-2 text-[10px] text-[hsl(var(--muted-foreground))]">
-            <span className="size-2 rounded-full bg-[hsl(var(--accent-foreground))]" />
-            {attention ? `${attention} deadline${attention === 1 ? '' : 's'} need attention` : 'All deadlines on track'}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-3 py-2 text-[11px] text-[hsl(var(--muted-foreground))]">
+              <span className="size-2 rounded-full bg-emerald-500" />
+              {attention ? `${attention} deadline${attention === 1 ? '' : 's'} need attention` : 'All deadlines on track'}
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowAddModal(true)}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-3.5 py-2 text-xs font-semibold hover:opacity-90 transition-opacity shadow-2xs cursor-pointer"
+              data-testid="button-add-deadline"
+            >
+              <Plus size={14} />
+              <span>Track New Deadline</span>
+            </button>
           </div>
         }
       />
 
-      {/* Compliance Metrics Overview - Reconciled 4-Card Grid */}
+      {/* Compliance Metrics Overview - Clean theme cards blending with background */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-xs">
+        <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-2xs">
           <div className="gg-mono text-[9px] uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
             Total Tracked
           </div>
-          <div className="mt-2 text-[24px] font-extrabold">{deadlines.length}</div>
+          <div className="mt-2 text-[24px] font-extrabold text-[hsl(var(--foreground))]">{deadlines.length}</div>
           <div className="mt-1 text-[10px] text-[hsl(var(--muted-foreground))]">Active grant deadlines</div>
         </div>
-        <div className="rounded-xl border border-rose-500/30 bg-rose-500/5 p-4 shadow-xs">
-          <div className="gg-mono text-[9px] uppercase tracking-wider text-rose-600 dark:text-rose-400 font-bold">
+        <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-2xs">
+          <div className="gg-mono text-[9px] uppercase tracking-wider text-[hsl(var(--muted-foreground))] font-semibold">
             Needs Attention
           </div>
-          <div className="mt-2 text-[24px] font-extrabold text-rose-600 dark:text-rose-400">
+          <div className="mt-2 text-[24px] font-extrabold text-[hsl(var(--foreground))]">
             {deadlines.filter((d: Deadline) => d.status === 'attention').length}
           </div>
-          <div className="mt-1 text-[10px] text-rose-700/80 dark:text-rose-300/80">&lt;14d runway &amp; &lt;80% prep</div>
+          <div className="mt-1 text-[10px] text-[hsl(var(--muted-foreground))]">&lt;14d runway &amp; &lt;80% prep</div>
         </div>
-        <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 shadow-xs">
-          <div className="gg-mono text-[9px] uppercase tracking-wider text-amber-600 dark:text-amber-400 font-bold">
+        <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-2xs">
+          <div className="gg-mono text-[9px] uppercase tracking-wider text-[hsl(var(--muted-foreground))] font-semibold">
             Due Soon
           </div>
-          <div className="mt-2 text-[24px] font-extrabold text-amber-600 dark:text-amber-400">
+          <div className="mt-2 text-[24px] font-extrabold text-[hsl(var(--foreground))]">
             {deadlines.filter((d: Deadline) => d.status === 'due_soon').length}
           </div>
-          <div className="mt-1 text-[10px] text-amber-700/80 dark:text-amber-300/80">11–21 days preparation window</div>
+          <div className="mt-1 text-[10px] text-[hsl(var(--muted-foreground))]">11–21 days preparation window</div>
         </div>
-        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 shadow-xs">
-          <div className="gg-mono text-[9px] uppercase tracking-wider text-emerald-600 dark:text-emerald-400 font-bold">
+        <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-2xs">
+          <div className="gg-mono text-[9px] uppercase tracking-wider text-[hsl(var(--muted-foreground))] font-semibold">
             On Track / Clear
           </div>
-          <div className="mt-2 text-[24px] font-extrabold text-emerald-600 dark:text-emerald-400">
+          <div className="mt-2 text-[24px] font-extrabold text-[hsl(var(--foreground))]">
             {deadlines.filter((d: Deadline) => d.status === 'on_track' || (d.status as string) === 'submitted').length}
           </div>
-          <div className="mt-1 text-[10px] text-emerald-700/80 dark:text-emerald-300/80">Adequate milestone runway</div>
+          <div className="mt-1 text-[10px] text-[hsl(var(--muted-foreground))]">Adequate milestone runway</div>
         </div>
       </div>
 
@@ -131,39 +185,136 @@ export default function Compliance() {
               ))}
           </section>
           <aside
-            className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--primary))] p-5 text-[hsl(var(--primary-foreground))]"
+            className="h-fit rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 text-[hsl(var(--foreground))] shadow-xs space-y-4"
             data-testid="card-compliance-note"
           >
-            <div className="flex size-9 items-center justify-center rounded-lg bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))]">
+            <div className="flex size-9 items-center justify-center rounded-lg bg-[hsl(var(--muted))] text-[hsl(var(--foreground))]">
               <FileText size={17} />
             </div>
-            <div className="mt-6 gg-serif text-[26px] leading-[1.02]">
+            <div className="gg-serif text-[24px] leading-[1.05]">
               A good first draft
               <br />
               <em>buys back a day.</em>
             </div>
-            <p className="mt-4 text-[11px] leading-relaxed text-[hsl(var(--primary-foreground)/.58)]">
+            <p className="text-[11px] leading-relaxed text-[hsl(var(--muted-foreground))]">
               Select “Draft report” on an upcoming deadline. Guardian will use the deadline context to prepare a
-              reviewable starting point — never a submission.
+              reviewable starting point — never an external submission.
             </p>
-            <div className="mt-8 border-t border-[hsl(var(--primary-foreground)/.15)] pt-4 text-[10px] text-[hsl(var(--primary-foreground)/.54)]">
-              <div className="flex justify-between">
+            <div className="border-t border-[hsl(var(--border))] pt-4 text-[10px] text-[hsl(var(--muted-foreground))]">
+              <div className="flex justify-between items-center">
                 <span>Drafts remain private</span>
-                <StatusPill value="clear" />
+                <span className="rounded bg-[hsl(var(--muted))] px-2 py-0.5 font-mono text-[9px] font-bold text-[hsl(var(--muted-foreground))]">
+                  LOCAL ONLY
+                </span>
               </div>
             </div>
           </aside>
         </div>
       )}
+
+      {/* Add Deadline Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
+          <div className="w-full max-w-md rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 shadow-xl space-y-4">
+            <div className="flex items-center justify-between border-b border-[hsl(var(--border))] pb-3">
+              <h3 className="text-[14px] font-bold text-[hsl(var(--foreground))]">Track New Compliance Deadline</h3>
+              <button
+                type="button"
+                onClick={() => setShowAddModal(false)}
+                className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateDeadline} className="space-y-3.5">
+              <div>
+                <label className="block text-[11px] font-bold text-[hsl(var(--foreground))] mb-1">
+                  Milestone / Requirement Title
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. NIH Conflict of Interest Disclosure or IRB Modification"
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  className="w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3 py-2 text-xs text-[hsl(var(--foreground))] focus:outline-none focus:ring-1 focus:ring-slate-400"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-[hsl(var(--foreground))] mb-1">
+                    Agency / Type
+                  </label>
+                  <select
+                    value={newType}
+                    onChange={(e) => setNewType(e.target.value)}
+                    className="w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3 py-2 text-xs text-[hsl(var(--foreground))] focus:outline-none"
+                  >
+                    <option value="IRB renewal">IRB renewal</option>
+                    <option value="Funding report">Funding report</option>
+                    <option value="Data management">Data management</option>
+                    <option value="Biosafety audit">Biosafety audit</option>
+                    <option value="Material transfer">Material transfer</option>
+                    <option value="Ethics disclosure">Ethics disclosure</option>
+                    <option value="Export control">Export control</option>
+                    <option value="Regulatory filing">Regulatory filing</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-[hsl(var(--foreground))] mb-1">
+                    Days until due
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="365"
+                    value={newDays}
+                    onChange={(e) => setNewDays(e.target.value)}
+                    className="w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3 py-2 text-xs text-[hsl(var(--foreground))] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-[hsl(var(--foreground))] mb-1">
+                  Initial Preparation Readiness ({newProgress}%)
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={newProgress}
+                  onChange={(e) => setNewProgress(e.target.value)}
+                  className="w-full accent-slate-700 dark:accent-slate-300"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[hsl(var(--border))]">
+                <Button variant="secondary" onClick={() => setShowAddModal(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isAdding}>
+                  {isAdding ? 'Registering...' : 'Register Deadline'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {draftMutation.isPending && (
         <div
           className="fixed bottom-5 right-5 z-20 flex items-center gap-2 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-4 py-3 text-[11px] font-bold shadow-lg"
           data-testid="status-drafting"
         >
-          <Sparkles size={15} className="text-[hsl(var(--accent-foreground))]" />
+          <Sparkles size={15} className="text-slate-500 animate-spin" />
           Assembling a reviewable draft…
         </div>
       )}
+
       {draft && (
         <Drawer title="Compliance draft · private" onClose={() => setDraft(null)}>
           <div className="flex items-start justify-between gap-3">
@@ -171,19 +322,19 @@ export default function Compliance() {
               <StatusPill value={draft.status} />
               <h2 className="mt-4 gg-serif text-[26px] leading-[1.05]">{draft.title}</h2>
             </div>
-            <div className="flex size-10 items-center justify-center rounded-lg bg-[hsl(var(--accent)/.25)] text-[hsl(var(--accent-foreground))]">
+            <div className="flex size-10 items-center justify-center rounded-lg bg-[hsl(var(--muted))] text-[hsl(var(--foreground))]">
               <FileText size={19} />
             </div>
           </div>
 
-          {/* Deterministic Context Inputs Feeding the AI Drafter */}
-          <div className="mt-5 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 space-y-2.5">
+          {/* Context Inputs Feeding the Drafter - subtle cards */}
+          <div className="mt-5 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.3)] p-4 space-y-2.5">
             <div className="flex items-center justify-between">
-              <span className="gg-mono text-[9px] uppercase tracking-wider font-extrabold text-amber-600 dark:text-amber-400">
-                Deterministic Context Inputs Feeding Strands Drafter
+              <span className="gg-mono text-[9px] uppercase tracking-wider font-extrabold text-[hsl(var(--foreground))]">
+                Deterministic Context Inputs
               </span>
-              <span className="rounded bg-amber-500/20 px-1.5 py-0.5 font-mono text-[9px] font-bold text-amber-800 dark:text-amber-200">
-                Constitutional Article IV Enforced
+              <span className="rounded bg-[hsl(var(--muted))] px-1.5 py-0.5 font-mono text-[9px] font-bold text-[hsl(var(--muted-foreground))]">
+                Article IV Enforced
               </span>
             </div>
             <div className="grid grid-cols-2 gap-2 text-[10px]">
@@ -193,15 +344,15 @@ export default function Compliance() {
               </div>
               <div className="rounded bg-[hsl(var(--card))] border border-[hsl(var(--border))] p-2">
                 <span className="text-[hsl(var(--muted-foreground))] block">Preparation Readiness:</span>
-                <strong className="font-mono text-amber-600">Audit artifacts collected</strong>
+                <strong className="font-mono text-[hsl(var(--foreground))]">Audit artifacts collected</strong>
               </div>
               <div className="rounded bg-[hsl(var(--card))] border border-[hsl(var(--border))] p-2">
                 <span className="text-[hsl(var(--muted-foreground))] block">Safe Policy:</span>
-                <strong className="text-emerald-600">Zero Autonomous Submissions</strong>
+                <strong className="text-[hsl(var(--foreground))]">Zero Autonomous Submissions</strong>
               </div>
               <div className="rounded bg-[hsl(var(--card))] border border-[hsl(var(--border))] p-2">
                 <span className="text-[hsl(var(--muted-foreground))] block">PI Authority:</span>
-                <strong className="text-purple-600">Manual Signoff Required</strong>
+                <strong className="text-[hsl(var(--foreground))]">Manual Signoff Required</strong>
               </div>
             </div>
           </div>

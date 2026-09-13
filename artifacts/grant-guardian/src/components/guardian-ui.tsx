@@ -386,12 +386,12 @@ export function DeadlineRow({
             </span>
             <StatusPill value={isSubmitted ? 'clear' : deadline.status} kind="deadline" />
             {isUrgentTrigger && !isSubmitted && (
-              <span className="rounded bg-rose-500/15 border border-rose-500/30 px-2 py-0.5 font-mono text-[9px] font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1">
+              <span className="rounded-md bg-[hsl(var(--muted))] border border-[hsl(var(--border))] px-2 py-0.5 font-mono text-[9px] font-bold text-[hsl(var(--foreground))] flex items-center gap-1">
                 ⚡ 14-Day Trigger Active (&lt;80% prep)
               </span>
             )}
             {isSubmitted && (
-              <span className="rounded bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 font-mono text-[9px] font-bold text-emerald-600 dark:text-emerald-400">
+              <span className="rounded-md bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 font-mono text-[9px] font-bold text-emerald-600 dark:text-emerald-400">
                 ✓ PI Signed &amp; Filed Externally
               </span>
             )}
@@ -404,32 +404,23 @@ export function DeadlineRow({
 
         <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2.5 shrink-0">
           <div className="text-right">
-            <span
-              className={cx(
-                'gg-mono text-[15px] font-extrabold',
-                deadline.daysLeft <= 7
-                  ? 'text-rose-500'
-                  : deadline.daysLeft <= 21
-                  ? 'text-amber-500'
-                  : 'text-emerald-500'
-              )}
-            >
+            <span className="gg-mono text-[15px] font-extrabold text-[hsl(var(--foreground))]">
               {deadline.daysLeft}d
             </span>
             <span className="ml-1 text-[10px] text-[hsl(var(--muted-foreground))] font-medium">remaining</span>
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Prominent One-Click Draft Report Button */}
+            {/* Clean theme-blended Draft Report Button */}
             {!isSubmitted && (
               <button
                 type="button"
                 onClick={onDraft}
-                className="flex items-center gap-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold px-3 py-1.5 text-[11px] shadow-xs cursor-pointer transition-all shrink-0"
+                className="flex items-center gap-1.5 rounded-lg bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-bold px-3 py-1.5 text-[11px] hover:opacity-90 shadow-2xs cursor-pointer transition-all shrink-0"
                 data-testid={`button-draft-${deadline.id}`}
                 title="Generate AI compliance draft using deadline & lab context"
               >
-                <Sparkles size={13} className="text-slate-950" />
+                <Sparkles size={13} />
                 <span>Draft report</span>
               </button>
             )}
@@ -447,13 +438,13 @@ export function DeadlineRow({
                 Mark Submitted
               </button>
             ) : (
-              <span className="text-[11px] text-emerald-500 font-bold">✓ Filed</span>
+              <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold">✓ Filed</span>
             )}
           </div>
         </div>
       </div>
 
-      {/* Progress Bar with Unambiguous Meaning */}
+      {/* Progress Bar with Soft Colors Blending Into Background */}
       <div className="mt-3.5 space-y-1.5">
         <div className="flex items-center justify-between text-[10px] text-[hsl(var(--muted-foreground))]">
           <span className="flex items-center gap-1">
@@ -462,12 +453,9 @@ export function DeadlineRow({
           </span>
           <span className="gg-mono font-bold text-[hsl(var(--foreground))]">{isSubmitted ? 100 : (deadline.progress ?? 0)}%</span>
         </div>
-        <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
+        <div className="h-2 w-full overflow-hidden rounded-full bg-[hsl(var(--muted))]">
           <div
-            className={cx(
-              'h-full rounded-full transition-all',
-              (deadline.progress ?? 0) < 30 ? 'bg-rose-500' : (deadline.progress ?? 0) < 75 ? 'bg-amber-500' : 'bg-emerald-500'
-            )}
+            className="h-full rounded-full transition-all bg-slate-700 dark:bg-slate-300"
             style={{ width: `${Math.min(100, isSubmitted ? 100 : (deadline.progress ?? 0))}%` }}
           />
         </div>

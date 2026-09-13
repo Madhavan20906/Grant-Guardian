@@ -511,21 +511,21 @@ export default function Overview() {
 
         <div className="grid gap-3 sm:grid-cols-3">
           {/* Card 1: Direct Retraction */}
-          <div className="rounded-xl border border-red-500/40 bg-red-500/5 p-4 flex flex-col justify-between space-y-3 shadow-sm">
+          <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 flex flex-col justify-between space-y-3 shadow-2xs">
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <span className="rounded bg-red-600 px-2 py-0.5 gg-mono text-[8px] font-extrabold text-white uppercase tracking-wider">
-                  🔴 DIRECT RETRACTION
+                <span className="rounded-md bg-[hsl(var(--muted))] border border-[hsl(var(--border))] px-2 py-0.5 gg-mono text-[8px] font-extrabold text-[hsl(var(--foreground))] uppercase tracking-wider">
+                  DIRECT RETRACTION
                 </span>
-                <span className="text-[10px] text-red-600 font-bold">Action Taken</span>
+                <span className="text-[10px] text-[hsl(var(--muted-foreground))] font-semibold">Action Taken</span>
               </div>
-              <h4 className="text-[13px] font-bold text-red-900 dark:text-red-200 leading-snug">
+              <h4 className="text-[13px] font-bold text-[hsl(var(--foreground))] leading-snug">
                 Obokata et al. (Nature 2014)
               </h4>
               <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
                 Stimulus-triggered fate conversion of somatic cells...
               </p>
-              <div className="rounded bg-[hsl(var(--card))] border border-red-500/20 p-2 text-[10px] text-red-700 dark:text-red-300 font-mono">
+              <div className="rounded bg-[hsl(var(--muted)/.4)] border border-[hsl(var(--border))] p-2 text-[10px] text-[hsl(var(--foreground))] font-mono">
                 Evidence: Retraction Watch Notice (2014-07-02)
               </div>
             </div>
@@ -533,7 +533,7 @@ export default function Overview() {
             <button
               type="button"
               onClick={() => setSelectedCitationId(1)}
-              className="w-full rounded-lg bg-red-600 px-3 py-1.5 text-[11px] font-bold text-white hover:bg-red-700 shadow-sm"
+              className="w-full rounded-lg bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-3 py-2 text-[11px] font-bold hover:opacity-90 shadow-2xs transition-opacity cursor-pointer"
               data-testid="btn-queue-quarantine"
             >
               Inspect Isolation Record →
@@ -541,21 +541,21 @@ export default function Overview() {
           </div>
 
           {/* Card 2: Propagation Risk */}
-          <div className="rounded-xl border border-amber-500/40 bg-amber-500/5 p-4 flex flex-col justify-between space-y-3 shadow-sm ring-1 ring-amber-500/20">
+          <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 flex flex-col justify-between space-y-3 shadow-2xs">
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <span className="rounded bg-amber-500 px-2 py-0.5 gg-mono text-[8px] font-extrabold text-white uppercase tracking-wider">
-                  🟠 PROPAGATION RISK
+                <span className="rounded-md bg-[hsl(var(--muted))] border border-[hsl(var(--border))] px-2 py-0.5 gg-mono text-[8px] font-extrabold text-[hsl(var(--foreground))] uppercase tracking-wider">
+                  PROPAGATION RISK
                 </span>
-                <span className="text-[10px] text-amber-600 font-bold">Human Judgment</span>
+                <span className="text-[10px] text-[hsl(var(--muted-foreground))] font-semibold">Human Judgment</span>
               </div>
-              <h4 className="text-[13px] font-bold text-amber-900 dark:text-amber-200 leading-snug">
+              <h4 className="text-[13px] font-bold text-[hsl(var(--foreground))] leading-snug">
                 Lin et al. (Cell Stem Cell 2015)
               </h4>
               <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
                 Tissue engineering downstream of stimulus findings.
               </p>
-              <div className="rounded bg-[hsl(var(--card))] border border-amber-500/20 p-2 text-[10px] text-amber-800 dark:text-amber-300 font-mono">
+              <div className="rounded bg-[hsl(var(--muted)/.4)] border border-[hsl(var(--border))] p-2 text-[10px] text-[hsl(var(--foreground))] font-mono">
                 Lin et al. → Obokata 2014 (Retracted Root)
               </div>
             </div>
@@ -563,36 +563,36 @@ export default function Overview() {
             <button
               type="button"
               onClick={() => setSelectedCitationId(2)}
-              className="w-full rounded-lg bg-amber-600 px-3 py-1.5 text-[11px] font-bold text-white hover:bg-amber-700 shadow-sm"
+              className="w-full rounded-lg bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-3 py-2 text-[11px] font-bold hover:opacity-90 shadow-2xs transition-opacity cursor-pointer"
               data-testid="btn-queue-investigate"
             >
-              Investigate & Decide →
+              Investigate &amp; Decide →
             </button>
           </div>
 
           {/* Card 3: Compliance Deadline */}
-          <div className="rounded-xl border border-blue-500/40 bg-blue-500/5 p-4 flex flex-col justify-between space-y-3 shadow-sm">
+          <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 flex flex-col justify-between space-y-3 shadow-2xs">
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <span className="rounded bg-blue-600 px-2 py-0.5 gg-mono text-[8px] font-extrabold text-white uppercase tracking-wider">
-                  🟡 COMPLIANCE DEADLINE
+                <span className="rounded-md bg-[hsl(var(--muted))] border border-[hsl(var(--border))] px-2 py-0.5 gg-mono text-[8px] font-extrabold text-[hsl(var(--foreground))] uppercase tracking-wider">
+                  COMPLIANCE DEADLINE
                 </span>
-                <span className="text-[10px] text-blue-600 font-bold">Due in 18 Days</span>
+                <span className="text-[10px] text-[hsl(var(--muted-foreground))] font-semibold">Due in 18 Days</span>
               </div>
-              <h4 className="text-[13px] font-bold text-blue-900 dark:text-blue-200 leading-snug">
+              <h4 className="text-[13px] font-bold text-[hsl(var(--foreground))] leading-snug">
                 NSF Annual Progress Report
               </h4>
               <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
-                Includes Section 4 research integrity statement & citation verification.
+                Includes Section 4 research integrity statement &amp; citation verification.
               </p>
-              <div className="rounded bg-[hsl(var(--card))] border border-blue-500/20 p-2 text-[10px] text-blue-800 dark:text-blue-300 font-mono">
+              <div className="rounded bg-[hsl(var(--muted)/.4)] border border-[hsl(var(--border))] p-2 text-[10px] text-[hsl(var(--foreground))] font-mono">
                 Draft readiness: 82% · Narrative assembled
               </div>
             </div>
 
             <Link
               href="/compliance"
-              className="w-full rounded-lg bg-[hsl(var(--primary))] px-3 py-1.5 text-center text-[11px] font-bold text-[hsl(var(--primary-foreground))] hover:opacity-90 shadow-sm"
+              className="w-full rounded-lg bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-3 py-2 text-center text-[11px] font-bold hover:opacity-90 shadow-2xs transition-opacity block"
               data-testid="btn-queue-draft"
             >
               Review Compliance Draft →
@@ -724,7 +724,7 @@ export default function Overview() {
                 <span className="font-mono font-bold text-slate-900 dark:text-white">04</span>
               </div>
               <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                <div className="h-full bg-emerald-500 rounded-full transition-all duration-500" style={{ width: '48%' }} />
+                <div className="h-full bg-slate-700 dark:bg-slate-300 rounded-full transition-all duration-500" style={{ width: '48%' }} />
               </div>
             </div>
 
@@ -735,7 +735,7 @@ export default function Overview() {
                 <span className="font-mono font-bold text-slate-900 dark:text-white">03</span>
               </div>
               <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                <div className="h-full bg-amber-500 rounded-full transition-all duration-500" style={{ width: '32%' }} />
+                <div className="h-full bg-slate-500 dark:bg-slate-400 rounded-full transition-all duration-500" style={{ width: '32%' }} />
               </div>
             </div>
 
@@ -746,13 +746,13 @@ export default function Overview() {
                 <span className="font-mono font-bold text-slate-900 dark:text-white">01</span>
               </div>
               <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                <div className="h-full bg-rose-500 rounded-full transition-all duration-500" style={{ width: '12%' }} />
+                <div className="h-full bg-slate-400 dark:bg-slate-500 rounded-full transition-all duration-500" style={{ width: '12%' }} />
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right: Live Activity */}
+        {/* Right: Live Activity - dynamically populated from real activity records */}
         <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs space-y-4">
           <div className="flex items-center justify-between">
             <div>
@@ -773,77 +773,37 @@ export default function Overview() {
           </div>
 
           <div className="space-y-3.5 pt-1">
-            {/* Stream item 1 */}
-            <div className="flex items-start gap-3">
-              <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60">
-                <span className="size-1.5 rounded-full bg-emerald-500" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[12px] font-bold text-slate-900 dark:text-slate-100">Access Decision</span>
-                    <span className="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-[9px] font-semibold text-slate-600 dark:text-slate-300">
-                      Data Access
-                    </span>
+            {activity.length > 0 ? (
+              activity.slice(0, 3).map((item) => (
+                <div key={item.id} className="flex items-start gap-3">
+                  <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                    <span className="size-1.5 rounded-full bg-slate-600 dark:bg-slate-400" />
                   </div>
-                  <div className="flex items-center gap-2 font-mono text-[10px] text-slate-400 shrink-0">
-                    <span className="text-slate-600 dark:text-slate-300">284ms</span>
-                    <span>03:11 PM</span>
-                  </div>
-                </div>
-                <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                  Scope check: PI Dr. Elena Rossi verified for grant COG-24-118; safe pass.
-                </p>
-              </div>
-            </div>
-
-            {/* Stream item 2 */}
-            <div className="flex items-start gap-3">
-              <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60">
-                <span className="size-1.5 rounded-full bg-emerald-500" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[12px] font-bold text-slate-900 dark:text-slate-100">Risk Scan</span>
-                    <span className="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-[9px] font-semibold text-slate-600 dark:text-slate-300">
-                      Compliance Monitor
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 font-mono text-[10px] text-slate-400 shrink-0">
-                    <span className="text-slate-600 dark:text-slate-300">412ms</span>
-                    <span>03:08 PM</span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[12px] font-bold text-slate-900 dark:text-slate-100 truncate max-w-[200px]">
+                          {item.title}
+                        </span>
+                        <span className="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-[9px] font-semibold text-slate-600 dark:text-slate-300 uppercase">
+                          {item.kind || 'sweep'}
+                        </span>
+                      </div>
+                      <span className="font-mono text-[10px] text-slate-400 shrink-0">
+                        {item.timestamp || 'Just now'}
+                      </span>
+                    </div>
+                    <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                      {item.description}
+                    </p>
                   </div>
                 </div>
-                <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                  Read 8 deadlines from compliance_items; classified by due date and owner readiness.
-                </p>
+              ))
+            ) : (
+              <div className="py-4 text-center text-xs text-slate-400">
+                Awaiting upcoming autonomous scan or PI signoff...
               </div>
-            </div>
-
-            {/* Stream item 3 */}
-            <div className="flex items-start gap-3">
-              <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60">
-                <span className="size-1.5 rounded-full bg-emerald-500" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[12px] font-bold text-slate-900 dark:text-slate-100">Weekly Digest</span>
-                    <span className="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-[9px] font-semibold text-slate-600 dark:text-slate-300">
-                      Reporting
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 font-mono text-[10px] text-slate-400 shrink-0">
-                    <span className="text-slate-600 dark:text-slate-300">691ms</span>
-                    <span>03:02 PM</span>
-                  </div>
-                </div>
-                <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                  Synthesized 7 decisions and 8 compliance items into a calm, exact digest.
-                </p>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </section>

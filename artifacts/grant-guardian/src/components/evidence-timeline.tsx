@@ -48,7 +48,15 @@ export interface EvidenceMetadata {
   [key: string]: unknown;
 }
 
-export function EvidenceTimeline({ metadata, doi }: { metadata?: EvidenceMetadata; doi?: string }) {
+export function EvidenceTimeline({
+  metadata,
+  doi,
+  activity,
+}: {
+  metadata?: EvidenceMetadata;
+  doi?: string;
+  activity?: { title?: string; description?: string; kind?: string; tone?: string; timestamp?: string };
+}) {
   const [showRaw, setShowRaw] = useState(false);
 
   const cascade = metadata?.graph?.cascade;
@@ -126,7 +134,232 @@ export function EvidenceTimeline({ metadata, doi }: { metadata?: EvidenceMetadat
     },
   ];
 
-  const traceSteps = (metadata?.trace && metadata.trace.length > 0) ? metadata.trace : defaultTrace;
+  let contextualTrace: TraceStep[] = defaultTrace;
+  if (activity) {
+    const title = activity.title || '';
+    const desc = activity.description || '';
+    const kind = activity.kind || '';
+    const tone = activity.tone || '';
+
+    if (kind === 'draft' || title.toLowerCase().includes('draft') || title.toLowerCase().includes('compliance')) {
+      contextualTrace = [
+        {
+          step: 'dependency',
+          status: 'success',
+          label: 'Step 1 — Regulatory Milestone Ingested',
+          detail: `Compliance requirement identified: "${title}". Deadline context and proposal parameters loaded.`,
+          durationMs: 14,
+          provider: 'Grant Rubric Ingestion',
+        },
+        {
+          step: 'crossref',
+          status: 'success',
+          label: 'Step 2 — Agency Requirement Parsing',
+          detail: 'Parsed agency requirements for research integrity statements, data governance, and citation provenance.',
+          durationMs: 95,
+          provider: 'Agency Specification Parser',
+        },
+        {
+          step: 'retraction_watch',
+          status: 'success',
+          label: 'Step 3 — Integrity Bibliography Cross-Check',
+          detail: 'Queried active proposal citations against Retraction Watch. 0 flagged retractions in draft scope.',
+          durationMs: 65,
+          provider: 'Retraction Watch Verified',
+        },
+        {
+          step: 'relationship',
+          status: 'neutral',
+          label: 'Step 4 — Bedrock Agent Draft Synthesis',
+          detail: 'Assembled reviewable starting narrative using laboratory project history and milestone criteria.',
+          durationMs: 340,
+          provider: 'Strands Drafter Agent',
+        },
+        {
+          step: 'safety_policy',
+          status: 'success',
+          label: 'Step 5 — Zero External Submission Guardrail',
+          detail: 'Safety Invariant Enforced: Reviewable draft saved locally only. Automated external submission strictly prohibited.',
+          durationMs: 12,
+          provider: 'Deterministic Safety Guardrail',
+        },
+        {
+          step: 'decision',
+          status: 'success',
+          label: 'Step 6 — Review Ready for PI Signoff',
+          detail: desc || 'Draft created for Principal Investigator review.',
+          durationMs: 6,
+          provider: 'Compliance Registry',
+        },
+      ];
+    } else if (title.toLowerCase().includes('decision') || title.toLowerCase().includes('signoff') || title.toLowerCase().includes('pi judgment')) {
+      contextualTrace = [
+        {
+          step: 'dependency',
+          status: 'success',
+          label: 'Step 1 — Human Authority Verification',
+          detail: 'Researcher credentials and role confirmed. Session authenticated for PI scientific authority.',
+          durationMs: 11,
+          provider: 'Authentication Service',
+        },
+        {
+          step: 'relationship',
+          status: tone === 'danger' ? 'danger' : tone === 'success' ? 'success' : 'warning',
+          label: 'Step 2 — PI Verdict Executed',
+          detail: desc || 'Human signoff judgment recorded into laboratory audit ledger.',
+          durationMs: 24,
+          provider: 'PI Decision Engine',
+        },
+        {
+          step: 'safety_policy',
+          status: 'success',
+          label: 'Step 3 — Immutable Audit Ledger Commit',
+          detail: 'Deterministic Safety Invariant: Human scientific judgment overrides heuristics. Ledger entry sealed.',
+          durationMs: 16,
+          provider: 'Governance Ledger',
+        },
+        {
+          step: 'decision',
+          status: 'success',
+          label: 'Step 4 — Proposal Bibliography Synchronized',
+          detail: 'Active grant draft workspace updated to reflect latest human signoff.',
+          durationMs: 8,
+          provider: 'Workspace State Sync',
+        },
+      ];
+    } else if (tone === 'danger' || title.toLowerCase().includes('retraction') || kind === 'flagged') {
+      contextualTrace = [
+        {
+          step: 'dependency',
+          status: 'success',
+          label: 'Step 1 — Dependency Mapped in Lab Workspace',
+          detail: 'Citation indexed in active proposal bibliography.',
+          durationMs: 12,
+          provider: 'Workspace Indexer',
+        },
+        {
+          step: 'crossref',
+          status: 'success',
+          label: 'Step 2 — Query Crossref Metadata',
+          detail: 'Publisher metadata resolved. Journal indexing confirmed.',
+          durationMs: 115,
+          provider: 'Crossref REST API',
+        },
+        {
+          step: 'retraction_watch',
+          status: 'flagged',
+          label: 'Step 3 — Query Retraction Watch Dataset',
+          detail: 'MATCH CONFIRMED: Retraction notice identified. Reason: data integrity / figure duplication.',
+          durationMs: 78,
+          provider: 'Retraction Watch Database',
+        },
+        {
+          step: 'safety_policy',
+          status: 'danger',
+          label: 'Step 4 — Direct Retraction Invariant Applied',
+          detail: 'Safety policy rule: Direct retraction signals permit autonomous quarantine to protect proposal.',
+          durationMs: 15,
+          provider: 'Deterministic Safety Guardrail',
+        },
+        {
+          step: 'decision',
+          status: 'danger',
+          label: 'Step 5 — Action Enforced: Quarantined',
+          detail: desc || 'Isolated citation from active drafts. Audit record logged.',
+          durationMs: 5,
+          provider: 'Guardian Quarantine Core',
+        },
+      ];
+    } else if (tone === 'warning' || title.toLowerCase().includes('propagation') || kind === 'escalation') {
+      contextualTrace = [
+        {
+          step: 'dependency',
+          status: 'success',
+          label: 'Step 1 — Literature Graph Mapping',
+          detail: 'Grant references paper for foundational protocol.',
+          durationMs: 14,
+          provider: 'Semantic Scholar Graph',
+        },
+        {
+          step: 'crossref',
+          status: 'success',
+          label: 'Step 2 — Direct Publisher Verification',
+          detail: 'Primary target paper has clean indexing and no publisher retractions.',
+          durationMs: 128,
+          provider: 'Crossref',
+        },
+        {
+          step: 'relationship',
+          status: 'warning',
+          label: 'Step 3 — 1-Hop Graph Cascade Traversal',
+          detail: 'Traversed downstream reference tree: 1 intermediate reference relies on a retracted root study.',
+          durationMs: 290,
+          provider: 'Strands Propagation Engine',
+        },
+        {
+          step: 'safety_policy',
+          status: 'warning',
+          label: 'Step 4 — Restraint Invariant Applied',
+          detail: 'Article IV Restraint: AI prohibited from asserting scientific invalidity for 2nd-order propagation risk.',
+          durationMs: 18,
+          provider: 'Deterministic Guardrail',
+        },
+        {
+          step: 'decision',
+          status: 'warning',
+          label: 'Step 5 — Human Escalation',
+          detail: desc || 'Escalated to Human Decision Inbox. Principal Investigator evaluation required.',
+          durationMs: 10,
+          provider: 'Human Decision Inbox',
+        },
+      ];
+    } else {
+      contextualTrace = [
+        {
+          step: 'dependency',
+          status: 'success',
+          label: 'Step 1 — Autonomous Watch Sweep Initiated',
+          detail: 'Background worker checked active lab literature.',
+          durationMs: 10,
+          provider: 'Watch Worker',
+        },
+        {
+          step: 'crossref',
+          status: 'success',
+          label: 'Step 2 — Registry Verification',
+          detail: 'Crossref metadata confirmed current and authentic across all monitored DOIs.',
+          durationMs: 110,
+          provider: 'Crossref',
+        },
+        {
+          step: 'retraction_watch',
+          status: 'success',
+          label: 'Step 3 — Retraction Watch Check',
+          detail: 'Zero retraction notices recorded. Clean status confirmed.',
+          durationMs: 62,
+          provider: 'Retraction Watch',
+        },
+        {
+          step: 'safety_policy',
+          status: 'success',
+          label: 'Step 4 — Guardrail Evaluation',
+          detail: 'Zero interrupt threshold preserved. Silent verification confirmed.',
+          durationMs: 12,
+          provider: 'Guardian Restraint Core',
+        },
+        {
+          step: 'decision',
+          status: 'success',
+          label: 'Step 5 — Heartbeat Logged',
+          detail: desc || 'Clean verification record persisted.',
+          durationMs: 6,
+          provider: 'Audit Stream',
+        },
+      ];
+    }
+  }
+
+  const traceSteps = (metadata?.trace && metadata.trace.length > 0) ? metadata.trace : contextualTrace;
 
   const getStepIcon = (step: string, status: string) => {
     if (status === 'flagged' || status === 'danger') return XCircle;

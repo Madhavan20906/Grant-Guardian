@@ -590,6 +590,11 @@ export const demoDeadlines = [
   { id: 1, userId: 1, type: "IRB renewal", title: "Human Subjects Protocol 24-118", dueDate: new Date(Date.now() + 11 * 86400000), progress: 72, status: "due_soon" as const, owner: "Dr. Elena Rossi" },
   { id: 2, userId: 1, type: "Funding report", title: "NSF CAREER annual progress report", dueDate: new Date(Date.now() + 52 * 86400000), progress: 38, status: "on_track" as const, owner: "Dr. Elena Rossi" },
   { id: 3, userId: 1, type: "Data management", title: "NIH Data Management & Sharing update", dueDate: new Date(Date.now() + 3 * 86400000), progress: 12, status: "attention" as const, owner: "Dr. Elena Rossi" },
+  { id: 4, userId: 1, type: "Biosafety audit", title: "Institutional Biosafety Committee (IBC) Re-certification", dueDate: new Date(Date.now() + 19 * 86400000), progress: 65, status: "due_soon" as const, owner: "Dr. Elena Rossi" },
+  { id: 5, userId: 1, type: "Material transfer", title: "MTA Biomaterials Multi-Site Compliance Verification", dueDate: new Date(Date.now() + 27 * 86400000), progress: 85, status: "on_track" as const, owner: "Dr. Elena Rossi" },
+  { id: 6, userId: 1, type: "Ethics disclosure", title: "Financial Conflict of Interest (FCOI) Annual Filing", dueDate: new Date(Date.now() + 35 * 86400000), progress: 90, status: "on_track" as const, owner: "Dr. Elena Rossi" },
+  { id: 7, userId: 1, type: "Export control", title: "EAR & ITAR Foreign National Laboratory Screening", dueDate: new Date(Date.now() + 64 * 86400000), progress: 45, status: "on_track" as const, owner: "Dr. Elena Rossi" },
+  { id: 8, userId: 1, type: "Lab safety", title: "Chemical Hygiene & Hazardous Waste Quarterly Ledger", dueDate: new Date(Date.now() + 6 * 86400000), progress: 20, status: "attention" as const, owner: "Dr. Elena Rossi" },
   // User 2: Dr. Marcus Chen
   { id: 201, userId: 2, type: "Grant renewal", title: "NIH R01 Clinical Proteomics Core renewal", dueDate: new Date(Date.now() + 8 * 86400000), progress: 68, status: "due_soon" as const, owner: "Dr. Marcus Chen" },
   { id: 202, userId: 2, type: "Funding report", title: "DoD CDMRP Breast Cancer Research progress report", dueDate: new Date(Date.now() + 45 * 86400000), progress: 42, status: "on_track" as const, owner: "Dr. Marcus Chen" },

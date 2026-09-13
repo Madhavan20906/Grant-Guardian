@@ -515,6 +515,57 @@ class GuardianStore {
     }
   }
 
+  async addDeadline(data: {
+    userId: number;
+    type: string;
+    title: string;
+    dueDate: Date;
+    owner: string;
+    progress?: number;
+    status?: "on_track" | "due_soon" | "attention";
+  }): Promise<DeadlineRecord> {
+    const progress = data.progress ?? 15;
+    const days = Math.ceil((data.dueDate.getTime() - Date.now()) / 86_400_000);
+    const status = data.status || (days <= 7 ? "attention" : days <= 21 ? "due_soon" : "on_track");
+
+    const record: DeadlineRecord = {
+      id: this.memoryDeadlines.length + 100,
+      userId: data.userId,
+      type: data.type,
+      title: data.title,
+      dueDate: data.dueDate,
+      owner: data.owner,
+      progress,
+      status,
+    };
+
+    if (isDatabaseConfigured) {
+      try {
+        const [inserted] = await db
+          .insert(deadlines)
+          .values({
+            userId: data.userId,
+            type: data.type,
+            title: data.title,
+            dueDate: data.dueDate,
+            owner: data.owner,
+            progress,
+            status,
+          })
+          .returning();
+        if (inserted) {
+          record.id = inserted.id;
+        }
+      } catch (err) {
+        logger.warn({ err, operation: "addDeadline" }, "Database unavailable for addDeadline; saved to memory");
+      }
+    }
+
+    this.memoryDeadlines.push(record);
+    return record;
+  }
+
+
   async getActivities(userId: number, limit = 100): Promise<ActivityRecord[]> {
     if (!isDatabaseConfigured) {
       return this.memoryActivities

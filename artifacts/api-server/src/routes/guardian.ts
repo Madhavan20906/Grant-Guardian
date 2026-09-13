@@ -82,6 +82,75 @@ router.get("/guardian/deadlines", async (req, res, next) => {
   }
 });
 
+router.post("/guardian/deadlines", async (req, res, next) => {
+  try {
+    const { userId, user } = await resolveUser(req);
+    const title = String(req.body?.title ?? "").trim();
+    const type = String(req.body?.type ?? "Compliance Review").trim();
+    const dueDateStr = String(req.body?.dueDate ?? "");
+    const dueDate = dueDateStr ? new Date(dueDateStr) : new Date(Date.now() + 30 * 86400000);
+    const progress = Number(req.body?.progress) || 10;
+    const owner = String(req.body?.owner || (user ? `${user.title} ${user.name}` : "Principal Investigator")).trim();
+
+    if (!title) {
+      return res.status(400).json({ error: "Title is required" });
+    }
+
+    const created = await guardianStore.addDeadline({
+      userId,
+      title,
+      type,
+      dueDate,
+      owner,
+      progress,
+    });
+
+    await guardianStore.addActivity({
+      userId,
+      kind: "draft",
+      title: `Compliance requirement tracked: ${title}`,
+      description: `Registered active milestone for ${type} (Due ${dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}). Guardian compliance watch attached.`,
+      tone: "neutral",
+    });
+
+    const defaultOwner = user ? `${user.title} ${user.name}` : undefined;
+    return res.status(201).json(deadlineDto(created, defaultOwner));
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.post("/guardian/activity", async (req, res, next) => {
+  try {
+    const userId = await resolveUserId(req);
+    const title = String(req.body?.title ?? "").trim();
+    const description = String(req.body?.description ?? "").trim();
+    const kind = String(req.body?.kind ?? "scan").trim();
+    const tone = String(req.body?.tone ?? "neutral").trim();
+
+    if (!title) {
+      return res.status(400).json({ error: "Title is required" });
+    }
+
+    const activity = await guardianStore.addActivity({
+      userId,
+      title,
+      description,
+      kind,
+      tone,
+      createdAt: new Date(),
+    });
+
+    return res.status(201).json({
+      ...activity,
+      timestamp: activity.createdAt.toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }),
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+
 router.get("/guardian/activity", async (req, res, next) => {
   try {
     const userId = await resolveUserId(req);
