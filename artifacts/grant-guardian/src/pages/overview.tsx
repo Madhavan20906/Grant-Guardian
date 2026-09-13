@@ -220,18 +220,18 @@ export default function Overview() {
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={() => setShowStrandsInfo(true)}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-500/40 bg-indigo-950/40 hover:bg-indigo-900/60 dark:bg-indigo-950/70 px-3.5 py-2 text-xs font-black text-indigo-300 transition-all shadow-sm ring-1 ring-indigo-500/30"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-2xs"
               data-testid="btn-strands-boss-hud"
             >
-              <Crown size={14} className="text-amber-400" />
-              <span>Strands Core: 10/10 Tools</span>
+              <Layers size={14} className="text-slate-500 dark:text-slate-400" />
+              <span>Strands Core: 10 Tools</span>
             </button>
             <button
               onClick={() => setShowDemoModal(true)}
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-700 hover:from-indigo-700 hover:to-purple-800 text-white px-4 py-2 text-xs font-extrabold transition-all shadow-sm ring-2 ring-indigo-500/20"
+              className="inline-flex items-center gap-2 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 px-4 py-2 text-xs font-bold transition-all shadow-xs"
               data-testid="btn-launch-demo-investigation"
             >
-              <Sparkles size={14} className="text-amber-300" />
+              <Sparkles size={14} className="text-amber-500 dark:text-amber-600" />
               <span>Launch Live Demo (37 Citations)</span>
             </button>
             <button
@@ -248,16 +248,16 @@ export default function Overview() {
         </div>
 
         {/* JUDGING SHOWCASE / DEMO CALLOUT BANNER */}
-        <div className="rounded-2xl border-2 border-indigo-500/30 bg-gradient-to-r from-indigo-50/90 via-purple-50/50 to-white dark:from-indigo-950/40 dark:via-purple-950/20 dark:to-slate-900 p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4 shadow-xs" data-testid="banner-judging-showcase">
+        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4 shadow-xs" data-testid="banner-judging-showcase">
           <div className="space-y-1">
-            <div className="flex items-center gap-2 font-mono text-[10px] font-extrabold uppercase tracking-widest text-indigo-700 dark:text-indigo-400">
-              <span className="flex size-2 rounded-full bg-indigo-600 animate-ping" />
-              <span>Autonomous Decision-Making &middot; Signature Contamination Cascade</span>
+            <div className="flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+              <span className="size-2 rounded-full bg-emerald-500" />
+              <span>Autonomous Decision Pipeline · Contamination Cascade</span>
             </div>
-            <h3 className="text-[16px] font-extrabold text-slate-900 dark:text-white">
+            <h3 className="text-[16px] font-bold text-slate-900 dark:text-white">
               Watch the Agent Autonomously Detect Citation Contamination Cascades
             </h3>
-            <p className="text-[12px] text-slate-600 dark:text-slate-300 max-w-2xl font-medium">
+            <p className="text-[12px] text-slate-600 dark:text-slate-400 max-w-2xl font-normal leading-relaxed">
               A researcher submits a grant proposal &rarr; Agent ingests 37 citations &rarr; silently passes 34 clean citations &rarr; chooses Crossref &amp; Retraction Watch for suspicious records &rarr; traverses 1-hop Semantic Scholar graph &rarr; finds 2 downstream citations in proposal text &rarr; enforces Human Decision Boundary.
             </p>
           </div>
@@ -266,19 +266,19 @@ export default function Overview() {
             <button
               type="button"
               onClick={() => setShowStrandsInfo(true)}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-500/50 bg-indigo-900/30 hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 px-3.5 py-2.5 text-[12px] font-extrabold shadow-sm transition-all"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 px-3.5 py-2.5 text-[12px] font-semibold transition-colors"
               data-testid="btn-banner-strands-boss"
             >
-              <Crown size={13} className="text-amber-500" />
-              <span>Sovereign Boss Fleet (10 Tools)</span>
+              <Layers size={13} className="text-slate-400" />
+              <span>Strands Core (10 Tools)</span>
             </button>
             <button
               type="button"
               onClick={() => setShowDemoModal(true)}
-              className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 text-[12px] font-extrabold shadow-sm transition-all"
+              className="inline-flex items-center gap-2 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 px-4 py-2.5 text-[12px] font-bold shadow-xs transition-colors"
               data-testid="btn-demo-banner-cta"
             >
-              <Play size={13} className="fill-white" />
+              <Play size={13} className="fill-current" />
               <span>Launch Live Investigation</span>
             </button>
           </div>
