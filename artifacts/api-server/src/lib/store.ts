@@ -712,21 +712,23 @@ class GuardianStore {
       deadlineReminders: data.deadlineReminders ?? current.deadlineReminders,
     };
 
-    try {
-      const [row] = await db
-        .update(preferences)
-        .set({
-          weeklyDeskNote: updated.weeklyDeskNote,
-          highRiskInterrupts: updated.highRiskInterrupts,
-          deadlineReminders: updated.deadlineReminders,
-        })
-        .where(eq(preferences.userId, userId))
-        .returning();
-      if (row) {
-        return row as PreferencesRecord;
+    if (isDatabaseConfigured) {
+      try {
+        const [row] = await db
+          .update(preferences)
+          .set({
+            weeklyDeskNote: updated.weeklyDeskNote,
+            highRiskInterrupts: updated.highRiskInterrupts,
+            deadlineReminders: updated.deadlineReminders,
+          })
+          .where(eq(preferences.userId, userId))
+          .returning();
+        if (row) {
+          return row as PreferencesRecord;
+        }
+      } catch (err) {
+        logger.warn({ err, operation: "updatePreferences" }, "Database unavailable for updatePreferences; updating in-memory store");
       }
-    } catch (err) {
-      logger.warn({ err, operation: "updatePreferences" }, "Database unavailable for updatePreferences; updating in-memory store");
     }
 
     const idx = this.memoryPreferences.findIndex(p => p.userId === userId);
@@ -745,17 +747,21 @@ class GuardianStore {
       const normalizedDoi = doi.trim();
       let exists = false;
 
-      try {
-        const [existing] = await db
-          .select()
-          .from(citations)
-          .where(and(eq(citations.userId, userId), eq(citations.doi, normalizedDoi)))
-          .limit(1);
-        if (existing) {
-          exists = true;
+      if (isDatabaseConfigured) {
+        try {
+          const [existing] = await db
+            .select()
+            .from(citations)
+            .where(and(eq(citations.userId, userId), eq(citations.doi, normalizedDoi)))
+            .limit(1);
+          if (existing) {
+            exists = true;
+          }
+        } catch (err) {
+          logger.warn({ err, doi: normalizedDoi, operation: "importCitations.check" }, "Database unavailable for import deduplication; checking memory");
+          exists = this.memoryCitations.some(c => c.userId === userId && c.doi.toLowerCase() === normalizedDoi.toLowerCase());
         }
-      } catch (err) {
-        logger.warn({ err, doi: normalizedDoi, operation: "importCitations.check" }, "Database unavailable for import deduplication; checking memory");
+      } else {
         exists = this.memoryCitations.some(c => c.userId === userId && c.doi.toLowerCase() === normalizedDoi.toLowerCase());
       }
 
@@ -775,25 +781,27 @@ class GuardianStore {
         updatedAt: new Date(),
       };
 
-      try {
-        const [inserted] = await db
-          .insert(citations)
-          .values({
-            userId,
-            doi: newRecord.doi,
-            title: newRecord.title,
-            authors: newRecord.authors,
-            venue: newRecord.venue,
-            year: newRecord.year,
-            status: newRecord.status,
-            risk: newRecord.risk,
-          })
-          .returning();
-        if (inserted) {
-          newRecord.id = inserted.id;
+      if (isDatabaseConfigured) {
+        try {
+          const [inserted] = await db
+            .insert(citations)
+            .values({
+              userId,
+              doi: newRecord.doi,
+              title: newRecord.title,
+              authors: newRecord.authors,
+              venue: newRecord.venue,
+              year: newRecord.year,
+              status: newRecord.status,
+              risk: newRecord.risk,
+            })
+            .returning();
+          if (inserted) {
+            newRecord.id = inserted.id;
+          }
+        } catch (err) {
+          logger.warn({ err, doi: normalizedDoi, operation: "importCitations.insert" }, "Database unavailable for import insert; storing in memory");
         }
-      } catch (err) {
-        logger.warn({ err, doi: normalizedDoi, operation: "importCitations.insert" }, "Database unavailable for import insert; storing in memory");
       }
 
       this.memoryCitations.push(newRecord);
@@ -814,24 +822,26 @@ class GuardianStore {
     retractedReferences?: any;
   }>): Promise<void> {
     for (const d of decisions) {
-      try {
-        await db
-          .update(citations)
-          .set({
-            status: d.status as any,
-            risk: d.risk as any,
-            detail: d.detail,
-            metadata: {
-              graph: d.graph,
-              providers: d.providerStatus,
-              trace: d.trace,
-              retractedReferences: d.retractedReferences,
-            },
-            updatedAt: new Date(),
-          })
-          .where(eq(citations.id, d.citationId));
-      } catch (err) {
-        logger.warn({ err, citationId: d.citationId, operation: "saveCitationDecisions" }, "Database unavailable to save scan decision; updating memory store");
+      if (isDatabaseConfigured) {
+        try {
+          await db
+            .update(citations)
+            .set({
+              status: d.status as any,
+              risk: d.risk as any,
+              detail: d.detail,
+              metadata: {
+                graph: d.graph,
+                providers: d.providerStatus,
+                trace: d.trace,
+                retractedReferences: d.retractedReferences,
+              },
+              updatedAt: new Date(),
+            })
+            .where(eq(citations.id, d.citationId));
+        } catch (err) {
+          logger.warn({ err, citationId: d.citationId, operation: "saveCitationDecisions" }, "Database unavailable to save scan decision; updating memory store");
+        }
       }
 
       const memTarget = this.memoryCitations.find(c => c.id === d.citationId);

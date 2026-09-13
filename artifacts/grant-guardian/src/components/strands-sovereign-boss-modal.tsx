@@ -357,6 +357,8 @@ export interface StrandsSovereignBossModalProps {
   onClose: () => void;
 }
 
+export type StrandsFleetModalProps = StrandsSovereignBossModalProps;
+
 export function StrandsSovereignBossModal({ isOpen, onClose }: StrandsSovereignBossModalProps) {
   const [activeTab, setActiveTab] = useState<'matrix' | 'consensus' | 'sandbox' | 'proofs'>('matrix');
   const [selectedScenario, setSelectedScenario] = useState<SimulationScenario>(SCENARIOS[1]);

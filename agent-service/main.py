@@ -34,115 +34,20 @@ from strands.models.model import Model
 app = FastAPI(title="Grant Guardian Strands Agent", version="2.0.0")
 
 # 2. VERIFIED BENCHMARK RETRACTIONS REGISTER (Demonstration & Benchmark Fallback)
-# Transparently labeled as offline fallback data across scientific domains
-KNOWN_RETRACTED_DOIS: dict[str, dict[str, str]] = {
-    # Stem Cell Biology & Reprogramming
-    "10.1038/nature13358": {
-        "reason": "Stimulus-triggered fate conversion of somatic cells into pluripotency (STAP) retracted due to image manipulation and data fabrication.",
-        "date": "2014-07-02",
-        "title": "Stimulus-triggered fate conversion of somatic cells into pluripotency",
-    },
-    "10.1038/nature13357": {
-        "reason": "Bidirectional chromatin remodeling in STAP cells retracted due to image duplication.",
-        "date": "2014-07-02",
-        "title": "Bidirectional chromatin remodeling in STAP cells",
-    },
-    "10.1016/j.cell.2016.10.024": {
-        "reason": "Cellular reprogramming study retracted following institutional committee investigation.",
-        "date": "2016-11-15",
-        "title": "Cellular reprogramming study",
-    },
-    "10.1126/science.1112286": {
-        "reason": "Patient-specific embryonic stem cell lines retracted due to fabricated DNA profiling and teratoma data (Hwang scandal).",
-        "date": "2006-01-12",
-        "title": "Patient-specific embryonic stem cell lines derived from human SCNT blastocysts",
-    },
-    "10.1126/science.1094515": {
-        "reason": "Evidence of a pluripotent human embryonic stem cell line derived from cloned blastocyst retracted due to data fabrication.",
-        "date": "2006-01-12",
-        "title": "Evidence of a pluripotent human embryonic stem cell line derived from a cloned blastocyst",
-    },
-    # Medicine, Vaccines & Infectious Disease
-    "10.1016/s0140-6736(97)11096-0": {
-        "reason": "MMR autism claim (Wakefield et al.) formally retracted by The Lancet due to falsified clinical claims and ethical violations.",
-        "date": "2010-02-06",
-        "title": "RETRACTED: Ileal-lymphoid-nodular hyperplasia, non-specific colitis, and pervasive developmental disorder in children",
-    },
-    "10.1016/s0140-6736(20)31180-6": {
-        "reason": "Multinational COVID-19 hydroxychloroquine registry analysis retracted by The Lancet due to unverified Surgisphere database.",
-        "date": "2020-06-05",
-        "title": "RETRACTED: Hydroxychloroquine or chloroquine with or without a macrolide for treatment of COVID-19: a multinational registry analysis",
-    },
-    "10.1056/nejmoa2007621": {
-        "reason": "Cardiovascular disease and COVID-19 mortality analysis retracted by NEJM due to inability to audit underlying Surgisphere data.",
-        "date": "2020-06-04",
-        "title": "RETRACTED: Cardiovascular Disease, Drug Therapy, and Mortality in Covid-19",
-    },
-    "10.1016/s0140-6736(11)60715-4": {
-        "reason": "Synthetic trachea transplantation (Macchiarini et al.) retracted by The Lancet due to severe clinical misconduct and falsified patient outcomes.",
-        "date": "2018-07-07",
-        "title": "RETRACTED: Clinical transplantation of a tissue-engineered airway",
-    },
-    # Oncology & Cancer Genomics
-    "10.1126/science.1129064": {
-        "reason": "Genomic signatures to guide chemotherapy selection retracted following Duke University inquiry into irreproducible microarrays.",
-        "date": "2011-01-07",
-        "title": "RETRACTED: Genomic signatures to guide the choice of chemotherapy",
-    },
-    "10.1056/nejmoa0806455": {
-        "reason": "Validation of gene signatures for lung cancer recurrence retracted due to computational coding errors and predictor data anomalies.",
-        "date": "2011-01-07",
-        "title": "RETRACTED: Validation of gene signatures for lung-cancer recurrence",
-    },
-    # Physics & Materials Science
-    "10.1038/s41586-020-2801-z": {
-        "reason": "Room-temperature superconductivity in carbonaceous sulfur hydride retracted by Nature editors due to non-reproducible electrical resistance processing.",
-        "date": "2022-09-26",
-        "title": "RETRACTED: Room-temperature superconductivity in a carbonaceous sulfur hydride",
-    },
-    "10.1038/s41586-023-05742-0": {
-        "reason": "Near-ambient superconductivity in N-doped lutetium hydride retracted by Nature following institutional data manipulation investigation.",
-        "date": "2023-11-07",
-        "title": "RETRACTED: Evidence of near-ambient superconductivity in N-doped lutetium hydride",
-    },
-    "10.1038/35040508": {
-        "reason": "Field-effect superconductivity in molecular crystals (Schön scandal) retracted due to data falsification and identical noise across figures.",
-        "date": "2003-03-06",
-        "title": "RETRACTED: Superconductivity in a single-organic-molecule field-effect transistor",
-    },
-    "10.1126/science.290.5493.963": {
-        "reason": "Light-emitting field-effect transistor retracted following Bell Labs independent committee investigation.",
-        "date": "2002-11-01",
-        "title": "RETRACTED: A light-emitting field-effect transistor",
-    },
-    "10.1038/nature02477": {
-        "reason": "DNA repair mechanism study retracted following institutional committee findings.",
-        "date": "2007-06-21",
-        "title": "RETRACTED: Defective repair of oxidative DNA damage in Cockayne syndrome",
-    },
-    # Psychology & Social Science
-    "10.1126/science.1203629": {
-        "reason": "Coping with chaos / disordered contexts promoting stereotyping (Stapel et al.) retracted due to fraudulent, fabricated survey data.",
-        "date": "2011-12-02",
-        "title": "RETRACTED: Coping with chaos: how disordered contexts promote stereotyping and discrimination",
-    },
-    "10.1126/science.1256099": {
-        "reason": "Contact hypothesis experiment on attitudes toward equality (LaCour & Green) retracted due to fabricated survey respondents.",
-        "date": "2015-05-28",
-        "title": "RETRACTED: When contact changes minds: an experiment on transmission of support for gay equality",
-    },
-    # Environmental Science & Computer Science
-    "10.1126/science.aaf6659": {
-        "reason": "Microplastics in larval fish study retracted due to missing original empirical data and findings of scientific dishonesty.",
-        "date": "2017-05-05",
-        "title": "RETRACTED: Environmentally relevant concentrations of microplastic particles influence host marker development in fish",
-    },
-    "10.1016/j.patcog.2020.107798": {
-        "reason": "Deep face anti-spoofing study retracted due to non-verifiable test benchmarks and duplicate figures.",
-        "date": "2021-04-15",
-        "title": "RETRACTED: Deep face anti-spoofing via joint convolutional neural networks",
-    },
-}
+# Dynamically loaded from external benchmark dataset across scientific domains
+BENCHMARK_DATA_PATH = os.path.join(os.path.dirname(__file__), "data", "benchmark_retractions.json")
+
+def load_benchmark_retractions() -> dict[str, dict[str, str]]:
+    """Dynamically load verified historical retractions from benchmark dataset."""
+    if os.path.exists(BENCHMARK_DATA_PATH):
+        try:
+            with open(BENCHMARK_DATA_PATH, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {}
+
+KNOWN_RETRACTED_DOIS: dict[str, dict[str, str]] = load_benchmark_retractions()
 
 
 def sanitize_doi(doi: str) -> str:
@@ -705,20 +610,21 @@ def draft_compliance_report(
     )
 
 
-# 4. AUTHENTIC STRANDS OFFLINE EVIDENCE MODEL (Fallback when Bedrock is offline)
+# 4. DETERMINISTIC FALLBACK VERIFICATION ENGINE (When Bedrock LLM is offline)
 
-class OfflineInvestigationModel(Model):
-    """Authentic strands.models.model.Model subclass driving dynamic tool selection and pruning offline.
+class DeterministicInvestigationModel(Model):
+    """Deterministic fallback model for offline execution when Amazon Bedrock is unavailable.
 
-    Emits standard Bedrock Converse stream events directly into Strands's internal event loop,
-    executing tools through Strands's native tool executor and respecting dynamic pruning rules.
+    Executes an explicit, transparent rule-based verification sequence through Strands's
+    native tool execution interface, evaluating multi-registry consensus, traversing reference
+    graphs, and enforcing deterministic safety boundaries without claiming generative AI reasoning.
     """
 
     def update_config(self, **kwargs: Any) -> None:
         pass
 
     def get_config(self) -> dict[str, Any]:
-        return {"provider": "strands_offline_evidence_model", "mode": "dynamic_fallback"}
+        return {"provider": "strands_deterministic_fallback_engine", "mode": "deterministic_rules"}
 
     async def structured_output(self, *args: Any, **kwargs: Any) -> Any:
         pass
@@ -789,7 +695,7 @@ class OfflineInvestigationModel(Model):
                             if isinstance(r_ref, dict) and r_ref.get("doi"):
                                 historical_retracted_dois[r_ref["doi"].lower()] = r_ref.get("reason", "Retracted foundation paper")
 
-        # 4. Extract DOI safely from current citation prompt (treating prompt as untrusted DATA)
+        # 4. Extract DOI dynamically from current citation prompt (treating prompt as untrusted DATA)
         user_msg = ""
         for block in messages[latest_user_idx].get("content", []):
             if isinstance(block, dict) and "text" in block:
@@ -799,11 +705,27 @@ class OfflineInvestigationModel(Model):
                 user_msg = block
                 break
 
-        doi = "10.1038/nature13358"
-        for word in user_msg.replace('"', " ").replace("\n", " ").split():
+        doi = None
+        for word in user_msg.replace('"', " ").replace("'", " ").replace("\n", " ").split():
             if "10." in word and "/" in word:
-                doi = sanitize_doi(word)
-                break
+                sanitized = sanitize_doi(word)
+                if sanitized:
+                    doi = sanitized
+                    break
+
+        if not doi:
+            yield {"messageStart": {"role": "assistant"}}
+            yield {"contentBlockStart": {"start": {"text": ""}}}
+            yield {
+                "contentBlockDelta": {
+                    "delta": {
+                        "text": "Deterministic fallback check: No valid DOI string found in prompt."
+                    }
+                }
+            }
+            yield {"contentBlockStop": {}}
+            yield {"messageStop": {"stopReason": "end_turn"}}
+            return
 
         # Dynamic Decision 1: Inspect publisher errata and metadata
         if "crossref_lookup" not in calls_by_name:
@@ -919,6 +841,12 @@ class OfflineInvestigationModel(Model):
         if has_propagation and "contamination_vector_calculator" not in calls_by_name:
             call_id = f"call_vec_{len(messages)}_{len(tool_uses)+1}"
             flagged = retracted_refs[0] if retracted_refs else {}
+            citation_context = (
+                "grant_aim_dependency" if "aim" in user_msg.lower()
+                else ("methodology" if "method" in user_msg.lower()
+                else ("background_literature" if "prior" in user_msg.lower() or "background" in user_msg.lower()
+                else "foundational_claim"))
+            )
             yield {"messageStart": {"role": "assistant"}}
             yield {"contentBlockStart": {"start": {"toolUse": {"toolUseId": call_id, "name": "contamination_vector_calculator"}}}}
             yield {
@@ -928,7 +856,7 @@ class OfflineInvestigationModel(Model):
                             "input": json.dumps({
                                 "root_doi": doi,
                                 "retracted_ref_doi": flagged.get("doi", ""),
-                                "citation_context": "methodology",
+                                "citation_context": citation_context,
                             })
                         }
                     }
@@ -993,6 +921,10 @@ class OfflineInvestigationModel(Model):
         yield {"contentBlockDelta": {"delta": {"text": summary}}}
         yield {"contentBlockStop": {}}
         yield {"messageStop": {"stopReason": "end_turn"}}
+
+
+# Alias for backward compatibility
+OfflineInvestigationModel = DeterministicInvestigationModel
 
 
 # 4B. STRANDS MULTI-AGENT ARCHITECTURE: AGENTS-AS-TOOLS & SOVEREIGN HANDOFFS
@@ -1340,20 +1272,7 @@ def scan(request: ScanRequest) -> dict[str, Any]:
                             parsed_c = raw_c
                         tool_results_by_id[call_id] = parsed_c
 
-        # Model reasoning & internal planning dictionaries (observable chain-of-thought)
-        thought_map = {
-            "crossref_lookup": f"Received untrusted DOI {doi}. Plan: Establish official publisher baseline by querying Crossref REST API for formal update-to links, corrigenda, or publisher errata.",
-            "retraction_watch_lookup": f"Publisher metadata analyzed. Plan: Query independent licensed Retraction Watch database for {doi} to confirm whether any legal decrees, institutional committee sanctions, or formal retraction notices exist.",
-            "openalex_global_registry": f"Cross-examining global 250M+ scholarly works graph for {doi} to detect retraction flags, citation metrics, and institutional provenance.",
-            "pubmed_retraction_verifier": f"Validating against NIH National Library of Medicine (MeSH / PMC) to verify official biomedical peer-reviewed record status for {doi}.",
-            "semantic_scholar_graph": f"Direct paper {doi} confirmed clean across registries. Plan: Must check for latent 2nd-order citation rot. Extracting 1-hop reference graph via Semantic Scholar to inspect cited foundation literature.",
-            "check_reference_retractions": f"Extracted child bibliography for {doi}. Plan: Concurrently scan all referenced works against Retraction Watch using worker pool to detect indirect dependency rot.",
-            "contamination_vector_calculator": f"Foundational retraction detected in references of {doi}. Plan: Calculate quantitative Contamination Severity Index (CSI 0.0-1.0) and map proposal blast radius before human escalation.",
-            "escalate_to_human": f"2nd-order propagation cascade confirmed for {doi}. RESTRICTION INVARIANT: AI is strictly prohibited from auto-deleting or altering proposal citations. Must route structured briefing to PI Decision Inbox.",
-            "provenance_proof_generator": f"Multi-registry consensus established for {doi}. Plan: Cryptographically seal evidence and deterministic decision into immutable HMAC-SHA256 audit receipt (NIST SP 800-92 standard).",
-            "draft_compliance_report": f"Regulatory compliance deadline approaching. Plan: Autonomously draft preliminary progress report narrative enforcing the strict non-submission invariant.",
-        }
-
+        # Rationale & invariant rules for observable audit trace
         rule_map = {
             "crossref_lookup": "Mandatory Invariant: Publisher errata must be inspected before traversing downstream dependencies.",
             "retraction_watch_lookup": "Corroboration Invariant: Publisher notices must be cross-checked against independent retraction registries.",
@@ -1367,7 +1286,7 @@ def scan(request: ScanRequest) -> dict[str, Any]:
             "draft_compliance_report": "Non-Submission Invariant: AI compliance drafts never auto-submit without human PI signoff.",
         }
 
-        # Build observable trace entries with genuine model thoughts and plan
+        # Build observable trace entries
         calls_by_name: dict[str, Any] = {}
         for tc in citation_tool_calls:
             name = tc.get("name", "")
@@ -1393,6 +1312,12 @@ def scan(request: ScanRequest) -> dict[str, Any]:
             else:
                 agent_role = "SovereignCoordinatorAgent"
 
+            rationale_text = (
+                f"Bedrock model reasoning directed execution of {name} for {doi}."
+                if has_bedrock
+                else f"Deterministic policy rule triggered execution of {name} for {doi}."
+            )
+
             tool_trace.append({
                 "tool": name,
                 "citation_doi": doi,
@@ -1400,12 +1325,11 @@ def scan(request: ScanRequest) -> dict[str, Any]:
                 "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
                 "duration_ms": max(12, t_duration // max(1, len(citation_tool_calls))),
                 "status": status_label_step,
-                "thought_before_action": thought_map.get(name, f"Executing agent tool {name} to evaluate {doi}."),
                 "decision_rule": rule_map.get(name, "Deterministic safety policy invariant."),
-                "planning_rationale": thought_map.get(name, f"Executing agent tool {name} to evaluate {doi}."),
+                "planning_rationale": rationale_text,
                 "input": tc.get("input", {}),
                 "output": out,
-                "decision_rationale": thought_map.get(name, f"Agent-selected execution of {name}."),
+                "decision_rationale": f"{'Model' if has_bedrock else 'Deterministic'} evaluation of {name}.",
             })
 
         # Structured evidence synthesis
@@ -1426,7 +1350,7 @@ def scan(request: ScanRequest) -> dict[str, Any]:
             or (isinstance(pm_data, dict) and pm_data.get("is_retracted"))
         )
 
-        # Observable pruning notation (Proof of non-fixed sequencing!)
+        # Branch optimization: direct retractions prune reference crawling
         if is_direct and "semantic_scholar_graph" not in calls_by_name:
             tool_trace.append({
                 "tool": "semantic_scholar_graph",
@@ -1435,12 +1359,11 @@ def scan(request: ScanRequest) -> dict[str, Any]:
                 "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
                 "duration_ms": 0,
                 "status": "pruned",
-                "thought_before_action": f"Direct paper {doi} already confirmed retracted across multi-registry consensus. Downstream reference crawling would be redundant and wasteful.",
-                "decision_rule": "Dynamic Pruning Invariant: Terminate downstream literature graph expansion immediately upon direct retraction confirmation.",
-                "planning_rationale": "Direct retraction confirmed; graph crawl pruned to save 3 API calls and ~450ms latency.",
+                "decision_rule": "Pruning Invariant: Terminate downstream literature graph expansion immediately upon direct retraction confirmation.",
+                "planning_rationale": "Direct retraction confirmed; downstream reference crawl pruned to conserve compute.",
                 "input": {"doi": doi},
                 "output": {"pruned": True, "reason": "Direct retraction confirmed across multi-registry consensus; reference crawl pruned."},
-                "decision_rationale": "Direct retraction verified independently. Graph traversal pruned to preserve resources.",
+                "decision_rationale": "Direct retraction verified independently. Reference traversal pruned.",
             })
 
         has_prop = bool(isinstance(ref_data, dict) and ref_data.get("has_propagation_risk"))
@@ -1513,7 +1436,7 @@ def scan(request: ScanRequest) -> dict[str, Any]:
     payload_result = {
         "agent": "strands",
         "version": "2.0.0",
-        "agent_power_level": "ULTIMATE_SOVEREIGN_BOSS",
+        "agent_power_level": "SOVEREIGN_MULTI_AGENT_FLEET",
         "mode": mode,
         "status_label": status_label,
         "fallback": is_fallback,
@@ -1606,7 +1529,7 @@ def health() -> dict[str, Any]:
         "status": "ok",
         "agent": "strands",
         "version": "2.0.0",
-        "agent_power_level": "ULTIMATE_SOVEREIGN_BOSS",
+        "agent_power_level": "SOVEREIGN_MULTI_AGENT_FLEET",
         "mode": mode,
         "status_label": status_label,
         "fallback": is_fallback,

@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import { BedrockRuntimeClient, ConverseCommand } from "@aws-sdk/client-bedrock-runtime";
 import { logger } from "./logger";
 
@@ -115,7 +116,7 @@ export async function runStrandsService(citations: CitationInput[]) {
       error: "STRANDS_AGENT_URL is not configured",
       mode: "strands_offline_fallback",
       status_label: "STRANDS UNAVAILABLE — Offline Verification Active",
-      agent_power_level: "ULTIMATE_SOVEREIGN_BOSS",
+      agent_power_level: "SOVEREIGN_MULTI_AGENT_FLEET",
       tools: 10,
       consensus_registries: [
         "Crossref REST API",
@@ -142,7 +143,7 @@ export async function runStrandsService(citations: CitationInput[]) {
         error: `Strands service ${response.status}`,
         mode: "error",
         status_label: `STRANDS SERVICE ERROR (${response.status})`,
-        agent_power_level: "ULTIMATE_SOVEREIGN_BOSS",
+        agent_power_level: "SOVEREIGN_MULTI_AGENT_FLEET",
         tools: 10,
         consensus_registries: [
           "Crossref REST API",
@@ -162,7 +163,7 @@ export async function runStrandsService(citations: CitationInput[]) {
       error: null,
       agent: payload.agent,
       version: payload.version,
-      agent_power_level: payload.agent_power_level ?? "ULTIMATE_SOVEREIGN_BOSS",
+      agent_power_level: payload.agent_power_level ?? "SOVEREIGN_MULTI_AGENT_FLEET",
       mode: payload.mode ?? "strands_agentcore_live",
       status_label: payload.status_label ?? "STRANDS AGENT LIVE — AWS Bedrock Orchestration",
       fallback: payload.fallback ?? false,
@@ -187,7 +188,7 @@ export async function runStrandsService(citations: CitationInput[]) {
       error: error instanceof Error ? error.message : "Strands service unavailable",
       mode: "unreachable",
       status_label: "STRANDS UNAVAILABLE — Fallback Mode Active",
-      agent_power_level: "ULTIMATE_SOVEREIGN_BOSS",
+      agent_power_level: "SOVEREIGN_MULTI_AGENT_FLEET",
       tools: 10,
       consensus_registries: [
         "Crossref REST API",
@@ -252,115 +253,20 @@ const crossref = async (doi: string): Promise<ToolResult> => {
   }
 };
 
-// Known retracted DOIs benchmark database for high-reliability demo verification across multiple disciplines
-export const KNOWN_RETRACTED_DOIS: Record<string, { reason: string; date: string; title: string }> = {
-  // Stem Cell Biology & Reprogramming
-  "10.1038/nature13358": {
-    reason: "Stimulus-triggered fate conversion of somatic cells into pluripotency (STAP) paper retracted due to image manipulation, data fabrication, and irreproducibility.",
-    date: "2014-07-02",
-    title: "Stimulus-triggered fate conversion of somatic cells into pluripotency",
-  },
-  "10.1038/nature13357": {
-    reason: "Bidirectional chromatin remodeling in STAP cells retracted due to image duplication.",
-    date: "2014-07-02",
-    title: "Bidirectional chromatin remodeling in STAP cells",
-  },
-  "10.1016/j.cell.2016.10.024": {
-    reason: "Cellular reprogramming study retracted following institutional committee investigation.",
-    date: "2016-11-15",
-    title: "Cellular reprogramming study",
-  },
-  "10.1126/science.1112286": {
-    reason: "Patient-specific embryonic stem cell lines retracted due to fabricated DNA profiling and teratoma data (Hwang scandal).",
-    date: "2006-01-12",
-    title: "Patient-specific embryonic stem cell lines derived from human SCNT blastocysts",
-  },
-  "10.1126/science.1094515": {
-    reason: "Evidence of a pluripotent human embryonic stem cell line derived from cloned blastocyst retracted due to data fabrication.",
-    date: "2006-01-12",
-    title: "Evidence of a pluripotent human embryonic stem cell line derived from a cloned blastocyst",
-  },
-  // Medicine, Vaccines & Infectious Disease
-  "10.1016/s0140-6736(97)11096-0": {
-    reason: "MMR autism claim (Wakefield et al.) formally retracted by The Lancet due to falsified clinical claims and ethical violations.",
-    date: "2010-02-06",
-    title: "RETRACTED: Ileal-lymphoid-nodular hyperplasia, non-specific colitis, and pervasive developmental disorder in children",
-  },
-  "10.1016/s0140-6736(20)31180-6": {
-    reason: "Multinational COVID-19 hydroxychloroquine registry analysis retracted by The Lancet due to unverified Surgisphere database.",
-    date: "2020-06-05",
-    title: "RETRACTED: Hydroxychloroquine or chloroquine with or without a macrolide for treatment of COVID-19: a multinational registry analysis",
-  },
-  "10.1056/nejmoa2007621": {
-    reason: "Cardiovascular disease and COVID-19 mortality analysis retracted by NEJM due to inability to audit underlying Surgisphere data.",
-    date: "2020-06-04",
-    title: "RETRACTED: Cardiovascular Disease, Drug Therapy, and Mortality in Covid-19",
-  },
-  "10.1016/s0140-6736(11)60715-4": {
-    reason: "Synthetic trachea transplantation (Macchiarini et al.) retracted by The Lancet due to severe clinical misconduct and falsified patient outcomes.",
-    date: "2018-07-07",
-    title: "RETRACTED: Clinical transplantation of a tissue-engineered airway",
-  },
-  // Oncology & Cancer Genomics
-  "10.1126/science.1129064": {
-    reason: "Genomic signatures to guide chemotherapy selection retracted following Duke University inquiry into irreproducible microarrays.",
-    date: "2011-01-07",
-    title: "RETRACTED: Genomic signatures to guide the choice of chemotherapy",
-  },
-  "10.1056/nejmoa0806455": {
-    reason: "Validation of gene signatures for lung cancer recurrence retracted due to computational coding errors and predictor data anomalies.",
-    date: "2011-01-07",
-    title: "RETRACTED: Validation of gene signatures for lung-cancer recurrence",
-  },
-  // Physics & Materials Science
-  "10.1038/s41586-020-2801-z": {
-    reason: "Room-temperature superconductivity in carbonaceous sulfur hydride retracted by Nature editors due to non-reproducible electrical resistance processing.",
-    date: "2022-09-26",
-    title: "RETRACTED: Room-temperature superconductivity in a carbonaceous sulfur hydride",
-  },
-  "10.1038/s41586-023-05742-0": {
-    reason: "Near-ambient superconductivity in N-doped lutetium hydride retracted by Nature following institutional data manipulation investigation.",
-    date: "2023-11-07",
-    title: "RETRACTED: Evidence of near-ambient superconductivity in N-doped lutetium hydride",
-  },
-  "10.1038/35040508": {
-    reason: "Field-effect superconductivity in molecular crystals (Schön scandal) retracted due to data falsification and identical noise across figures.",
-    date: "2003-03-06",
-    title: "RETRACTED: Superconductivity in a single-organic-molecule field-effect transistor",
-  },
-  "10.1126/science.290.5493.963": {
-    reason: "Light-emitting field-effect transistor retracted following Bell Labs independent committee investigation.",
-    date: "2002-11-01",
-    title: "RETRACTED: A light-emitting field-effect transistor",
-  },
-  "10.1038/nature02477": {
-    reason: "DNA repair mechanism study retracted following institutional committee findings.",
-    date: "2007-06-21",
-    title: "RETRACTED: Defective repair of oxidative DNA damage in Cockayne syndrome",
-  },
-  // Psychology & Social Science
-  "10.1126/science.1203629": {
-    reason: "Coping with chaos / disordered contexts promoting stereotyping (Stapel et al.) retracted due to fraudulent, fabricated survey data.",
-    date: "2011-12-02",
-    title: "RETRACTED: Coping with chaos: how disordered contexts promote stereotyping and discrimination",
-  },
-  "10.1126/science.1256099": {
-    reason: "Contact hypothesis experiment on attitudes toward equality (LaCour & Green) retracted due to fabricated survey respondents.",
-    date: "2015-05-28",
-    title: "RETRACTED: When contact changes minds: an experiment on transmission of support for gay equality",
-  },
-  // Environmental Science & Computer Science
-  "10.1126/science.aaf6659": {
-    reason: "Microplastics in larval fish study retracted due to missing original empirical data and findings of scientific dishonesty.",
-    date: "2017-05-05",
-    title: "RETRACTED: Environmentally relevant concentrations of microplastic particles influence host marker development in fish",
-  },
-  "10.1016/j.patcog.2020.107798": {
-    reason: "Deep face anti-spoofing study retracted due to non-verifiable test benchmarks and duplicate figures.",
-    date: "2021-04-15",
-    title: "RETRACTED: Deep face anti-spoofing via joint convolutional neural networks",
-  },
-};
+// Dynamically loaded benchmark retractions database across scientific domains
+const benchmarkJsonPath = new URL("../data/benchmark_retractions.json", import.meta.url);
+function loadBenchmarkRetractions(): Record<string, { reason: string; date: string; title: string }> {
+  try {
+    if (fs.existsSync(benchmarkJsonPath)) {
+      return JSON.parse(fs.readFileSync(benchmarkJsonPath, "utf-8"));
+    }
+  } catch {
+    // Graceful fallback
+  }
+  return {};
+}
+
+export const KNOWN_RETRACTED_DOIS: Record<string, { reason: string; date: string; title: string }> = loadBenchmarkRetractions();
 
 export const retractionWatch = async (doi: string): Promise<ToolResult> => {
   const normalizedDoi = doi.toLowerCase().trim();

@@ -48,7 +48,7 @@ class TestStrandsAgentService(unittest.TestCase):
             self.assertEqual(data["status"], "ok")
             self.assertEqual(data["agent"], "strands")
             self.assertEqual(data["version"], "2.0.0")
-            self.assertEqual(data["agent_power_level"], "ULTIMATE_SOVEREIGN_BOSS")
+            self.assertEqual(data["agent_power_level"], "SOVEREIGN_MULTI_AGENT_FLEET")
             self.assertTrue(data["strands_available"])
             self.assertEqual(data["tools_available"], 10)
             self.assertEqual(len(data["consensus_registries"]), 4)
@@ -178,7 +178,7 @@ class TestStrandsAgentService(unittest.TestCase):
         data = response.json()
         self.assertEqual(data["agent"], "strands")
         self.assertEqual(data["version"], "2.0.0")
-        self.assertEqual(data["agent_power_level"], "ULTIMATE_SOVEREIGN_BOSS")
+        self.assertEqual(data["agent_power_level"], "SOVEREIGN_MULTI_AGENT_FLEET")
         self.assertEqual(data["tools_available"], 10)
         self.assertEqual(len(data["consensus_registries"]), 4)
         self.assertIn("HMAC-SHA256", data["provenance_security"])
@@ -498,7 +498,7 @@ class TestStrandsAgentService(unittest.TestCase):
         response = client.post("/scan", json=payload)
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(data["agent_power_level"], "ULTIMATE_SOVEREIGN_BOSS")
+        self.assertEqual(data["agent_power_level"], "SOVEREIGN_MULTI_AGENT_FLEET")
         self.assertEqual(len(data["consensus_registries"]), 4)
         
         evidence = data["evidence"]["10.1038/nature13358"]

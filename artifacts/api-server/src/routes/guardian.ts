@@ -294,7 +294,7 @@ router.get("/guardian/strands/status", async (_req, res) => {
     available: result.available,
     mode: result.mode,
     statusLabel: result.status_label,
-    powerLevel: result.agent_power_level ?? "ULTIMATE_SOVEREIGN_BOSS",
+    powerLevel: result.agent_power_level ?? "SOVEREIGN_MULTI_AGENT_FLEET",
     tools: result.tools ?? 10,
     consensusRegistries: result.consensus_registries ?? [
       "Crossref REST API",

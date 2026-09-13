@@ -22,9 +22,9 @@
 
 ---
 
-## 🎯 The Strands Multi-Agent Fleet as Undeniable Centerpiece
+## 🎯 Strands Multi-Agent Fleet Architecture
 
-Grant Guardian is built from the ground up around the **Python Strands Agent** framework (`from strands import Agent, tool`). It is not an LLM chat wrapper or prompt template; Strands is the sovereign multi-agent coordinator driving tool-directed graph traversal across scientific registries, enforcing deterministic safety invariants, maintaining cross-sweep durable memory, and orchestrating specialized subagents through Strands' authentic **Agents-as-Tools** pattern.
+Grant Guardian is built around the **Python Strands Agent** framework (`from strands import Agent, tool`). Strands acts as the multi-agent coordinator driving tool-directed graph traversal across scientific registries, enforcing deterministic safety invariants, maintaining cross-sweep durable memory, and orchestrating specialized subagents through Strands' **Agents-as-Tools** pattern.
 
 ```
                               ┌────────────────────────────────────────────────────────┐
@@ -112,7 +112,7 @@ coordinator_agent = StrandsAgent(
 
 ### 2. Verifiable Chain-of-Thought: Model Planning & Decision Rationales
 
-Live demos of model-driven agents are only convincing when the judge can see **what the model thought and planned *before* taking action**. Every tool execution in Grant Guardian captures and emits the model's explicit hypothesis, decision rule, and next-step plan:
+In live operation with Claude 3.5 Sonnet on AWS Bedrock, every tool execution captures and emits the model's explicit hypothesis, decision rule, and next-step plan, maintaining a verifiable reasoning trail:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -165,11 +165,14 @@ Live demos of model-driven agents are only convincing when the judge can see **w
 
 ---
 
-### 3. Dynamic Tool Selection Tree: Proof of Zero Fixed Sequencing
+### 3. Adaptive Tool Selection & Dual-Mode Execution Architecture
 
-A critical question for technical hackathon judges is: *"Is tool selection genuinely dynamic per citation, or does every scan just run all tools in a fixed static pipeline?"*
+Grant Guardian provides two execution modes engineered for operational reliability and transparency:
 
-Grant Guardian **never executes a fixed pipeline**. Tool selection is 100% conditional on live intermediate registry data, with active branch pruning that cuts latency and resource consumption:
+1. **Live Bedrock Mode (`anthropic.claude-3-5-sonnet-20241022-v2:0`)**: When AWS Bedrock credentials are provided, Claude 3.5 Sonnet conducts multi-turn LLM reasoning, evaluates tool schemas against real-time findings, and dynamically orchestrates tool invocations.
+2. **Deterministic Fallback Engine (`DeterministicInvestigationModel`)**: When running offline or when Bedrock is unavailable, the agent executes an explicit, rule-guided verification sequence through Strands' native tool execution interface. Rather than running a static linear script, it implements rule-guided branching: confirmed direct retractions immediately prune graph crawling (~450ms saved), while clean root papers trigger 1-hop reference traversal and propagation analysis.
+
+Both modes evaluate intermediate registry findings, apply identical branch-pruning logic, and seal outputs with cryptographic HMAC-SHA256 audit receipts:
 
 ```
                                   Input Citation DOI
