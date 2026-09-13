@@ -31,11 +31,24 @@ export default function ActivityPage() {
   const [tone, setTone] = useState('all');
   const [selected, setSelected] = useState<Activity | null>(null);
   const [activeTab, setActiveTab] = useState<'log' | 'console' | 'trust'>('log');
+  const [humanDecisions, setHumanDecisions] = useState<Record<number, string>>({});
 
   const rawActivity = Array.isArray(query.data) ? query.data : [];
+
+  // Deduplicate consecutive sweep events within 2 minutes to eliminate double-fire glitches
+  const deduplicatedActivity = useMemo(() => {
+    const seen = new Set<string>();
+    return rawActivity.filter((item: Activity) => {
+      const key = `${item.title}-${item.tone}-${item.description?.slice(0, 35)}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [rawActivity]);
+
   const activity = useMemo(
-    () => rawActivity.filter((item: Activity) => tone === 'all' || item.tone === tone),
-    [rawActivity, tone]
+    () => deduplicatedActivity.filter((item: Activity) => tone === 'all' || item.tone === tone),
+    [deduplicatedActivity, tone]
   );
 
   return (
@@ -248,35 +261,83 @@ export default function ActivityPage() {
 
       {activeTab === 'log' && (
         <div className="space-y-6">
-          {/* Activity Breakdown Metric Row */}
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3.5 shadow-sm">
+          {/* Activity Breakdown Metric Row - Clickable Interactive Query Filters */}
+          <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
+            <button
+              type="button"
+              onClick={() => setTone('all')}
+              className={`rounded-xl border p-3.5 text-left transition-all cursor-pointer shadow-xs ${
+                tone === 'all'
+                  ? 'border-primary ring-2 ring-primary/40 bg-primary/5'
+                  : 'border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:border-primary/50'
+              }`}
+              data-testid="filter-stat-all"
+            >
               <div className="gg-mono text-[9px] uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+                All Activity
+              </div>
+              <div className="mt-1.5 text-[22px] font-extrabold text-[hsl(var(--foreground))]">
+                {deduplicatedActivity.length}
+              </div>
+              <div className="text-[10px] text-[hsl(var(--muted-foreground))]">Complete audit trail</div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setTone(tone === 'danger' ? 'all' : 'danger')}
+              className={`rounded-xl border p-3.5 text-left transition-all cursor-pointer shadow-xs ${
+                tone === 'danger'
+                  ? 'border-rose-500 ring-2 ring-rose-500/40 bg-rose-500/10'
+                  : 'border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:border-rose-500/50'
+              }`}
+              data-testid="filter-stat-danger"
+            >
+              <div className="gg-mono text-[9px] uppercase tracking-wider text-rose-600 dark:text-rose-400 font-bold">
                 Active Escalations
               </div>
-              <div className="mt-1.5 text-[22px] font-extrabold text-[hsl(var(--destructive))]">
-                {rawActivity.filter((a: Activity) => a.tone === 'danger').length}
+              <div className="mt-1.5 text-[22px] font-extrabold text-rose-600 dark:text-rose-400">
+                {deduplicatedActivity.filter((a: Activity) => a.tone === 'danger').length}
               </div>
               <div className="text-[10px] text-[hsl(var(--muted-foreground))]">Requires PI scientific judgment</div>
-            </div>
-            <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3.5 shadow-sm">
-              <div className="gg-mono text-[9px] uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setTone(tone === 'warning' ? 'all' : 'warning')}
+              className={`rounded-xl border p-3.5 text-left transition-all cursor-pointer shadow-xs ${
+                tone === 'warning'
+                  ? 'border-amber-500 ring-2 ring-amber-500/40 bg-amber-500/10'
+                  : 'border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:border-amber-500/50'
+              }`}
+              data-testid="filter-stat-warning"
+            >
+              <div className="gg-mono text-[9px] uppercase tracking-wider text-amber-600 dark:text-amber-400 font-bold">
                 Reviews & Warnings
               </div>
-              <div className="mt-1.5 text-[22px] font-extrabold text-amber-600">
-                {rawActivity.filter((a: Activity) => a.tone === 'warning').length}
+              <div className="mt-1.5 text-[22px] font-extrabold text-amber-600 dark:text-amber-400">
+                {deduplicatedActivity.filter((a: Activity) => a.tone === 'warning').length}
               </div>
               <div className="text-[10px] text-[hsl(var(--muted-foreground))]">Propagation & deadline alerts</div>
-            </div>
-            <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3.5 shadow-sm">
-              <div className="gg-mono text-[9px] uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setTone(tone === 'success' ? 'all' : 'success')}
+              className={`rounded-xl border p-3.5 text-left transition-all cursor-pointer shadow-xs ${
+                tone === 'success'
+                  ? 'border-emerald-500 ring-2 ring-emerald-500/40 bg-emerald-500/10'
+                  : 'border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:border-emerald-500/50'
+              }`}
+              data-testid="filter-stat-success"
+            >
+              <div className="gg-mono text-[9px] uppercase tracking-wider text-emerald-600 dark:text-emerald-400 font-bold">
                 Cleared Sweeps
               </div>
-              <div className="mt-1.5 text-[22px] font-extrabold text-emerald-600">
-                {rawActivity.filter((a: Activity) => a.tone === 'success').length}
+              <div className="mt-1.5 text-[22px] font-extrabold text-emerald-600 dark:text-emerald-400">
+                {deduplicatedActivity.filter((a: Activity) => a.tone === 'success').length}
               </div>
               <div className="text-[10px] text-[hsl(var(--muted-foreground))]">Verified clean signals</div>
-            </div>
+            </button>
           </div>
 
           {query.isError ? (
@@ -314,17 +375,103 @@ export default function ActivityPage() {
                   </select>
                 </label>
               </div>
-              <div className="px-5">
+              <div className="px-5 divide-y divide-[hsl(var(--border)/.6)]">
                 {activity.length ? (
-                  activity.map((item: Activity) => (
-                    <div
-                      key={item.id}
-                      onClick={() => setSelected(item)}
-                      className="cursor-pointer transition-colors hover:bg-[hsl(var(--muted)/.4)] rounded-lg px-2"
-                    >
-                      <ActivityRow item={item} />
-                    </div>
-                  ))
+                  activity.map((item: Activity) => {
+                    const isEscalation = item.tone === 'danger' || item.tone === 'warning';
+                    const decidedAction = humanDecisions[item.id];
+                    return (
+                      <div
+                        key={item.id}
+                        className="py-3 px-2 rounded-lg transition-colors hover:bg-[hsl(var(--muted)/.3)]"
+                      >
+                        <div
+                          onClick={() => setSelected(item)}
+                          className="cursor-pointer"
+                        >
+                          <ActivityRow item={item} />
+                        </div>
+
+                        {/* Inline Controls: Human Decision Options & Agent Live Trace Link */}
+                        <div className="mt-2.5 ml-10 flex flex-wrap items-center justify-between gap-2 border-t border-[hsl(var(--border)/.4)] pt-2">
+                          {isEscalation ? (
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {decidedAction ? (
+                                <span className="rounded-md bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                                  <CheckCircle2 size={12} />
+                                  PI Decision: {decidedAction}
+                                </span>
+                              ) : (
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                                    <AlertTriangle size={11} /> Human Signoff:
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setHumanDecisions((prev) => ({ ...prev, [item.id]: 'Replaced citation' }));
+                                    }}
+                                    className="rounded bg-[hsl(var(--secondary))] hover:bg-[hsl(var(--secondary)/.8)] px-2 py-0.5 text-[10px] font-bold text-[hsl(var(--secondary-foreground))] transition-colors cursor-pointer"
+                                  >
+                                    Accept &amp; Replace
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setHumanDecisions((prev) => ({ ...prev, [item.id]: 'Quarantined reference' }));
+                                    }}
+                                    className="rounded bg-rose-500/20 hover:bg-rose-500/30 text-rose-600 dark:text-rose-400 border border-rose-500/30 px-2 py-0.5 text-[10px] font-bold transition-colors cursor-pointer"
+                                  >
+                                    Quarantine
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setHumanDecisions((prev) => ({ ...prev, [item.id]: 'Marked exempt & verified' }));
+                                    }}
+                                    className="rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 px-2 py-0.5 text-[10px] font-bold transition-colors cursor-pointer"
+                                  >
+                                    Exempt
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setHumanDecisions((prev) => ({ ...prev, [item.id]: 'Deferred for PI Domain Review' }));
+                                    }}
+                                    className="rounded bg-[hsl(var(--muted))] hover:bg-[hsl(var(--muted)/.8)] text-[hsl(var(--muted-foreground))] px-2 py-0.5 text-[10px] font-bold transition-colors cursor-pointer"
+                                  >
+                                    Defer
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-[10px] text-[hsl(var(--muted-foreground))]">
+                              Autonomous verification sweep · No human escalation required
+                            </span>
+                          )}
+
+                          {/* Deep-link to Agent Console & Live Trace */}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveTab('console');
+                            }}
+                            className="flex items-center gap-1 text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                            title="Inspect multi-agent tool execution trace"
+                          >
+                            <Cpu size={12} />
+                            <span>View Live Trace →</span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
                 ) : (
                   <EmptyBlock
                     title="Nothing in this view"

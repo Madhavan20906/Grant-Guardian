@@ -603,16 +603,19 @@ export const demoDeadlines = [
 export const demoActivities = [
   // User 1
   { id: 1, userId: 1, kind: "flagged", title: "Retraction signal caught: STAP Stem Cell Study", description: "Retraction Watch identified direct retraction notice for 10.1038/nature13358 (Obokata et al. 2014). Paper quarantined.", tone: "danger", createdAt: new Date() },
-  { id: 2, userId: 1, kind: "escalation", title: "Propagation risk routed to PI: Lin et al. (2015)", description: "Semantic Scholar 1-hop graph found reference to retracted DOI 10.1038/nature13358. Escalated for human claim evaluation.", tone: "warning", createdAt: new Date() },
-  { id: 3, userId: 1, kind: "scan", title: "Autonomous multi-agent desk sweep completed", description: "Dynamically routed 5 citations across 3 branching paths: 1 direct retraction pruned early, 1 propagation cascade escalated, 3 verified clean with graph crawling. Durable session updated.", tone: "neutral", createdAt: new Date() },
+  { id: 2, userId: 1, kind: "escalation", title: "Propagation risk routed to PI: Lin et al. (2015)", description: "Semantic Scholar 1-hop graph found reference to retracted DOI 10.1038/nature13358. Escalated for human claim evaluation.", tone: "warning", createdAt: new Date(Date.now() - 3600000) },
+  { id: 3, userId: 1, kind: "scan", title: "Autonomous multi-agent desk sweep completed", description: "Dynamically routed 5 citations across 3 branching paths: 1 direct retraction pruned early, 1 propagation cascade escalated, 3 verified clean with graph crawling. Durable session updated.", tone: "neutral", createdAt: new Date(Date.now() - 7200000) },
+  { id: 4, userId: 1, kind: "clear", title: "Cleared sweep: 6 foundational citations verified", description: "Crossref and Retraction Watch confirm clean status across CRISPR and graphene foundational citations.", tone: "success", createdAt: new Date(Date.now() - 10800000) },
   // User 2
   { id: 201, userId: 2, kind: "flagged", title: "Retraction caught: Cancer Genomic Signatures", description: "Retraction Watch confirmed direct retraction for 10.1126/science.1129064 (Potti et al. 2006). Quarantined from oncology grant drafts.", tone: "danger", createdAt: new Date() },
-  { id: 202, userId: 2, kind: "escalation", title: "Propagation risk routed to PI: Baggerly et al. (2008)", description: "Citation graph identified 2nd-order reference to retracted signature paper. Escalated to Dr. Chen.", tone: "warning", createdAt: new Date() },
-  { id: 203, userId: 2, kind: "scan", title: "Oncology bibliography sweep completed", description: "Autonomous sweep across 4 oncology citations completed without interruption.", tone: "neutral", createdAt: new Date() },
+  { id: 202, userId: 2, kind: "escalation", title: "Propagation risk routed to PI: Baggerly et al. (2008)", description: "Citation graph identified 2nd-order reference to retracted signature paper. Escalated to Dr. Chen.", tone: "warning", createdAt: new Date(Date.now() - 3600000) },
+  { id: 203, userId: 2, kind: "scan", title: "Oncology bibliography sweep completed", description: "Autonomous sweep across 4 oncology citations completed without interruption.", tone: "neutral", createdAt: new Date(Date.now() - 7200000) },
+  { id: 204, userId: 2, kind: "clear", title: "Cleared sweep: Proteomics citations verified clean", description: "All direct DOIs verified without retraction signals.", tone: "success", createdAt: new Date(Date.now() - 10800000) },
   // User 3
   { id: 301, userId: 3, kind: "flagged", title: "Retraction caught: Hydroxychloroquine COVID-19 Registry", description: "Retraction Watch confirmed direct retraction for 10.1016/S0140-6736(20)31180-6 (Mehra et al. 2020). Paper quarantined.", tone: "danger", createdAt: new Date() },
-  { id: 302, userId: 3, kind: "escalation", title: "Propagation risk routed to PI: Cardiovascular COVID-19", description: "Citation graph detected foundation dependency on retracted Surgisphere database. Escalated for domain review.", tone: "warning", createdAt: new Date() },
-  { id: 303, userId: 3, kind: "scan", title: "Neurotherapeutics literature sweep completed", description: "Autonomous sweep completed across 3 tracked citations.", tone: "neutral", createdAt: new Date() },
+  { id: 302, userId: 3, kind: "escalation", title: "Propagation risk routed to PI: Cardiovascular COVID-19", description: "Citation graph detected foundation dependency on retracted Surgisphere database. Escalated for domain review.", tone: "warning", createdAt: new Date(Date.now() - 3600000) },
+  { id: 303, userId: 3, kind: "scan", title: "Neurotherapeutics literature sweep completed", description: "Autonomous sweep completed across 3 tracked citations.", tone: "neutral", createdAt: new Date(Date.now() - 7200000) },
+  { id: 304, userId: 3, kind: "clear", title: "Cleared sweep: Neurotherapeutics references verified", description: "All direct DOIs verified without retraction signals.", tone: "success", createdAt: new Date(Date.now() - 10800000) },
 ];
 
 export async function ensureSeedData() {

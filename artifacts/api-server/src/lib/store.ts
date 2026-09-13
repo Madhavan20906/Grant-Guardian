@@ -538,6 +538,21 @@ class GuardianStore {
   }
 
   async addActivity(data: { userId: number; kind: string; title: string; description: string; tone: string; createdAt?: Date }): Promise<ActivityRecord> {
+    const now = data.createdAt ?? new Date();
+
+    // Deduplication check: prevent identical consecutive events within 90 seconds (avoids double-fire UI glitches)
+    const existingIndex = this.memoryActivities.findIndex(
+      (a) =>
+        a.userId === data.userId &&
+        a.title === data.title &&
+        Math.abs(new Date(a.createdAt).getTime() - now.getTime()) < 90_000
+    );
+    if (existingIndex !== -1) {
+      this.memoryActivities[existingIndex].description = data.description;
+      this.memoryActivities[existingIndex].createdAt = now;
+      return this.memoryActivities[existingIndex];
+    }
+
     const record: ActivityRecord = {
       id: this.memoryActivities.length + 1,
       userId: data.userId,
@@ -545,7 +560,7 @@ class GuardianStore {
       title: data.title,
       description: data.description,
       tone: data.tone,
-      createdAt: data.createdAt ?? new Date(),
+      createdAt: now,
     };
 
     if (!isDatabaseConfigured) {

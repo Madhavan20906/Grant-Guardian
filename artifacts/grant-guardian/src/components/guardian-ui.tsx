@@ -361,8 +361,119 @@ export function CitationRow({ citation, onSelect }: { citation: Citation; onSele
   return <button type="button" onClick={onSelect} className="group flex w-full items-center gap-3 border-b border-[hsl(var(--border)/.7)] px-4 py-3 text-left transition-colors hover:bg-[hsl(var(--muted)/.5)]" data-testid={`row-citation-${citation.id}`}><div className="flex size-7 shrink-0 items-center justify-center rounded-md bg-[hsl(var(--secondary)/.55)] text-[hsl(var(--secondary-foreground))]"><BookOpen size={13} /></div><div className="min-w-0 flex-1"><div className="truncate text-[11px] font-bold group-hover:text-[hsl(var(--accent-foreground))]">{citation.title}</div><div className="mt-1 truncate text-[10px] text-[hsl(var(--muted-foreground))]">{citation.authors} · {citation.venue} · {citation.year}</div></div><div className="hidden w-28 shrink-0 sm:block"><StatusPill value={citation.status} /><RiskPill risk={citation.risk} /></div><ArrowUpRight className="shrink-0 text-[hsl(var(--muted-foreground))] opacity-0 transition-opacity group-hover:opacity-100" size={15} /></button>;
 }
 
-export function DeadlineRow({ deadline, onDraft }: { deadline: Deadline; onDraft: () => void }) {
-  return <div className="border-b border-[hsl(var(--border)/.7)] px-4 py-3.5 last:border-0" data-testid={`row-deadline-${deadline.id}`}><div className="flex items-start justify-between gap-3"><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><span className="gg-mono text-[9px] uppercase tracking-[.12em] text-[hsl(var(--muted-foreground))]">{deadline.type}</span><StatusPill value={deadline.status} kind="deadline" /></div><div className="mt-1.5 text-[12px] font-bold">{deadline.title}</div><div className="mt-1 text-[10px] text-[hsl(var(--muted-foreground))]">Owner: {deadline.owner} · Due {deadline.dueDate}</div></div><div className="shrink-0 text-right"><div className={cx('gg-mono text-[13px] font-medium', deadline.daysLeft <= 7 ? 'text-[hsl(var(--destructive))]' : deadline.daysLeft <= 21 ? 'text-[hsl(25_62%_35%)]' : 'text-[hsl(var(--foreground))]')}>{deadline.daysLeft}d</div><div className="mt-1 text-[9px] text-[hsl(var(--muted-foreground))]">remaining</div></div></div><div className="mt-3 flex items-center gap-3"><div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[hsl(var(--muted))]"><div className="h-full rounded-full bg-[hsl(var(--accent-foreground))] transition-all" style={{ width: `${Math.min(100, deadline.progress ?? 0)}%` }} /></div><span className="gg-mono w-8 text-right text-[9px] text-[hsl(var(--muted-foreground))]">{deadline.progress ?? 0}%</span>{deadline.status !== 'on_track' && <button type="button" onClick={onDraft} className="text-[10px] font-bold text-[hsl(var(--accent-foreground))] hover:underline" data-testid={`button-draft-${deadline.id}`}>Draft report</button>}</div></div>;
+export function DeadlineRow({
+  deadline,
+  onDraft,
+  onMarkSubmitted,
+}: {
+  deadline: Deadline;
+  onDraft: () => void;
+  onMarkSubmitted?: () => void;
+}) {
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const isUrgentTrigger = deadline.daysLeft <= 14 && (deadline.progress ?? 0) < 80;
+
+  return (
+    <div
+      className="border-b border-[hsl(var(--border)/.7)] p-4 sm:p-5 last:border-0 hover:bg-[hsl(var(--muted)/.25)] transition-colors"
+      data-testid={`row-deadline-${deadline.id}`}
+    >
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="gg-mono text-[9px] uppercase tracking-[.12em] text-[hsl(var(--muted-foreground))] font-bold">
+              {deadline.type}
+            </span>
+            <StatusPill value={isSubmitted ? 'clear' : deadline.status} kind="deadline" />
+            {isUrgentTrigger && !isSubmitted && (
+              <span className="rounded bg-rose-500/15 border border-rose-500/30 px-2 py-0.5 font-mono text-[9px] font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                ⚡ 14-Day Trigger Active (&lt;80% prep)
+              </span>
+            )}
+            {isSubmitted && (
+              <span className="rounded bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 font-mono text-[9px] font-bold text-emerald-600 dark:text-emerald-400">
+                ✓ PI Signed &amp; Filed Externally
+              </span>
+            )}
+          </div>
+          <div className="mt-1.5 text-[14px] font-bold text-[hsl(var(--foreground))]">{deadline.title}</div>
+          <div className="mt-1 text-[11px] text-[hsl(var(--muted-foreground))]">
+            Owner: {deadline.owner} · Due {deadline.dueDate}
+          </div>
+        </div>
+
+        <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2.5 shrink-0">
+          <div className="text-right">
+            <span
+              className={cx(
+                'gg-mono text-[15px] font-extrabold',
+                deadline.daysLeft <= 7
+                  ? 'text-rose-500'
+                  : deadline.daysLeft <= 21
+                  ? 'text-amber-500'
+                  : 'text-emerald-500'
+              )}
+            >
+              {deadline.daysLeft}d
+            </span>
+            <span className="ml-1 text-[10px] text-[hsl(var(--muted-foreground))] font-medium">remaining</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {/* Prominent One-Click Draft Report Button */}
+            {!isSubmitted && (
+              <button
+                type="button"
+                onClick={onDraft}
+                className="flex items-center gap-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold px-3 py-1.5 text-[11px] shadow-xs cursor-pointer transition-all shrink-0"
+                data-testid={`button-draft-${deadline.id}`}
+                title="Generate AI compliance draft using deadline & lab context"
+              >
+                <Sparkles size={13} className="text-slate-950" />
+                <span>Draft report</span>
+              </button>
+            )}
+
+            {!isSubmitted ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSubmitted(true);
+                  if (onMarkSubmitted) onMarkSubmitted();
+                }}
+                className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:bg-[hsl(var(--muted))] px-2.5 py-1.5 text-[10px] font-semibold text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors"
+                title="Mark this deadline officially submitted by PI to external agency portal"
+              >
+                Mark Submitted
+              </button>
+            ) : (
+              <span className="text-[11px] text-emerald-500 font-bold">✓ Filed</span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Progress Bar with Unambiguous Meaning */}
+      <div className="mt-3.5 space-y-1.5">
+        <div className="flex items-center justify-between text-[10px] text-[hsl(var(--muted-foreground))]">
+          <span className="flex items-center gap-1">
+            <span className="font-bold text-[hsl(var(--foreground))]">Preparation Readiness:</span> {deadline.progress ?? 0}%
+            <span className="text-[9px] opacity-75">(audit artifacts &amp; narrative completeness, not time elapsed)</span>
+          </span>
+          <span className="gg-mono font-bold text-[hsl(var(--foreground))]">{isSubmitted ? 100 : (deadline.progress ?? 0)}%</span>
+        </div>
+        <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
+          <div
+            className={cx(
+              'h-full rounded-full transition-all',
+              (deadline.progress ?? 0) < 30 ? 'bg-rose-500' : (deadline.progress ?? 0) < 75 ? 'bg-amber-500' : 'bg-emerald-500'
+            )}
+            style={{ width: `${Math.min(100, isSubmitted ? 100 : (deadline.progress ?? 0))}%` }}
+          />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export function ScanButton({ isPending, onClick }: { isPending: boolean; onClick: () => void }) {
@@ -385,7 +496,7 @@ export function Drawer({
   return (
     <div
       className={cx(
-        'fixed inset-0 z-50 flex bg-slate-950/70 backdrop-blur-xs transition-all duration-300',
+        'fixed inset-0 z-50 flex bg-slate-950/80 backdrop-blur-sm transition-all duration-300',
         isCentered ? 'items-center justify-center p-4 sm:p-6' : 'justify-end'
       )}
       role="dialog"
@@ -398,76 +509,102 @@ export function Drawer({
         aria-label="Close detail"
         data-testid="button-close-drawer"
       />
-      <section
+
+      {/* Main Drawer/Modal Container */}
+      <div
         className={cx(
-          'relative h-full overflow-y-auto bg-[hsl(var(--card))] shadow-2xl transition-all duration-300',
+          'relative flex h-full transition-all duration-300 z-10',
           isCentered
-            ? 'w-full max-w-5xl max-h-[92vh] rounded-2xl border border-slate-700 dark:border-slate-800 p-6 sm:p-8'
-            : 'w-full max-w-[540px] border-l border-[hsl(var(--border))] p-6'
+            ? 'w-full max-w-5xl max-h-[92vh] my-auto'
+            : 'w-full max-w-[580px]'
         )}
       >
-        {/* Left-Side Push Button attached to panel edge */}
-        <button
-          type="button"
-          onClick={() => setIsCentered(!isCentered)}
-          className={cx(
-            'absolute z-20 flex items-center gap-1.5 rounded-l-xl border border-slate-700 bg-slate-900/95 px-3 py-2 text-xs font-bold text-amber-300 shadow-2xl backdrop-blur transition-all hover:bg-slate-800 hover:border-amber-400 hover:text-white cursor-pointer',
-            isCentered
-              ? 'right-16 top-6 rounded-xl border border-r'
-              : '-left-[145px] top-20 border-r-0'
-          )}
-          title={isCentered ? 'Dock to right sidebar' : 'Push AI investigation to center stage'}
-          data-testid="button-push-to-center"
-        >
-          {isCentered ? (
-            <>
-              <ArrowRight size={14} className="text-amber-400 shrink-0" />
-              <span>Dock to Side</span>
-            </>
-          ) : (
-            <>
-              <ArrowLeft size={14} className="text-amber-400 shrink-0 animate-pulse" />
-              <span>Push to Center</span>
-            </>
-          )}
-        </button>
+        {/* Left-Side Push Button - Placed outside the scroll container to ensure 100% visibility */}
+        {!isCentered && (
+          <div className="absolute -left-11 top-20 z-50">
+            <button
+              type="button"
+              onClick={() => setIsCentered(true)}
+              className="group flex flex-col items-center justify-center gap-2 rounded-l-xl border-y border-l border-amber-500 bg-slate-900 px-2.5 py-4 text-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:bg-slate-800 hover:text-white cursor-pointer transition-all"
+              title="Push to Center for expanded visibility"
+              data-testid="button-push-to-center"
+            >
+              <ArrowLeft size={18} className="animate-pulse text-amber-400 group-hover:-translate-x-0.5 transition-transform" />
+              <span className="[writing-mode:vertical-rl] rotate-180 font-mono text-[9px] font-extrabold tracking-widest uppercase text-amber-300">
+                Push Center
+              </span>
+            </button>
+          </div>
+        )}
 
-        <div className="mb-6 flex items-center justify-between border-b border-[hsl(var(--border))] pb-3.5">
-          <div className="flex items-center gap-2.5">
-            <div className="gg-mono text-[11px] font-bold uppercase tracking-[.16em] text-[hsl(var(--muted-foreground))]">
-              {title}
+        {/* When Centered: Right-Side Dock Button to smoothly return to side */}
+        {isCentered && (
+          <div className="absolute -right-11 top-20 z-50 hidden sm:block">
+            <button
+              type="button"
+              onClick={() => setIsCentered(false)}
+              className="group flex flex-col items-center justify-center gap-2 rounded-r-xl border-y border-r border-amber-500 bg-slate-900 px-2.5 py-4 text-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:bg-slate-800 hover:text-white cursor-pointer transition-all"
+              title="Dock back to right sidebar"
+              data-testid="button-dock-to-side"
+            >
+              <ArrowRight size={18} className="text-amber-400 group-hover:translate-x-0.5 transition-transform" />
+              <span className="[writing-mode:vertical-rl] rotate-180 font-mono text-[9px] font-extrabold tracking-widest uppercase text-amber-300">
+                Dock Side
+              </span>
+            </button>
+          </div>
+        )}
+
+        <section
+          className={cx(
+            'relative h-full w-full overflow-y-auto bg-[hsl(var(--card))] shadow-2xl transition-all duration-300 flex flex-col',
+            isCentered
+              ? 'rounded-2xl border border-slate-700 p-6 sm:p-8'
+              : 'border-l border-[hsl(var(--border))] p-6'
+          )}
+        >
+          {/* Header Bar with explicit Center/Dock button */}
+          <div className="mb-5 flex items-center justify-between border-b border-[hsl(var(--border))] pb-3.5 shrink-0">
+            <div className="flex items-center gap-2.5">
+              <div className="gg-mono text-[11px] font-bold uppercase tracking-[.16em] text-[hsl(var(--muted-foreground))]">
+                {title}
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsCentered(!isCentered)}
+                className="flex items-center gap-1.5 rounded-lg border border-amber-500/40 bg-amber-500/10 px-2.5 py-1 text-[11px] font-bold text-amber-400 hover:bg-amber-500/20 hover:text-amber-300 transition-colors shadow-2xs cursor-pointer"
+                title={isCentered ? 'Dock back to right sidebar' : 'Push AI investigation to center stage'}
+                data-testid="button-toggle-center"
+              >
+                {isCentered ? (
+                  <>
+                    <ArrowRight size={13} className="text-amber-400" />
+                    <span>Dock to Side</span>
+                  </>
+                ) : (
+                  <>
+                    <ArrowLeft size={13} className="text-amber-400 animate-pulse" />
+                    <span>Push to Center</span>
+                  </>
+                )}
+              </button>
             </div>
             <button
               type="button"
-              onClick={() => setIsCentered(!isCentered)}
-              className="flex items-center gap-1.5 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.4)] px-2.5 py-1 text-[11px] font-semibold text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition-colors"
-              title={isCentered ? 'Dock to right sidebar' : 'Push to center stage'}
+              onClick={onClose}
+              className="rounded-md p-1.5 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]"
+              aria-label="Close detail panel"
+              data-testid="button-close-detail"
             >
-              {isCentered ? (
-                <>
-                  <Minimize2 size={13} className="text-amber-400" />
-                  <span>Dock Side</span>
-                </>
-              ) : (
-                <>
-                  <Maximize2 size={13} className="text-amber-400" />
-                  <span>Center Stage</span>
-                </>
-              )}
+              <X size={17} />
             </button>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-md p-1.5 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]"
-            aria-label="Close detail panel"
-            data-testid="button-close-detail"
-          >
-            <X size={17} />
-          </button>
-        </div>
-        {children}
-      </section>
+
+          <div className="flex-1">
+            {children}
+          </div>
+        </section>
+      </div>
     </div>
   );
 }
