@@ -376,4 +376,19 @@ router.get("/guardian/strands/status", async (_req, res) => {
   });
 });
 
+router.post("/guardian/seed", async (req, res, next) => {
+  try {
+    const userId = await resolveUserId(req);
+    const template = String(req.body?.template || "biomaterials");
+    const result = await guardianStore.seedUserWorkspace(userId, template);
+    return res.json({
+      success: true,
+      message: `Seeded ${result.citationsCount} citations and ${result.deadlinesCount} compliance deadlines.`,
+      ...result,
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
 export default router;

@@ -82,12 +82,49 @@ export function OnboardingEmptyState({ onImportClick }: OnboardingEmptyStateProp
     setQuickDoi(sampleDoi);
   };
 
+  const handleLoadBenchmark = async () => {
+    setIsSubmitting(true);
+    setFeedback(null);
+    try {
+      const res = await fetch('/api/guardian/seed', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ template: 'biomaterials' }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setFeedback({
+          type: 'success',
+          message: data.message || 'Successfully loaded 12 citations and 8 compliance deadlines into your workspace!',
+        });
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: getListCitationsQueryKey() }),
+          queryClient.invalidateQueries({ queryKey: getGetGuardianOverviewQueryKey() }),
+          queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() }),
+          queryClient.invalidateQueries({ queryKey: ['guardian', 'watch', 'status'] }),
+        ]);
+      } else {
+        setFeedback({
+          type: 'error',
+          message: 'Failed to load benchmark citations into this workspace.',
+        });
+      }
+    } catch {
+      setFeedback({
+        type: 'error',
+        message: 'Network error communicating with Guardian API server.',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <div className="rounded-2xl border border-[hsl(var(--border))] bg-gradient-to-b from-[hsl(var(--card))] to-[hsl(var(--card)/.7)] p-6 md:p-8 shadow-sm space-y-8" data-testid="onboarding-empty-state">
+    <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 md:p-8 shadow-xs space-y-8" data-testid="onboarding-empty-state">
       {/* Header section */}
       <div className="max-w-2xl space-y-3">
-        <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-[11px] font-bold text-blue-600 dark:text-blue-400">
-          <ShieldCheck size={13} />
+        <div className="inline-flex items-center gap-2 rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--muted))] px-3 py-1 text-[11px] font-bold text-[hsl(var(--foreground))]">
+          <ShieldCheck size={13} className="text-[hsl(var(--muted-foreground))]" />
           <span>FIRST-TIME SETUP & ONBOARDING</span>
         </div>
         <h2 className="text-2xl md:text-3xl font-serif font-bold text-[hsl(var(--foreground))]">
@@ -100,9 +137,9 @@ export function OnboardingEmptyState({ onImportClick }: OnboardingEmptyStateProp
 
       {/* 3-Step Architecture Flow */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-4.5 space-y-2.5">
-          <div className="flex items-center gap-2 text-xs font-bold text-blue-600 dark:text-blue-400">
-            <span className="flex size-5 items-center justify-center rounded-full bg-blue-500/15 text-[10px]">1</span>
+        <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4.5 space-y-2.5">
+          <div className="flex items-center gap-2 text-xs font-bold text-[hsl(var(--foreground))]">
+            <span className="flex size-5 items-center justify-center rounded-full bg-[hsl(var(--muted))] text-[10px] border border-[hsl(var(--border))]">1</span>
             <span>Ingest Literature</span>
           </div>
           <h3 className="text-[13px] font-bold text-[hsl(var(--foreground))]">
@@ -113,9 +150,9 @@ export function OnboardingEmptyState({ onImportClick }: OnboardingEmptyStateProp
           </p>
         </div>
 
-        <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-4.5 space-y-2.5">
-          <div className="flex items-center gap-2 text-xs font-bold text-purple-600 dark:text-purple-400">
-            <span className="flex size-5 items-center justify-center rounded-full bg-purple-500/15 text-[10px]">2</span>
+        <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4.5 space-y-2.5">
+          <div className="flex items-center gap-2 text-xs font-bold text-[hsl(var(--foreground))]">
+            <span className="flex size-5 items-center justify-center rounded-full bg-[hsl(var(--muted))] text-[10px] border border-[hsl(var(--border))]">2</span>
             <span>Autonomous Watch</span>
           </div>
           <h3 className="text-[13px] font-bold text-[hsl(var(--foreground))]">
@@ -126,9 +163,9 @@ export function OnboardingEmptyState({ onImportClick }: OnboardingEmptyStateProp
           </p>
         </div>
 
-        <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-4.5 space-y-2.5">
-          <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400">
-            <span className="flex size-5 items-center justify-center rounded-full bg-emerald-500/15 text-[10px]">3</span>
+        <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4.5 space-y-2.5">
+          <div className="flex items-center gap-2 text-xs font-bold text-[hsl(var(--foreground))]">
+            <span className="flex size-5 items-center justify-center rounded-full bg-[hsl(var(--muted))] text-[10px] border border-[hsl(var(--border))]">3</span>
             <span>Proof of Restraint</span>
           </div>
           <h3 className="text-[13px] font-bold text-[hsl(var(--foreground))]">
@@ -140,11 +177,37 @@ export function OnboardingEmptyState({ onImportClick }: OnboardingEmptyStateProp
         </div>
       </div>
 
+      {/* 1-Click Populate Proposal Benchmark Banner */}
+      <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+            <Sparkles size={12} />
+            <span>INSTANT BENCHMARK INITIALIZATION</span>
+          </div>
+          <h3 className="text-sm font-bold text-[hsl(var(--foreground))]">
+            Load Complete Biomaterials Benchmark (12 Citations & 8 Deadlines)
+          </h3>
+          <p className="text-xs text-[hsl(var(--muted-foreground))] max-w-xl">
+            Populate your account with an authentic grant proposal bibliography containing 1 direct retraction (STAP protocol), 1 propagation risk (Lin et al.), and 10 clean citations for immediate testing.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={handleLoadBenchmark}
+          disabled={isSubmitting}
+          className="inline-flex items-center gap-2 rounded-lg bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:opacity-90 px-4 py-2.5 text-xs font-bold transition-all shadow-xs disabled:opacity-50 shrink-0 cursor-pointer"
+          data-testid="btn-load-benchmark-workspace"
+        >
+          <Sparkles size={13} />
+          <span>{isSubmitting ? 'Loading Benchmark...' : 'Load 12 Citations into Workspace'}</span>
+        </button>
+      </div>
+
       {/* Quick Add DOI Form */}
-      <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 p-5 space-y-4">
+      <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 space-y-4">
         <div>
           <h3 className="text-sm font-bold text-[hsl(var(--foreground))] flex items-center gap-2">
-            <BookOpen size={16} className="text-blue-500" />
+            <BookOpen size={16} className="text-[hsl(var(--muted-foreground))]" />
             Track Your First Citation
           </h3>
           <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5">
@@ -158,13 +221,13 @@ export function OnboardingEmptyState({ onImportClick }: OnboardingEmptyStateProp
             value={quickDoi}
             onChange={(e) => setQuickDoi(e.target.value)}
             placeholder="Paste a DOI (e.g. 10.1038/nature13358 or 10.1038/s41586-021-03819-2)..."
-            className="flex-1 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3.5 py-2 text-xs text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] focus:border-blue-500 focus:outline-none"
+            className="flex-1 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3.5 py-2 text-xs text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] focus:border-[hsl(var(--border))] focus:outline-none"
             data-testid="input-onboarding-doi"
           />
           <button
             type="submit"
             disabled={isSubmitting || !quickDoi.trim()}
-            className="rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2 text-xs font-bold text-white transition-all disabled:opacity-50 shrink-0"
+            className="rounded-lg bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:opacity-90 px-4 py-2 text-xs font-bold transition-all disabled:opacity-50 shrink-0 cursor-pointer"
             data-testid="btn-onboarding-add-doi"
           >
             {isSubmitting ? 'Registering...' : 'Track & Scan'}
@@ -176,21 +239,21 @@ export function OnboardingEmptyState({ onImportClick }: OnboardingEmptyStateProp
           <button
             type="button"
             onClick={() => loadSampleDoi('10.1038/nature13358')}
-            className="rounded-md bg-[hsl(var(--background))] border border-[hsl(var(--border))] px-2 py-0.5 font-mono text-[10px] text-red-600 dark:text-red-400 hover:border-red-500"
+            className="rounded-md bg-[hsl(var(--muted))] border border-[hsl(var(--border))] px-2 py-0.5 font-mono text-[10px] text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted)/.8)]"
           >
             10.1038/nature13358 (STAP Retraction)
           </button>
           <button
             type="button"
             onClick={() => loadSampleDoi('10.1016/j.stem.2015.01.002')}
-            className="rounded-md bg-[hsl(var(--background))] border border-[hsl(var(--border))] px-2 py-0.5 font-mono text-[10px] text-amber-600 dark:text-amber-400 hover:border-amber-500"
+            className="rounded-md bg-[hsl(var(--muted))] border border-[hsl(var(--border))] px-2 py-0.5 font-mono text-[10px] text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted)/.8)]"
           >
             10.1016/j.stem.2015.01.002 (Lin 2nd-Order Risk)
           </button>
           <button
             type="button"
             onClick={() => loadSampleDoi('10.1038/s41586-021-03819-2')}
-            className="rounded-md bg-[hsl(var(--background))] border border-[hsl(var(--border))] px-2 py-0.5 font-mono text-[10px] text-emerald-600 dark:text-emerald-400 hover:border-emerald-500"
+            className="rounded-md bg-[hsl(var(--muted))] border border-[hsl(var(--border))] px-2 py-0.5 font-mono text-[10px] text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted)/.8)]"
           >
             10.1038/s41586-021-03819-2 (AlphaFold Clean)
           </button>
@@ -198,11 +261,7 @@ export function OnboardingEmptyState({ onImportClick }: OnboardingEmptyStateProp
 
         {feedback && (
           <div
-            className={`rounded-lg p-3 text-xs font-medium ${
-              feedback.type === 'success'
-                ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20'
-                : 'bg-red-500/10 text-red-700 dark:text-red-300 border border-red-500/20'
-            }`}
+            className="rounded-lg p-3 text-xs font-medium bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] border border-[hsl(var(--border))]"
           >
             {feedback.message}
           </div>

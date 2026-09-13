@@ -117,26 +117,26 @@ export function WhyThisDecisionPanel({
   };
 
   return (
-    <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs overflow-hidden" data-testid="why-this-decision-panel">
+    <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-xs overflow-hidden" data-testid="why-this-decision-panel">
       {/* Header bar */}
-      <div className="border-b border-slate-100 dark:border-slate-800 p-5 bg-slate-50/60 dark:bg-slate-800/40">
+      <div className="border-b border-[hsl(var(--border))] p-5 bg-[hsl(var(--card))]">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <span className="flex size-7 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400">
-                <Fingerprint size={16} />
+              <span className="flex size-7 items-center justify-center rounded-lg bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] border border-[hsl(var(--border))]">
+                <Fingerprint size={15} />
               </span>
-              <span className="font-mono text-[10px] uppercase font-bold tracking-widest text-indigo-700 dark:text-indigo-300">
+              <span className="font-mono text-[10px] uppercase font-bold tracking-widest text-[hsl(var(--muted-foreground))]">
                 Auditable Action Reasoning
               </span>
-              <span className="rounded bg-indigo-100/80 dark:bg-indigo-900/50 px-2 py-0.5 font-mono text-[9px] font-bold text-indigo-800 dark:text-indigo-300">
+              <span className="rounded bg-[hsl(var(--muted))] border border-[hsl(var(--border))] px-2 py-0.5 font-mono text-[9px] font-bold text-[hsl(var(--foreground))]">
                 Zero Opaque Chain-of-Thought
               </span>
             </div>
-            <h3 className="mt-1 text-[16px] font-extrabold text-slate-900 dark:text-white">
+            <h3 className="mt-1 text-[15px] font-bold text-[hsl(var(--foreground))]">
               Why Did the Agent Take These Actions?
             </h3>
-            <p className="mt-0.5 text-[12px] text-slate-500 dark:text-slate-400">
+            <p className="mt-0.5 text-[12px] text-[hsl(var(--muted-foreground))]">
               Complete provenance trail of what was detected, why each authoritative registry was queried, and what the agent decided next.
             </p>
           </div>
@@ -144,17 +144,17 @@ export function WhyThisDecisionPanel({
           <button
             type="button"
             onClick={copyProvenanceJson}
-            className="inline-flex items-center gap-1.5 self-start sm:self-auto rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-[11px] font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-2xs transition-all"
+            className="inline-flex items-center gap-1.5 self-start sm:self-auto rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--muted))] px-3 py-1.5 text-[11px] font-semibold text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted)/.8)] shadow-2xs transition-all cursor-pointer"
             data-testid="btn-copy-provenance-json"
           >
-            {copied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
+            {copied ? <Check size={12} className="text-[hsl(var(--muted-foreground))]" /> : <Copy size={12} />}
             <span>{copied ? 'Audit JSON Copied' : 'Export Audit JSON'}</span>
           </button>
         </div>
       </div>
 
       {/* Steps List */}
-      <div className="divide-y divide-slate-100 dark:divide-slate-800 p-2 sm:p-4">
+      <div className="divide-y divide-[hsl(var(--border))] p-2 sm:p-4">
         {steps.map((step) => {
           const isExpanded = expandedStep === step.id;
           return (
@@ -166,133 +166,121 @@ export function WhyThisDecisionPanel({
               <button
                 type="button"
                 onClick={() => setExpandedStep(isExpanded ? '' : step.id)}
-                className="w-full text-left p-4 flex items-center justify-between gap-4 hover:bg-slate-50/80 dark:hover:bg-slate-800/50 rounded-xl"
+                className="w-full text-left p-4 flex items-center justify-between gap-4 hover:bg-[hsl(var(--muted)/.5)] rounded-xl cursor-pointer"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className={`flex size-7 shrink-0 items-center justify-center rounded-full font-mono text-[11px] font-extrabold ${
-                    step.humanApprovalRequired
-                      ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-700'
-                      : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-700'
-                  }`}>
+                  <div className="flex size-7 shrink-0 items-center justify-center rounded-full font-mono text-[11px] font-bold bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] border border-[hsl(var(--border))]">
                     {step.stepNumber}
                   </div>
 
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-mono text-[11px] font-bold text-slate-900 dark:text-white">
+                      <span className="font-mono text-[11px] font-bold text-[hsl(var(--foreground))]">
                         {step.action}
                       </span>
-                      <span className="font-mono text-[9px] bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-600 dark:text-slate-300">
+                      <span className="font-mono text-[9px] bg-[hsl(var(--muted))] px-1.5 py-0.5 rounded text-[hsl(var(--muted-foreground))] border border-[hsl(var(--border))]">
                         tool: {step.toolName}
                       </span>
                       {step.humanApprovalRequired && (
-                        <span className="rounded bg-amber-500/15 text-amber-700 dark:text-amber-300 font-mono text-[9px] font-extrabold px-1.5 py-0.5">
+                        <span className="rounded bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] border border-[hsl(var(--border))] font-mono text-[9px] font-bold px-1.5 py-0.5">
                           ⚠ Human Approval Required
                         </span>
                       )}
                     </div>
-                    <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                    <p className="mt-0.5 text-[11px] text-[hsl(var(--muted-foreground))] truncate">
                       Detected: {step.detected}
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="font-mono text-[10px] text-slate-400 hidden sm:inline">
+                  <span className="font-mono text-[10px] text-[hsl(var(--muted-foreground))] hidden sm:inline">
                     {step.latencyMs ? `${step.latencyMs}ms` : ''}
                   </span>
-                  {isExpanded ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
+                  {isExpanded ? <ChevronUp size={16} className="text-[hsl(var(--muted-foreground))]" /> : <ChevronDown size={16} className="text-[hsl(var(--muted-foreground))]" />}
                 </div>
               </button>
 
               {/* Detailed Auditable Breakdown */}
               {isExpanded && (
-                <div className="px-4 pb-4 pt-1 space-y-3 bg-slate-50/50 dark:bg-slate-800/30 rounded-b-xl border-t border-slate-100 dark:border-slate-800">
+                <div className="px-4 pb-4 pt-1 space-y-3 bg-[hsl(var(--muted)/.25)] rounded-b-xl border-t border-[hsl(var(--border))]">
                   <div className="grid sm:grid-cols-2 gap-3 pt-2">
                     {/* Detected */}
-                    <div className="rounded-xl border border-slate-200/60 dark:border-slate-700/60 bg-white dark:bg-slate-800/70 p-3 space-y-1">
-                      <div className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        <span className="size-1.5 rounded-full bg-slate-400" />
+                    <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3 space-y-1">
+                      <div className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+                        <span className="size-1.5 rounded-full bg-[hsl(var(--muted-foreground))]" />
                         Detected
                       </div>
-                      <p className="text-[12px] text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
+                      <p className="text-[12px] text-[hsl(var(--foreground))] leading-relaxed font-medium">
                         {step.detected}
                       </p>
                     </div>
 
                     {/* Action */}
-                    <div className="rounded-xl border border-slate-200/60 dark:border-slate-700/60 bg-white dark:bg-slate-800/70 p-3 space-y-1">
-                      <div className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        <span className="size-1.5 rounded-full bg-indigo-500" />
+                    <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3 space-y-1">
+                      <div className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+                        <span className="size-1.5 rounded-full bg-[hsl(var(--muted-foreground))]" />
                         Agent Action
                       </div>
-                      <p className="text-[12px] text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
+                      <p className="text-[12px] text-[hsl(var(--foreground))] leading-relaxed font-medium">
                         {step.action}
                       </p>
                     </div>
 
                     {/* Why this source */}
-                    <div className="rounded-xl border border-indigo-200/60 dark:border-indigo-900/40 bg-indigo-50/40 dark:bg-indigo-950/20 p-3 space-y-1">
-                      <div className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400">
+                    <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3 space-y-1">
+                      <div className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
                         <Database size={11} />
                         Why This Source
                       </div>
-                      <p className="text-[12px] text-indigo-950 dark:text-indigo-200 leading-relaxed font-medium">
+                      <p className="text-[12px] text-[hsl(var(--foreground))] leading-relaxed font-medium">
                         {step.whyThisSource}
                       </p>
-                      <div className="font-mono text-[10px] text-indigo-600 dark:text-indigo-400 pt-0.5">
+                      <div className="font-mono text-[10px] text-[hsl(var(--muted-foreground))] pt-0.5">
                         Provider: {step.sourceProvider}
                       </div>
                     </div>
 
                     {/* Result */}
-                    <div className={`rounded-xl border p-3 space-y-1 ${
-                      step.humanApprovalRequired
-                        ? 'border-amber-200/60 dark:border-amber-900/40 bg-amber-50/40 dark:bg-amber-950/20'
-                        : 'border-emerald-200/60 dark:border-emerald-900/40 bg-emerald-50/40 dark:bg-emerald-950/20'
-                    }`}>
-                      <div className={`flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-wider ${
-                        step.humanApprovalRequired ? 'text-amber-700 dark:text-amber-400' : 'text-emerald-700 dark:text-emerald-400'
-                      }`}>
+                    <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3 space-y-1">
+                      <div className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--foreground))]">
                         <CheckCircle2 size={11} />
                         Verification Result
                       </div>
-                      <p className={`text-[12px] leading-relaxed font-medium ${
-                        step.humanApprovalRequired ? 'text-amber-950 dark:text-amber-200' : 'text-emerald-950 dark:text-emerald-200'
-                      }`}>
+                      <p className="text-[12px] text-[hsl(var(--foreground))] leading-relaxed font-medium">
                         {step.result}
                       </p>
                     </div>
                   </div>
 
                   {/* Next Action & Confidence Footer */}
-                  <div className="rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-800 p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
+                  <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
                     <div className="flex items-start sm:items-center gap-2">
-                      <span className="flex size-5 shrink-0 items-center justify-center rounded-md bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
+                      <span className="flex size-5 shrink-0 items-center justify-center rounded-md bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] border border-[hsl(var(--border))]">
                         <ArrowRight size={12} />
                       </span>
                       <div>
-                        <span className="font-mono text-[9px] uppercase font-bold text-slate-400">Next Action:</span>
-                        <p className="text-[11px] font-semibold text-slate-800 dark:text-slate-200">
+                        <span className="font-mono text-[9px] uppercase font-bold text-[hsl(var(--muted-foreground))]">Next Action:</span>
+                        <p className="text-[11px] font-semibold text-[hsl(var(--foreground))]">
                           {step.nextAction}
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 shrink-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-700">
+                    <div className="flex items-center gap-3 shrink-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-[hsl(var(--border))]">
                       <div className="text-right">
-                        <span className="font-mono text-[9px] uppercase font-bold text-slate-400 block">Confidence</span>
-                        <span className="font-mono text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                        <span className="font-mono text-[9px] uppercase font-bold text-[hsl(var(--muted-foreground))] block">Confidence</span>
+                        <span className="font-mono text-[10px] font-bold text-[hsl(var(--foreground))]">
                           {step.confidence}
                         </span>
                       </div>
 
                       {step.humanApprovalRequired && (
-                        <div className="rounded-lg bg-amber-500/15 border border-amber-500/30 px-2.5 py-1 text-right">
-                          <span className="font-mono text-[8px] uppercase font-extrabold text-amber-800 dark:text-amber-300 block">
+                        <div className="rounded-lg bg-[hsl(var(--muted))] border border-[hsl(var(--border))] px-2.5 py-1 text-right">
+                          <span className="font-mono text-[8px] uppercase font-extrabold text-[hsl(var(--foreground))] block">
                             Human Approval
                           </span>
-                          <span className="text-[10px] font-bold text-amber-700 dark:text-amber-400">
+                          <span className="text-[10px] font-bold text-[hsl(var(--muted-foreground))]">
                             Required Before Action
                           </span>
                         </div>
@@ -301,8 +289,8 @@ export function WhyThisDecisionPanel({
                   </div>
 
                   {step.humanApprovalReason && (
-                    <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-2.5 text-[11px] text-amber-900 dark:text-amber-200 flex items-start gap-2">
-                      <AlertTriangle size={14} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                    <div className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.4)] p-2.5 text-[11px] text-[hsl(var(--foreground))] flex items-start gap-2">
+                      <AlertTriangle size={14} className="text-[hsl(var(--muted-foreground))] shrink-0 mt-0.5" />
                       <span>
                         <strong>Why Human Approval is Mandatory:</strong> {step.humanApprovalReason}
                       </span>

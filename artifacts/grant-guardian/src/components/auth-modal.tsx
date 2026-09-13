@@ -43,7 +43,7 @@ export function AuthModal() {
   const [regInstitution, setRegInstitution] = useState('');
   const [regFocus, setRegFocus] = useState('');
   const [regProposalName, setRegProposalName] = useState('');
-  const [regStarter, setRegStarter] = useState('clean');
+  const [regStarter, setRegStarter] = useState('biomaterials');
 
   if (!isAuthModalOpen) return null;
 
@@ -434,9 +434,9 @@ export function AuthModal() {
                   onChange={(e) => setRegStarter(e.target.value)}
                   className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2 text-[12px] text-slate-900 dark:text-slate-100 focus:border-slate-900 dark:focus:border-white focus:outline-none transition-colors"
                 >
-                  <option value="clean">Blank Workspace (Clean slate for custom grant proposal)</option>
-                  <option value="biomaterials">Biomaterials & Regenerative Scaffolds Benchmark</option>
-                  <option value="oncology">Computational Oncology & Genomics Benchmark</option>
+                  <option value="biomaterials">Biomaterials & Regenerative Scaffolds Benchmark (12 Citations, 8 Deadlines — Recommended)</option>
+                  <option value="oncology">Computational Oncology & Genomics Benchmark (4 Citations, 3 Deadlines)</option>
+                  <option value="clean">Blank Workspace (0 Citations — Clean slate)</option>
                 </select>
               </div>
 

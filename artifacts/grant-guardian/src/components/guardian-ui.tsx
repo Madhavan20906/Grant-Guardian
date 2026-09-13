@@ -146,19 +146,19 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
   const { activePersona } = usePersona();
   return (
     <>
-      {open && <button type="button" aria-label="Close navigation" onClick={onClose} className="fixed inset-0 z-30 bg-[hsl(var(--primary)/.45)] md:hidden" data-testid="button-close-navigation" />}
-      <aside className={cx('fixed inset-y-0 left-0 z-40 flex w-[248px] -translate-x-full flex-col border-r border-slate-800/80 bg-[#0f172a] px-4 py-5 transition-transform md:translate-x-0', open && 'translate-x-0')} data-testid="sidebar-navigation">
+      {open && <button type="button" aria-label="Close navigation" onClick={onClose} className="fixed inset-0 z-30 bg-[hsl(var(--background)/.6)] backdrop-blur-xs md:hidden" data-testid="button-close-navigation" />}
+      <aside className={cx('fixed inset-y-0 left-0 z-40 flex w-[248px] -translate-x-full flex-col border-r border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar))] px-4 py-5 transition-transform md:translate-x-0', open && 'translate-x-0')} data-testid="sidebar-navigation">
         <div className="px-2"><LogoMark /></div>
-        <div className="font-mono mt-9 px-3 text-[9px] font-semibold uppercase tracking-[.22em] text-slate-500">CONTROL ROOM</div>
+        <div className="font-mono mt-9 px-3 text-[9px] font-semibold uppercase tracking-[.22em] text-[hsl(var(--sidebar-foreground)/.5)]">CONTROL ROOM</div>
         <nav className="mt-3 space-y-1" aria-label="Primary navigation">
           {navItems.map(({ href, label, icon: Icon }) => {
             const active = href === '/' ? location === '/' : location.startsWith(href);
             return (
-              <Link key={href} href={href} onClick={onClose} className={cx('group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[12px] font-medium transition-all', active ? 'bg-slate-800/90 text-amber-300 font-semibold shadow-xs border-l-2 border-amber-400 -ml-[2px] pl-[14px]' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200')} data-testid={`link-nav-${label.toLowerCase().replaceAll(' ', '-')}`}>
-                <Icon size={16} strokeWidth={active ? 2.2 : 1.7} className={active ? 'text-amber-400' : 'text-slate-400 group-hover:text-slate-300'} />
+              <Link key={href} href={href} onClick={onClose} className={cx('group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[12px] font-medium transition-all', active ? 'bg-[hsl(var(--sidebar-accent))] text-[hsl(var(--sidebar-accent-foreground))] font-semibold shadow-xs border-l-2 border-[hsl(var(--muted-foreground))] -ml-[2px] pl-[14px]' : 'text-[hsl(var(--sidebar-foreground)/.7)] hover:bg-[hsl(var(--sidebar-accent)/.5)] hover:text-[hsl(var(--sidebar-foreground))]')} data-testid={`link-nav-${label.toLowerCase().replaceAll(' ', '-')}`}>
+                <Icon size={16} strokeWidth={active ? 2.2 : 1.7} className={active ? 'text-[hsl(var(--sidebar-accent-foreground))]' : 'text-[hsl(var(--sidebar-foreground)/.6)] group-hover:text-[hsl(var(--sidebar-foreground))]'} />
                 <span>{label}</span>
                 {label === 'Citation health' && (
-                  <span className="ml-auto rounded-md bg-amber-500/15 px-1.5 py-0.5 font-mono text-[9px] font-bold text-amber-400 border border-amber-500/20">
+                  <span className="ml-auto rounded-md bg-[hsl(var(--sidebar-accent))] px-1.5 py-0.5 font-mono text-[9px] font-bold text-[hsl(var(--sidebar-foreground))] border border-[hsl(var(--sidebar-border))]">
                     3
                   </span>
                 )}
@@ -167,16 +167,16 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           })}
         </nav>
         <div className="mt-auto">
-          <div className="mb-4 rounded-xl border border-slate-800 bg-slate-900/60 p-3 text-xs">
-            <div className="font-mono text-[9px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">FLEET STATUS</div>
-            <div className="flex items-center gap-2 text-[11px] font-semibold text-slate-200">
-              <span className="size-1.5 rounded-full bg-emerald-400" />
+          <div className="mb-4 rounded-xl border border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar-accent)/.3)] p-3 text-xs">
+            <div className="font-mono text-[9px] font-bold uppercase tracking-wider text-[hsl(var(--sidebar-foreground)/.5)] mb-1.5">FLEET STATUS</div>
+            <div className="flex items-center gap-2 text-[11px] font-semibold text-[hsl(var(--sidebar-foreground))]">
+              <span className="size-1.5 rounded-full bg-[hsl(var(--muted-foreground))]" />
               All systems nominal
             </div>
-            <div className="font-mono mt-1 text-[9.5px] text-slate-400">AWS Bedrock · us-east-1</div>
+            <div className="font-mono mt-1 text-[9.5px] text-[hsl(var(--sidebar-foreground)/.6)]">AWS Bedrock · us-east-1</div>
           </div>
-          <div className="flex items-center gap-2.5 border-t border-slate-800/80 px-1 pt-3.5">
-            <div className="flex size-7 items-center justify-center rounded-lg bg-slate-800 border border-slate-700 text-[10px] font-bold text-slate-200">
+          <div className="flex items-center gap-2.5 border-t border-[hsl(var(--sidebar-border))] px-1 pt-3.5">
+            <div className="flex size-7 items-center justify-center rounded-lg bg-[hsl(var(--sidebar-accent))] border border-[hsl(var(--sidebar-border))] text-[10px] font-bold text-[hsl(var(--sidebar-foreground))]">
               {activePersona.initials}
             </div>
             <div className="min-w-0">
@@ -513,12 +513,12 @@ export function Drawer({
             <button
               type="button"
               onClick={() => setIsCentered(true)}
-              className="group flex flex-col items-center justify-center gap-2 rounded-l-xl border-y border-l border-amber-500 bg-slate-900 px-2.5 py-4 text-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:bg-slate-800 hover:text-white cursor-pointer transition-all"
+              className="group flex flex-col items-center justify-center gap-2 rounded-l-xl border-y border-l border-[hsl(var(--border))] bg-[hsl(var(--card))] px-2.5 py-4 text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] cursor-pointer transition-all shadow-xs"
               title="Push to Center for expanded visibility"
               data-testid="button-push-to-center"
             >
-              <ArrowLeft size={18} className="animate-pulse text-amber-400 group-hover:-translate-x-0.5 transition-transform" />
-              <span className="[writing-mode:vertical-rl] rotate-180 font-mono text-[9px] font-extrabold tracking-widest uppercase text-amber-300">
+              <ArrowLeft size={16} className="text-[hsl(var(--foreground))] group-hover:-translate-x-0.5 transition-transform" />
+              <span className="[writing-mode:vertical-rl] rotate-180 font-mono text-[9px] font-bold tracking-widest uppercase text-[hsl(var(--muted-foreground))] group-hover:text-[hsl(var(--foreground))]">
                 Push Center
               </span>
             </button>
@@ -531,12 +531,12 @@ export function Drawer({
             <button
               type="button"
               onClick={() => setIsCentered(false)}
-              className="group flex flex-col items-center justify-center gap-2 rounded-r-xl border-y border-r border-amber-500 bg-slate-900 px-2.5 py-4 text-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:bg-slate-800 hover:text-white cursor-pointer transition-all"
+              className="group flex flex-col items-center justify-center gap-2 rounded-r-xl border-y border-r border-[hsl(var(--border))] bg-[hsl(var(--card))] px-2.5 py-4 text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] cursor-pointer transition-all shadow-xs"
               title="Dock back to right sidebar"
               data-testid="button-dock-to-side"
             >
-              <ArrowRight size={18} className="text-amber-400 group-hover:translate-x-0.5 transition-transform" />
-              <span className="[writing-mode:vertical-rl] rotate-180 font-mono text-[9px] font-extrabold tracking-widest uppercase text-amber-300">
+              <ArrowRight size={16} className="text-[hsl(var(--foreground))] group-hover:translate-x-0.5 transition-transform" />
+              <span className="[writing-mode:vertical-rl] rotate-180 font-mono text-[9px] font-bold tracking-widest uppercase text-[hsl(var(--muted-foreground))] group-hover:text-[hsl(var(--foreground))]">
                 Dock Side
               </span>
             </button>
@@ -545,9 +545,9 @@ export function Drawer({
 
         <section
           className={cx(
-            'relative h-full w-full overflow-y-auto bg-[hsl(var(--card))] shadow-2xl transition-all duration-300 flex flex-col',
+            'relative h-full w-full overflow-y-auto bg-[hsl(var(--card))] shadow-xl transition-all duration-300 flex flex-col',
             isCentered
-              ? 'rounded-2xl border border-slate-700 p-6 sm:p-8'
+              ? 'rounded-2xl border border-[hsl(var(--border))] p-6 sm:p-8'
               : 'border-l border-[hsl(var(--border))] p-6'
           )}
         >
@@ -560,18 +560,18 @@ export function Drawer({
               <button
                 type="button"
                 onClick={() => setIsCentered(!isCentered)}
-                className="flex items-center gap-1.5 rounded-lg border border-amber-500/40 bg-amber-500/10 px-2.5 py-1 text-[11px] font-bold text-amber-400 hover:bg-amber-500/20 hover:text-amber-300 transition-colors shadow-2xs cursor-pointer"
+                className="flex items-center gap-1.5 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--muted))] px-2.5 py-1 text-[11px] font-medium text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted)/.8)] transition-colors shadow-2xs cursor-pointer"
                 title={isCentered ? 'Dock back to right sidebar' : 'Push AI investigation to center stage'}
                 data-testid="button-toggle-center"
               >
                 {isCentered ? (
                   <>
-                    <ArrowRight size={13} className="text-amber-400" />
+                    <ArrowRight size={13} className="text-[hsl(var(--muted-foreground))]" />
                     <span>Dock to Side</span>
                   </>
                 ) : (
                   <>
-                    <ArrowLeft size={13} className="text-amber-400 animate-pulse" />
+                    <ArrowLeft size={13} className="text-[hsl(var(--muted-foreground))]" />
                     <span>Push to Center</span>
                   </>
                 )}

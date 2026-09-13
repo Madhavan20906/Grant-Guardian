@@ -315,21 +315,9 @@ class GuardianStore {
       deadlineReminders: true,
     });
 
-    // Populate starter template if requested
-    if (data.starterTemplate === "biomaterials") {
-      const cloned = demoCitations.filter(c => c.userId === 1).map((c, i) => ({
-        ...c,
-        id: this.memoryCitations.length + i + 1,
-        userId: userRecord.id,
-      }));
-      this.memoryCitations.push(...cloned);
-    } else if (data.starterTemplate === "oncology") {
-      const cloned = demoCitations.filter(c => c.userId === 2).map((c, i) => ({
-        ...c,
-        id: this.memoryCitations.length + i + 1,
-        userId: userRecord.id,
-      }));
-      this.memoryCitations.push(...cloned);
+    // Populate starter template if requested (defaults to biomaterials)
+    if (data.starterTemplate && data.starterTemplate !== "clean") {
+      await this.seedUserWorkspace(userRecord.id, data.starterTemplate);
     }
 
     // Add initial welcome activity
@@ -342,6 +330,105 @@ class GuardianStore {
     });
 
     return userRecord;
+  }
+
+  async seedUserWorkspace(
+    userId: number,
+    template: string = "biomaterials"
+  ): Promise<{ citationsCount: number; deadlinesCount: number }> {
+    await this.ensureReady();
+    const sourceUserId = template === "oncology" ? 2 : 1;
+    const user = await this.getUserById(userId);
+    const ownerName = user ? `${user.title} ${user.name}` : "Principal Investigator";
+
+    // Filter and clone citations
+    const templateCitations = demoCitations.filter((c) => c.userId === sourceUserId);
+    const clonedCitations: CitationRecord[] = templateCitations.map((c, i) => ({
+      ...c,
+      id: this.memoryCitations.length + i + 1,
+      userId,
+      judgment: (c as any).judgment ?? "pending",
+      judgmentNotes: (c as any).judgmentNotes ?? null,
+      judgmentAt: (c as any).judgmentAt ?? null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }));
+
+    // Filter and clone deadlines
+    const templateDeadlines = demoDeadlines.filter((d) => d.userId === sourceUserId);
+    const clonedDeadlines: DeadlineRecord[] = templateDeadlines.map((d, i) => ({
+      ...d,
+      id: this.memoryDeadlines.length + i + 1,
+      userId,
+      owner: ownerName,
+    }));
+
+    // Filter and clone activities
+    const templateActivities = demoActivities.filter((a) => a.userId === sourceUserId);
+    const clonedActivities: ActivityRecord[] = templateActivities.map((a, i) => ({
+      ...a,
+      id: this.memoryActivities.length + i + 1,
+      userId,
+      createdAt: new Date(Date.now() - (i + 1) * 3600000),
+    }));
+
+    this.memoryCitations.push(...clonedCitations);
+    this.memoryDeadlines.push(...clonedDeadlines);
+    this.memoryActivities.push(...clonedActivities);
+
+    if (isDatabaseConfigured) {
+      try {
+        if (clonedCitations.length > 0) {
+          await db.insert(citations).values(
+            clonedCitations.map((c) => ({
+              userId: c.userId,
+              title: c.title,
+              authors: c.authors,
+              venue: c.venue,
+              year: c.year,
+              doi: c.doi,
+              status: c.status,
+              risk: c.risk,
+              detail: c.detail,
+              metadata: c.metadata,
+              judgment: c.judgment,
+              judgmentNotes: c.judgmentNotes,
+              judgmentAt: c.judgmentAt,
+            }))
+          );
+        }
+        if (clonedDeadlines.length > 0) {
+          await db.insert(deadlines).values(
+            clonedDeadlines.map((d) => ({
+              userId: d.userId,
+              type: d.type,
+              title: d.title,
+              dueDate: d.dueDate,
+              progress: d.progress,
+              owner: d.owner,
+            }))
+          );
+        }
+        if (clonedActivities.length > 0) {
+          await db.insert(activities).values(
+            clonedActivities.map((a) => ({
+              userId: a.userId,
+              kind: a.kind,
+              title: a.title,
+              description: a.description,
+              tone: a.tone,
+            }))
+          );
+        }
+      } catch (err) {
+        logger.warn({ err, userId }, "Database insertion during seedUserWorkspace failed; memory store populated");
+      }
+    }
+
+    return {
+      citationsCount: clonedCitations.length,
+      deadlinesCount: clonedDeadlines.length,
+    };
   }
 
   async updateUserProfile(

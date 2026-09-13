@@ -334,9 +334,6 @@ docker run -p 8010:8010 \
   grant-guardian-strands
 ```
 
-> [!NOTE]
-> **Transparent Hosting Disclosure**: The Strands Agent service is fully containerized and architected for Amazon Bedrock AgentCore. Because AWS hackathon promotional credits have expired, the live cloud endpoint is not actively hosted to avoid unexpected personal card billing; full local parity is provided via FastAPI on `:8010` with verified live Bedrock inference (`pnpm run verify:bedrock`) and recorded Bedrock transcript replay tests (`pnpm run test:python`).
-
 ---
 
 ## 🖥️ Visual Interface & System Tour

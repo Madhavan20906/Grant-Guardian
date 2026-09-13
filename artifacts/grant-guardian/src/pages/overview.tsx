@@ -125,6 +125,24 @@ export default function Overview() {
     (c: Citation) => c.status === 'propagation' || c.risk === 'high' || c.risk === 'medium'
   ).length;
 
+  const overdueCount = deadlines.filter(
+    (d: Deadline) => d.status === 'attention' || (d.daysLeft !== undefined && d.daysLeft < 0)
+  ).length;
+  const onTrackCount = deadlines.filter(
+    (d: Deadline) => d.status === 'on_track' || (d.status as string) === 'submitted'
+  ).length;
+  const dueSoonCount = deadlines.filter((d: Deadline) => d.status === 'due_soon').length;
+
+  const totalDeadlines = deadlines.length;
+  const onTrackPct = totalDeadlines > 0 ? Math.round((onTrackCount / totalDeadlines) * 100) : 0;
+  const dueSoonPct = totalDeadlines > 0 ? Math.round((dueSoonCount / totalDeadlines) * 100) : 0;
+  const overduePct = totalDeadlines > 0 ? Math.round((overdueCount / totalDeadlines) * 100) : 0;
+
+  const requestsTodayCount = activity.length > 0 ? activity.length : clearCount;
+  const recoveryRate = monitoredCount > 0
+    ? Math.round(((monitoredCount - retractedCount) / monitoredCount) * 100)
+    : 100;
+
   const selectedCitation = citations.find((c: Citation) => c.id === selectedCitationId) || citations[1] || null;
 
   const triggerMorningSweep = async () => {
@@ -200,19 +218,19 @@ export default function Overview() {
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 font-mono text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">
+            <div className="flex items-center gap-2 font-mono text-[11px] font-medium text-[hsl(var(--muted-foreground))] uppercase tracking-widest">
               <span>OPERATIONAL OVERVIEW</span>
               <span>·</span>
               <span>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }).toUpperCase()}</span>
             </div>
-            <h1 className="mt-2 text-[32px] md:text-[40px] font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
-              Good morning, <span className="text-indigo-900 dark:text-indigo-400">
+            <h1 className="mt-2 text-[32px] md:text-[40px] font-extrabold tracking-tight text-[hsl(var(--foreground))] leading-tight">
+              Good morning, <span>
                 {activePersona.title && activePersona.title.includes(activePersona.name)
                   ? activePersona.title
                   : `${activePersona.title ? activePersona.title + ' ' : ''}${activePersona.name}`}.
               </span>
             </h1>
-            <p className="mt-1 text-[14px] text-slate-500 dark:text-slate-400 font-normal">
+            <p className="mt-1 text-[14px] text-[hsl(var(--muted-foreground))] font-normal">
               One calm surface for every agent decision that touches your lab.
             </p>
           </div>
@@ -220,27 +238,27 @@ export default function Overview() {
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={() => setShowStrandsInfo(true)}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-2xs"
+              className="inline-flex items-center gap-2 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-3.5 py-2 text-xs font-semibold text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition-colors shadow-2xs cursor-pointer"
               data-testid="btn-strands-boss-hud"
             >
-              <Layers size={14} className="text-slate-500 dark:text-slate-400" />
+              <Layers size={14} className="text-[hsl(var(--muted-foreground))]" />
               <span>Strands Core: 10 Tools</span>
             </button>
             <button
               onClick={() => setShowDemoModal(true)}
-              className="inline-flex items-center gap-2 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 px-4 py-2 text-xs font-bold transition-all shadow-xs"
+              className="inline-flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-4 py-2 text-xs font-bold transition-opacity hover:opacity-90 shadow-xs cursor-pointer"
               data-testid="btn-launch-demo-investigation"
             >
-              <Sparkles size={14} className="text-amber-500 dark:text-amber-600" />
+              <Sparkles size={14} className="text-[hsl(var(--primary-foreground))]" />
               <span>Launch Live Demo (37 Citations)</span>
             </button>
             <button
               onClick={triggerMorningSweep}
               disabled={sweepLoading}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-2xs disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-4 py-2 text-xs font-semibold text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition-colors shadow-2xs disabled:opacity-50 cursor-pointer"
               data-testid="btn-simulate-sweep"
             >
-              <RefreshCw size={14} className={sweepLoading ? 'animate-spin text-indigo-600' : 'text-slate-400'} />
+              <RefreshCw size={14} className={sweepLoading ? 'animate-spin text-[hsl(var(--foreground))]' : 'text-[hsl(var(--muted-foreground))]'} />
               <span>{sweepLoading ? 'Refreshing signals...' : 'Refresh signals'}</span>
             </button>
             <ScanButton isPending={scan.isPending} onClick={runScan} />
@@ -248,16 +266,16 @@ export default function Overview() {
         </div>
 
         {/* JUDGING SHOWCASE / DEMO CALLOUT BANNER */}
-        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4 shadow-xs" data-testid="banner-judging-showcase">
+        <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4 shadow-2xs" data-testid="banner-judging-showcase">
           <div className="space-y-1">
-            <div className="flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
-              <span className="size-2 rounded-full bg-emerald-500" />
+            <div className="flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-widest text-[hsl(var(--muted-foreground))]">
+              <span className="size-2 rounded-full bg-[hsl(var(--muted-foreground))]" />
               <span>Autonomous Decision Pipeline · Contamination Cascade</span>
             </div>
-            <h3 className="text-[16px] font-bold text-slate-900 dark:text-white">
+            <h3 className="text-[16px] font-bold text-[hsl(var(--foreground))]">
               Watch the Agent Autonomously Detect Citation Contamination Cascades
             </h3>
-            <p className="text-[12px] text-slate-600 dark:text-slate-400 max-w-2xl font-normal leading-relaxed">
+            <p className="text-[12px] text-[hsl(var(--muted-foreground))] max-w-2xl font-normal leading-relaxed">
               A researcher submits a grant proposal &rarr; Agent ingests 37 citations &rarr; silently passes 34 clean citations &rarr; chooses Crossref &amp; Retraction Watch for suspicious records &rarr; traverses 1-hop Semantic Scholar graph &rarr; finds 2 downstream citations in proposal text &rarr; enforces Human Decision Boundary.
             </p>
           </div>
@@ -266,16 +284,16 @@ export default function Overview() {
             <button
               type="button"
               onClick={() => setShowStrandsInfo(true)}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 px-3.5 py-2.5 text-[12px] font-semibold transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted))] hover:bg-[hsl(var(--muted)/.8)] text-[hsl(var(--foreground))] px-3.5 py-2.5 text-[12px] font-semibold transition-colors cursor-pointer"
               data-testid="btn-banner-strands-boss"
             >
-              <Layers size={13} className="text-slate-400" />
+              <Layers size={13} className="text-[hsl(var(--muted-foreground))]" />
               <span>Strands Core (10 Tools)</span>
             </button>
             <button
               type="button"
               onClick={() => setShowDemoModal(true)}
-              className="inline-flex items-center gap-2 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 px-4 py-2.5 text-[12px] font-bold shadow-xs transition-colors"
+              className="inline-flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-4 py-2.5 text-[12px] font-bold shadow-xs hover:opacity-90 transition-opacity cursor-pointer"
               data-testid="btn-demo-banner-cta"
             >
               <Play size={13} className="fill-current" />
@@ -284,79 +302,89 @@ export default function Overview() {
           </div>
         </div>
 
-        {/* 2. FOUR CLEAN WHITE / SLATE KPI STAT CARDS (Calm SentinelMesh Design) */}
+        {/* 2. FOUR CLEAN BACKGROUND-BLENDED KPI STAT CARDS */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {/* Card 1 */}
-          <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs relative overflow-hidden">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 mb-4">
-              <Cpu size={18} />
+          <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-xs relative overflow-hidden">
+            <div className="flex size-9 items-center justify-center rounded-xl bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] mb-4 border border-[hsl(var(--border))]">
+              <Cpu size={17} />
             </div>
-            <div className="font-mono text-[30px] font-extrabold text-blue-950 dark:text-blue-200 leading-none">
+            <div className="font-mono text-[30px] font-bold text-[hsl(var(--foreground))] leading-none">
               {monitoredCount}
             </div>
-            <div className="mt-2 text-[12px] font-bold text-slate-900 dark:text-slate-100">
+            <div className="mt-2 text-[12px] font-semibold text-[hsl(var(--foreground))]">
               Active references
             </div>
-            <div className="font-mono text-[10px] text-slate-400">
-              registered and monitored
+            <div className="font-mono text-[10px] text-[hsl(var(--muted-foreground))]">
+              {monitoredCount === 0 ? 'no citations registered' : 'registered and monitored'}
             </div>
-            <div className="absolute right-0 bottom-0 size-24 translate-x-6 translate-y-6 rounded-full border border-slate-100 dark:border-slate-800/40 pointer-events-none" />
+            <div className="absolute right-0 bottom-0 size-24 translate-x-6 translate-y-6 rounded-full border border-[hsl(var(--border))]/40 pointer-events-none" />
           </div>
 
           {/* Card 2 */}
-          <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs relative overflow-hidden">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 mb-4">
-              <Clock3 size={18} />
+          <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-xs relative overflow-hidden">
+            <div className="flex size-9 items-center justify-center rounded-xl bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] mb-4 border border-[hsl(var(--border))]">
+              <Clock3 size={17} />
             </div>
-            <div className="font-mono text-[30px] font-extrabold text-amber-600 dark:text-amber-400 leading-none">
-              {deadlines.length || 8}
+            <div className="font-mono text-[30px] font-bold text-[hsl(var(--foreground))] leading-none">
+              {deadlines.length}
             </div>
-            <div className="mt-2 text-[12px] font-bold text-slate-900 dark:text-slate-100">
+            <div className="mt-2 text-[12px] font-semibold text-[hsl(var(--foreground))]">
               Open deadlines
             </div>
-            <div className="font-mono text-[10px] text-slate-400">
-              1 overdue review
+            <div className="font-mono text-[10px] text-[hsl(var(--muted-foreground))]">
+              {deadlines.length === 0
+                ? 'no active deadlines'
+                : overdueCount > 0
+                ? `${overdueCount} overdue review${overdueCount > 1 ? 's' : ''}`
+                : 'all deadlines on track'}
             </div>
-            <div className="absolute right-0 bottom-0 size-24 translate-x-6 translate-y-6 rounded-full border border-slate-100 dark:border-slate-800/40 pointer-events-none" />
+            <div className="absolute right-0 bottom-0 size-24 translate-x-6 translate-y-6 rounded-full border border-[hsl(var(--border))]/40 pointer-events-none" />
           </div>
 
           {/* Card 3 */}
-          <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs relative overflow-hidden">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 mb-4">
-              <ShieldCheck size={18} />
+          <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-xs relative overflow-hidden">
+            <div className="flex size-9 items-center justify-center rounded-xl bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] mb-4 border border-[hsl(var(--border))]">
+              <ShieldCheck size={17} />
             </div>
-            <div className="font-mono text-[30px] font-extrabold text-emerald-600 dark:text-emerald-400 leading-none">
-              {clearCount + 12}
+            <div className="font-mono text-[30px] font-bold text-[hsl(var(--foreground))] leading-none">
+              {requestsTodayCount}
             </div>
-            <div className="mt-2 text-[12px] font-bold text-slate-900 dark:text-slate-100">
+            <div className="mt-2 text-[12px] font-semibold text-[hsl(var(--foreground))]">
               Requests today
             </div>
-            <div className="font-mono text-[10px] text-slate-400">
-              access decisions logged
+            <div className="font-mono text-[10px] text-[hsl(var(--muted-foreground))]">
+              {requestsTodayCount === 0
+                ? 'no decisions logged'
+                : `${requestsTodayCount} access decision${requestsTodayCount > 1 ? 's' : ''} logged`}
             </div>
-            <div className="absolute right-0 bottom-0 size-24 translate-x-6 translate-y-6 rounded-full border border-slate-100 dark:border-slate-800/40 pointer-events-none" />
+            <div className="absolute right-0 bottom-0 size-24 translate-x-6 translate-y-6 rounded-full border border-[hsl(var(--border))]/40 pointer-events-none" />
           </div>
 
           {/* Card 4 */}
-          <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs relative overflow-hidden">
+          <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-xs relative overflow-hidden">
             <div className="flex items-center justify-between mb-4">
-              <div className="flex size-9 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400">
-                <RefreshCw size={17} />
+              <div className="flex size-9 items-center justify-center rounded-xl bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] border border-[hsl(var(--border))]">
+                <RefreshCw size={16} />
               </div>
-              <span className="flex items-center gap-1 font-mono text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
-                ↗ stable
+              <span className="flex items-center gap-1 font-mono text-[10px] font-medium text-[hsl(var(--muted-foreground))] bg-[hsl(var(--muted))] px-2 py-0.5 rounded-md border border-[hsl(var(--border))]">
+                {retractedCount > 0 ? 'review needed' : 'stable'}
               </span>
             </div>
-            <div className="font-mono text-[30px] font-extrabold text-amber-600 dark:text-amber-400 leading-none">
-              98.4%
+            <div className="font-mono text-[30px] font-bold text-[hsl(var(--foreground))] leading-none">
+              {recoveryRate}%
             </div>
-            <div className="mt-2 text-[12px] font-bold text-slate-900 dark:text-slate-100">
+            <div className="mt-2 text-[12px] font-semibold text-[hsl(var(--foreground))]">
               Recovery rate
             </div>
-            <div className="font-mono text-[10px] text-slate-400">
-              successful fallback runs
+            <div className="font-mono text-[10px] text-[hsl(var(--muted-foreground))]">
+              {monitoredCount === 0
+                ? 'no risks detected'
+                : retractedCount === 0
+                ? 'all citations verified clean'
+                : `${retractedCount} flagged / quarantined`}
             </div>
-            <div className="absolute right-0 bottom-0 size-24 translate-x-6 translate-y-6 rounded-full border border-slate-100 dark:border-slate-800/40 pointer-events-none" />
+            <div className="absolute right-0 bottom-0 size-24 translate-x-6 translate-y-6 rounded-full border border-[hsl(var(--border))]/40 pointer-events-none" />
           </div>
         </div>
       </div>
@@ -364,15 +392,15 @@ export default function Overview() {
       {/* LIVE SCAN PROGRESS & FEEDBACK BANNERS */}
       {scan.isPending && (
         <div
-          className="rounded-xl border border-purple-500/50 bg-purple-500/10 p-4 shadow-md flex items-center gap-3.5 animate-pulse"
+          className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-xs flex items-center gap-3.5"
           data-testid="banner-scan-active"
         >
-          <div className="size-5 rounded-full border-2 border-purple-500 border-t-transparent animate-spin shrink-0" />
+          <div className="size-4 rounded-full border-2 border-[hsl(var(--muted-foreground))] border-t-transparent animate-spin shrink-0" />
           <div>
-            <h4 className="text-[13px] font-bold text-purple-900 dark:text-purple-200">
+            <h4 className="text-[13px] font-bold text-[hsl(var(--foreground))]">
               Strands Agent Investigation in Progress...
             </h4>
-            <p className="text-[11px] text-purple-800/90 dark:text-purple-300/90">
+            <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
               Strands is querying Crossref metadata, Retraction Watch signals, and traversing 1-hop reference trees across Semantic Scholar. Evidence will feed the deterministic safety policy.
             </p>
           </div>
@@ -381,23 +409,23 @@ export default function Overview() {
 
       {scanMessage && !scan.isPending && (
         <div
-          className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4 shadow-sm flex items-center justify-between gap-3"
+          className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-xs flex items-center justify-between gap-3"
           data-testid="banner-scan-success"
         >
           <div className="flex items-center gap-2.5">
-            <CheckCircle2 size={18} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <CheckCircle2 size={16} className="text-[hsl(var(--muted-foreground))] shrink-0" />
             <div>
-              <h4 className="text-[13px] font-bold text-emerald-900 dark:text-emerald-200">
+              <h4 className="text-[13px] font-bold text-[hsl(var(--foreground))]">
                 Scan Sweep Completed Successfully
               </h4>
-              <p className="text-[11px] text-emerald-800/90 dark:text-emerald-300/90">
+              <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
                 {scanMessage}
               </p>
             </div>
           </div>
           <button
             onClick={() => setScanMessage('')}
-            className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 hover:underline shrink-0"
+            className="text-[11px] font-semibold text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:underline shrink-0"
           >
             Dismiss
           </button>
@@ -406,23 +434,23 @@ export default function Overview() {
 
       {scanError && !scan.isPending && (
         <div
-          className="rounded-xl border border-red-500/40 bg-red-500/10 p-4 shadow-sm flex items-center justify-between gap-3"
+          className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-xs flex items-center justify-between gap-3"
           data-testid="banner-scan-error"
         >
           <div className="flex items-center gap-2.5">
-            <AlertTriangle size={18} className="text-red-600 dark:text-red-400 shrink-0" />
+            <AlertTriangle size={16} className="text-[hsl(var(--muted-foreground))] shrink-0" />
             <div>
-              <h4 className="text-[13px] font-bold text-red-900 dark:text-red-200">
+              <h4 className="text-[13px] font-bold text-[hsl(var(--foreground))]">
                 Scan Disruption Notice
               </h4>
-              <p className="text-[11px] text-red-800/90 dark:text-red-300/90">
+              <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
                 {scanError}
               </p>
             </div>
           </div>
           <button
             onClick={() => setScanError('')}
-            className="text-[11px] font-bold text-red-700 dark:text-red-300 hover:underline shrink-0"
+            className="text-[11px] font-semibold text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:underline shrink-0"
           >
             Dismiss
           </button>
@@ -433,58 +461,58 @@ export default function Overview() {
         <OnboardingEmptyState />
       ) : (
         <>
-          {/* 3. GUARDIAN MORNING BRIEF CARD (Calm subtle alert) */}
+          {/* 3. GUARDIAN MORNING BRIEF CARD (Blends with background) */}
           {showMorningBrief && (
-            <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs space-y-3" data-testid="card-morning-brief">
+            <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-xs space-y-3" data-testid="card-morning-brief">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <span className="flex size-7 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400">
-                    <Sparkles size={15} />
+                  <span className="flex size-7 items-center justify-center rounded-lg bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] border border-[hsl(var(--border))]">
+                    <Sparkles size={14} />
                   </span>
                   <div>
-                    <h3 className="text-[13px] font-bold text-slate-900 dark:text-slate-100">
+                    <h3 className="text-[13px] font-bold text-[hsl(var(--foreground))]">
                       Guardian Morning Brief
                     </h3>
-                    <span className="font-mono text-[10px] text-slate-400">
+                    <span className="font-mono text-[10px] text-[hsl(var(--muted-foreground))]">
                       Autonomous Overnight Summary · Completed Today at 09:42 UTC
                     </span>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowMorningBrief(false)}
-                  className="font-mono text-[10px] font-semibold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                  className="font-mono text-[10px] font-semibold text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors"
                 >
                   Dismiss
                 </button>
               </div>
 
               <div className="grid sm:grid-cols-4 gap-3 text-[11px] pt-1">
-                <div className="rounded-xl bg-slate-50/80 dark:bg-slate-800/50 p-3 border border-slate-200/60 dark:border-slate-800">
-                  <span className="font-mono font-bold text-slate-900 dark:text-slate-100">48 Checked</span>
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Crossref + Retraction Watch registry scanned.</p>
+                <div className="rounded-lg bg-[hsl(var(--muted)/.4)] p-3 border border-[hsl(var(--border))]">
+                  <span className="font-mono font-bold text-[hsl(var(--foreground))]">48 Checked</span>
+                  <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">Crossref + Retraction Watch registry scanned.</p>
                 </div>
-                <div className="rounded-xl bg-rose-50/60 dark:bg-rose-950/20 p-3 border border-rose-200/60 dark:border-rose-900/40">
-                  <span className="font-mono font-bold text-rose-600 dark:text-rose-400">1 Retraction Caught</span>
-                  <p className="text-[10px] text-rose-700/80 dark:text-rose-300/80 mt-0.5">Obokata 2014 directly quarantined.</p>
+                <div className="rounded-lg bg-[hsl(var(--muted)/.4)] p-3 border border-[hsl(var(--border))]">
+                  <span className="font-mono font-bold text-[hsl(var(--foreground))]">1 Retraction Caught</span>
+                  <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">Obokata 2014 directly quarantined.</p>
                 </div>
-                <div className="rounded-xl bg-amber-50/60 dark:bg-amber-950/20 p-3 border border-amber-200/60 dark:border-amber-900/40">
-                  <span className="font-mono font-bold text-amber-600 dark:text-amber-400">1 Downstream Risk</span>
-                  <p className="text-[10px] text-amber-700/80 dark:text-amber-300/80 mt-0.5">Lin et al. escalated for human signoff.</p>
+                <div className="rounded-lg bg-[hsl(var(--muted)/.4)] p-3 border border-[hsl(var(--border))]">
+                  <span className="font-mono font-bold text-[hsl(var(--foreground))]">1 Downstream Risk</span>
+                  <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">Lin et al. escalated for human signoff.</p>
                 </div>
-                <div className="rounded-xl bg-emerald-50/60 dark:bg-emerald-950/20 p-3 border border-emerald-200/60 dark:border-emerald-900/40">
-                  <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">0 False Quarantines</span>
-                  <p className="text-[10px] text-emerald-700/80 dark:text-emerald-300/80 mt-0.5">Deterministic safety guardrail held.</p>
+                <div className="rounded-lg bg-[hsl(var(--muted)/.4)] p-3 border border-[hsl(var(--border))]">
+                  <span className="font-mono font-bold text-[hsl(var(--foreground))]">0 False Quarantines</span>
+                  <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">Deterministic safety guardrail held.</p>
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-[11px]">
-                <span className="text-slate-600 dark:text-slate-300">
-                  <strong className="text-slate-900 dark:text-white">Recommended action:</strong> Review the 2nd-order propagation alert for Lin et al. (Cell Stem Cell 2015).
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[hsl(var(--border))] text-[11px]">
+                <span className="text-[hsl(var(--muted-foreground))]">
+                  <strong className="text-[hsl(var(--foreground))]">Recommended action:</strong> Review the 2nd-order propagation alert for Lin et al. (Cell Stem Cell 2015).
                 </span>
                 <button
                   type="button"
                   onClick={() => setSelectedCitationId(2)}
-                  className="inline-flex items-center gap-1 rounded-lg bg-slate-900 dark:bg-white px-3 py-1 text-[11px] font-semibold text-white dark:text-slate-900 hover:opacity-90 transition-opacity"
+                  className="inline-flex items-center gap-1 rounded-lg bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-3 py-1.5 text-[11px] font-bold hover:opacity-90 transition-opacity"
                 >
                   Open Investigation <ArrowRight size={11} />
                 </button>
@@ -496,11 +524,11 @@ export default function Overview() {
       <section className="space-y-3" data-testid="section-attention-queue">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="size-2 rounded-full bg-amber-500 animate-ping" />
+            <span className="size-2 rounded-full bg-[hsl(var(--muted-foreground))]" />
             <h2 className="text-[16px] font-bold text-[hsl(var(--foreground))]">
               Guardian Attention Queue
             </h2>
-            <span className="rounded-full bg-amber-500/20 px-2.5 py-0.5 gg-mono text-[9px] font-extrabold text-amber-800 dark:text-amber-300">
+            <span className="rounded-full bg-[hsl(var(--muted))] border border-[hsl(var(--border))] px-2.5 py-0.5 gg-mono text-[9px] font-bold text-[hsl(var(--foreground))]">
               3 Items Require Awareness / Action
             </span>
           </div>
@@ -620,7 +648,7 @@ export default function Overview() {
               onClick={() => setActiveViewTab('cascade')}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
                 activeViewTab === 'cascade'
-                  ? 'bg-rose-600 text-white shadow-xs'
+                  ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]'
                   : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]'
               }`}
               data-testid="tab-contamination-cascade"
@@ -631,7 +659,7 @@ export default function Overview() {
               onClick={() => setActiveViewTab('why')}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
                 activeViewTab === 'why'
-                  ? 'bg-indigo-600 text-white shadow-xs'
+                  ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]'
                   : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]'
               }`}
               data-testid="tab-why-decision"
@@ -721,10 +749,12 @@ export default function Overview() {
             <div>
               <div className="flex justify-between items-center text-[12px] font-medium text-slate-600 dark:text-slate-300 mb-1.5">
                 <span>On track</span>
-                <span className="font-mono font-bold text-slate-900 dark:text-white">04</span>
+                <span className="font-mono font-bold text-slate-900 dark:text-white">
+                  {String(onTrackCount).padStart(2, '0')}
+                </span>
               </div>
               <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                <div className="h-full bg-slate-700 dark:bg-slate-300 rounded-full transition-all duration-500" style={{ width: '48%' }} />
+                <div className="h-full bg-slate-700 dark:bg-slate-300 rounded-full transition-all duration-500" style={{ width: `${onTrackPct}%` }} />
               </div>
             </div>
 
@@ -732,10 +762,12 @@ export default function Overview() {
             <div>
               <div className="flex justify-between items-center text-[12px] font-medium text-slate-600 dark:text-slate-300 mb-1.5">
                 <span>At risk</span>
-                <span className="font-mono font-bold text-slate-900 dark:text-white">03</span>
+                <span className="font-mono font-bold text-slate-900 dark:text-white">
+                  {String(dueSoonCount).padStart(2, '0')}
+                </span>
               </div>
               <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                <div className="h-full bg-slate-500 dark:bg-slate-400 rounded-full transition-all duration-500" style={{ width: '32%' }} />
+                <div className="h-full bg-slate-500 dark:bg-slate-400 rounded-full transition-all duration-500" style={{ width: `${dueSoonPct}%` }} />
               </div>
             </div>
 
@@ -743,10 +775,12 @@ export default function Overview() {
             <div>
               <div className="flex justify-between items-center text-[12px] font-medium text-slate-600 dark:text-slate-300 mb-1.5">
                 <span>Overdue</span>
-                <span className="font-mono font-bold text-slate-900 dark:text-white">01</span>
+                <span className="font-mono font-bold text-slate-900 dark:text-white">
+                  {String(overdueCount).padStart(2, '0')}
+                </span>
               </div>
               <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                <div className="h-full bg-slate-400 dark:bg-slate-500 rounded-full transition-all duration-500" style={{ width: '12%' }} />
+                <div className="h-full bg-slate-400 dark:bg-slate-500 rounded-full transition-all duration-500" style={{ width: `${overduePct}%` }} />
               </div>
             </div>
           </div>

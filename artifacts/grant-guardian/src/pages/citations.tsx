@@ -152,32 +152,32 @@ export default function Citations() {
 
       {/* Human Decision Inbox Banner */}
       {pendingEscalations.length > 0 && (
-        <section className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-5 shadow-sm space-y-4" data-testid="section-human-decision-inbox">
-          <div className="flex items-center justify-between gap-3 border-b border-amber-500/20 pb-3">
+        <section className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-xs space-y-4" data-testid="section-human-decision-inbox">
+          <div className="flex items-center justify-between gap-3 border-b border-[hsl(var(--border))] pb-3">
             <div className="flex items-center gap-2.5">
-              <span className="flex size-7 items-center justify-center rounded-lg bg-amber-500/20 text-amber-700 dark:text-amber-300">
-                <AlertTriangle size={16} />
+              <span className="flex size-7 items-center justify-center rounded-lg bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] border border-[hsl(var(--border))]">
+                <AlertTriangle size={15} />
               </span>
               <div>
-                <h3 className="text-[14px] font-bold tracking-tight text-amber-900 dark:text-amber-200">
+                <h3 className="text-[13px] font-bold tracking-tight text-[hsl(var(--foreground))]">
                   HUMAN DECISION INBOX · {pendingEscalations.length} Item Awaiting PI Review
                 </h3>
-                <p className="text-[10px] text-amber-700/80 dark:text-amber-300/80">
+                <p className="text-[10px] text-[hsl(var(--muted-foreground))]">
                   Guardian detected 2nd-order retracted foundation work. AI will not decide scientific validity.
                 </p>
               </div>
             </div>
-            <span className="rounded-full bg-amber-500/20 px-2.5 py-1 gg-mono text-[9px] font-bold text-amber-800 dark:text-amber-200">
+            <span className="rounded-full bg-[hsl(var(--muted))] border border-[hsl(var(--border))] px-2.5 py-1 gg-mono text-[9px] font-bold text-[hsl(var(--foreground))]">
               Escalated Policy
             </span>
           </div>
 
           <div className="space-y-3">
             {pendingEscalations.map((c: any) => (
-              <div key={c.id} className="rounded-xl border border-amber-500/30 bg-[hsl(var(--card))] p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+              <div key={c.id} className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="gg-mono text-[8px] uppercase tracking-wider bg-amber-500/20 text-amber-700 dark:text-amber-300 font-extrabold px-2 py-0.5 rounded">
+                    <span className="gg-mono text-[8px] uppercase tracking-wider bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] border border-[hsl(var(--border))] font-extrabold px-2 py-0.5 rounded">
                       2nd-Order Propagation Risk
                     </span>
                     <span className="text-[10px] text-[hsl(var(--muted-foreground))] gg-mono">
@@ -200,7 +200,7 @@ export default function Citations() {
       )}
 
       {judgmentSuccess && (
-        <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-[11px] font-semibold text-emerald-800 dark:text-emerald-300">
+        <div className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--muted))] p-3 text-[11px] font-semibold text-[hsl(var(--foreground))]">
           ✓ {judgmentSuccess}
         </div>
       )}

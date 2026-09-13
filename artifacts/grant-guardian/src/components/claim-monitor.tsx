@@ -98,7 +98,7 @@ export function ClaimMonitor() {
             <h3 className="text-[14px] font-bold text-[hsl(var(--foreground))]">
               Grant Claim Dependency Map
             </h3>
-            <span className="rounded bg-blue-500/15 px-2 py-0.5 text-[9px] gg-mono font-extrabold text-blue-700 dark:text-blue-300">
+            <span className="rounded bg-[hsl(var(--muted))] border border-[hsl(var(--border))] px-2 py-0.5 text-[9px] gg-mono font-bold text-[hsl(var(--foreground))]">
               {user.proposalName}
             </span>
           </div>
@@ -107,7 +107,7 @@ export function ClaimMonitor() {
           </p>
         </div>
 
-        <span className="gg-mono text-[10px] text-amber-600 dark:text-amber-400 font-bold bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full">
+        <span className="gg-mono text-[10px] text-[hsl(var(--foreground))] font-bold bg-[hsl(var(--muted))] border border-[hsl(var(--border))] px-3 py-1 rounded-full">
           1 Claim Requires Review
         </span>
       </div>
@@ -120,10 +120,10 @@ export function ClaimMonitor() {
               key={claim.id}
               type="button"
               onClick={() => setSelectedClaimId(claim.id)}
-              className={`w-full rounded-xl border p-3.5 text-left transition-all ${
+              className={`w-full rounded-xl border p-3.5 text-left transition-all cursor-pointer ${
                 selectedClaimId === claim.id
-                  ? 'border-blue-500 bg-blue-500/10 shadow-sm'
-                  : 'border-[hsl(var(--border))] bg-[hsl(var(--background))] hover:border-[hsl(var(--muted-foreground)/.3)]'
+                  ? 'border-[hsl(var(--foreground))] bg-[hsl(var(--muted))] shadow-2xs'
+                  : 'border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:bg-[hsl(var(--muted)/.4)]'
               }`}
             >
               <div className="flex items-center justify-between">
@@ -131,12 +131,12 @@ export function ClaimMonitor() {
                   Claim #{claim.claimNumber} · {claim.proposalSection}
                 </span>
                 {claim.status === 'review_required' ? (
-                  <span className="inline-flex items-center gap-1 rounded bg-amber-500/20 px-1.5 py-0.5 text-[8px] font-extrabold text-amber-700 dark:text-amber-300">
-                    <AlertTriangle size={10} /> Review Required
+                  <span className="inline-flex items-center gap-1 rounded bg-[hsl(var(--muted))] border border-[hsl(var(--border))] px-1.5 py-0.5 text-[8px] font-bold text-[hsl(var(--foreground))]">
+                    <AlertTriangle size={10} className="text-[hsl(var(--muted-foreground))]" /> Review Required
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 rounded bg-emerald-500/20 px-1.5 py-0.5 text-[8px] font-bold text-emerald-700 dark:text-emerald-300">
-                    <CheckCircle2 size={10} /> Safe
+                  <span className="inline-flex items-center gap-1 rounded bg-[hsl(var(--muted))] border border-[hsl(var(--border))] px-1.5 py-0.5 text-[8px] font-bold text-[hsl(var(--foreground))]">
+                    <CheckCircle2 size={10} className="text-[hsl(var(--muted-foreground))]" /> Safe
                   </span>
                 )}
               </div>
