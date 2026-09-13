@@ -24,6 +24,10 @@ import {
   FileText,
   RefreshCw,
   Activity as ActivityIcon,
+  Play,
+  Fingerprint,
+  Crown,
+  Flame,
 } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useLocation } from 'wouter';
@@ -47,6 +51,10 @@ import { BlastRadius } from '@/components/blast-radius';
 import { InvestigationWorkspace } from '@/components/investigation-workspace';
 import { ClaimMonitor } from '@/components/claim-monitor';
 import { OnboardingEmptyState } from '@/components/onboarding-empty-state';
+import { InteractiveInvestigationModal } from '@/components/interactive-investigation-modal';
+import { ContaminationCascade } from '@/components/contamination-cascade';
+import { WhyThisDecisionPanel } from '@/components/why-this-decision-panel';
+import { StrandsSovereignBossModal } from '@/components/strands-sovereign-boss-modal';
 import { usePersona } from '@/context/persona-context';
 
 export default function Overview() {
@@ -66,7 +74,8 @@ export default function Overview() {
   const [selectedCitationId, setSelectedCitationId] = useState<number | null>(null);
   const [showMorningBrief, setShowMorningBrief] = useState(true);
   const [showStrandsInfo, setShowStrandsInfo] = useState(false);
-  const [activeViewTab, setActiveViewTab] = useState<'attention' | 'graph' | 'claims' | 'blast'>('attention');
+  const [showDemoModal, setShowDemoModal] = useState(false);
+  const [activeViewTab, setActiveViewTab] = useState<'attention' | 'cascade' | 'why' | 'graph' | 'claims' | 'blast'>('attention');
   const [isSubmittingJudgment, setIsSubmittingJudgment] = useState(false);
 
   const watchStatusQuery = useQuery({
@@ -208,7 +217,23 @@ export default function Overview() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={() => setShowStrandsInfo(true)}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-500/40 bg-indigo-950/40 hover:bg-indigo-900/60 dark:bg-indigo-950/70 px-3.5 py-2 text-xs font-black text-indigo-300 transition-all shadow-sm ring-1 ring-indigo-500/30"
+              data-testid="btn-strands-boss-hud"
+            >
+              <Crown size={14} className="text-amber-400" />
+              <span>Strands Core: 10/10 Tools</span>
+            </button>
+            <button
+              onClick={() => setShowDemoModal(true)}
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-700 hover:from-indigo-700 hover:to-purple-800 text-white px-4 py-2 text-xs font-extrabold transition-all shadow-sm ring-2 ring-indigo-500/20"
+              data-testid="btn-launch-demo-investigation"
+            >
+              <Sparkles size={14} className="text-amber-300" />
+              <span>Launch Live Demo (37 Citations)</span>
+            </button>
             <button
               onClick={triggerMorningSweep}
               disabled={sweepLoading}
@@ -219,6 +244,43 @@ export default function Overview() {
               <span>{sweepLoading ? 'Refreshing signals...' : 'Refresh signals'}</span>
             </button>
             <ScanButton isPending={scan.isPending} onClick={runScan} />
+          </div>
+        </div>
+
+        {/* JUDGING SHOWCASE / DEMO CALLOUT BANNER */}
+        <div className="rounded-2xl border-2 border-indigo-500/30 bg-gradient-to-r from-indigo-50/90 via-purple-50/50 to-white dark:from-indigo-950/40 dark:via-purple-950/20 dark:to-slate-900 p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4 shadow-xs" data-testid="banner-judging-showcase">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 font-mono text-[10px] font-extrabold uppercase tracking-widest text-indigo-700 dark:text-indigo-400">
+              <span className="flex size-2 rounded-full bg-indigo-600 animate-ping" />
+              <span>Autonomous Decision-Making &middot; Signature Contamination Cascade</span>
+            </div>
+            <h3 className="text-[16px] font-extrabold text-slate-900 dark:text-white">
+              Watch the Agent Autonomously Detect Citation Contamination Cascades
+            </h3>
+            <p className="text-[12px] text-slate-600 dark:text-slate-300 max-w-2xl font-medium">
+              A researcher submits a grant proposal &rarr; Agent ingests 37 citations &rarr; silently passes 34 clean citations &rarr; chooses Crossref &amp; Retraction Watch for suspicious records &rarr; traverses 1-hop Semantic Scholar graph &rarr; finds 2 downstream citations in proposal text &rarr; enforces Human Decision Boundary.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+            <button
+              type="button"
+              onClick={() => setShowStrandsInfo(true)}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-500/50 bg-indigo-900/30 hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 px-3.5 py-2.5 text-[12px] font-extrabold shadow-sm transition-all"
+              data-testid="btn-banner-strands-boss"
+            >
+              <Crown size={13} className="text-amber-500" />
+              <span>Sovereign Boss Fleet (10 Tools)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowDemoModal(true)}
+              className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 text-[12px] font-extrabold shadow-sm transition-all"
+              data-testid="btn-demo-banner-cta"
+            >
+              <Play size={13} className="fill-white" />
+              <span>Launch Live Investigation</span>
+            </button>
           </div>
         </div>
 
@@ -542,7 +604,7 @@ export default function Overview() {
       {/* 5. INTERACTIVE EXPLORATION SWITCHER (Attention / Graph / Claims / Blast Radius) */}
       <div className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[hsl(var(--border))] pb-2">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setActiveViewTab('attention')}
               className={`px-3 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
@@ -555,6 +617,28 @@ export default function Overview() {
               Attention & Integrity
             </button>
             <button
+              onClick={() => setActiveViewTab('cascade')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
+                activeViewTab === 'cascade'
+                  ? 'bg-rose-600 text-white shadow-xs'
+                  : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]'
+              }`}
+              data-testid="tab-contamination-cascade"
+            >
+              <FileWarning size={12} /> Signature: Contamination Cascade
+            </button>
+            <button
+              onClick={() => setActiveViewTab('why')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
+                activeViewTab === 'why'
+                  ? 'bg-indigo-600 text-white shadow-xs'
+                  : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]'
+              }`}
+              data-testid="tab-why-decision"
+            >
+              <Fingerprint size={12} /> "Why this decision?" Panel
+            </button>
+            <button
               onClick={() => setActiveViewTab('graph')}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
                 activeViewTab === 'graph'
@@ -563,7 +647,7 @@ export default function Overview() {
               }`}
               data-testid="tab-dependency-graph"
             >
-              <GitFork size={12} /> Interactive Dependency Graph
+              <GitFork size={12} /> Dependency Graph
             </button>
             <button
               onClick={() => setActiveViewTab('blast')}
@@ -594,6 +678,14 @@ export default function Overview() {
           </span>
         </div>
 
+        {activeViewTab === 'cascade' && <ContaminationCascade />}
+        {activeViewTab === 'why' && (
+          <WhyThisDecisionPanel
+            doi="10.1016/j.stem.2015.01.002"
+            paperTitle="Downstream applications of stimulus-triggered pluripotency in tissue engineering"
+            status="propagation"
+          />
+        )}
         {activeViewTab === 'graph' && <CitationGraph />}
         {activeViewTab === 'blast' && <BlastRadius />}
         {activeViewTab === 'claims' && <ClaimMonitor />}
@@ -821,6 +913,18 @@ export default function Overview() {
           />
         </Drawer>
       )}
+
+      {/* Devastating 37-Citation Autonomous Investigation Demo Modal */}
+      <InteractiveInvestigationModal
+        isOpen={showDemoModal}
+        onClose={() => setShowDemoModal(false)}
+      />
+
+      {/* Strands Sovereign Boss HUD Modal (10-Tool Operational Matrix & Consensus Engine) */}
+      <StrandsSovereignBossModal
+        isOpen={showStrandsInfo}
+        onClose={() => setShowStrandsInfo(false)}
+      />
     </div>
   );
 }

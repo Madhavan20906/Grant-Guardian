@@ -20,8 +20,12 @@ from main import (
     app,
     crossref_lookup,
     retraction_watch_lookup,
+    openalex_global_registry,
+    pubmed_retraction_verifier,
     semantic_scholar_graph,
     check_reference_retractions,
+    contamination_vector_calculator,
+    provenance_proof_generator,
     escalate_to_human,
     draft_compliance_report,
     build_agent,
@@ -41,8 +45,11 @@ class TestStrandsAgentService(unittest.TestCase):
             self.assertEqual(data["status"], "ok")
             self.assertEqual(data["agent"], "strands")
             self.assertEqual(data["version"], "2.0.0")
+            self.assertEqual(data["agent_power_level"], "ULTIMATE_SOVEREIGN_BOSS")
             self.assertTrue(data["strands_available"])
-            self.assertEqual(data["tools_available"], 6)
+            self.assertEqual(data["tools_available"], 10)
+            self.assertEqual(len(data["consensus_registries"]), 4)
+            self.assertIn("HMAC-SHA256", data["provenance_security"])
 
     def test_authentic_strands_agent_instantiation(self):
         """Architecture Test: Verify build_agent() returns an authentic Strands Agent instance.
@@ -51,12 +58,16 @@ class TestStrandsAgentService(unittest.TestCase):
         """
         agent = build_agent()
         self.assertIsInstance(agent, StrandsAgent)
-        self.assertEqual(len(agent.tool_names), 6)
+        self.assertEqual(len(agent.tool_names), 10)
         expected_tools = {
             "crossref_lookup",
             "retraction_watch_lookup",
+            "openalex_global_registry",
+            "pubmed_retraction_verifier",
             "semantic_scholar_graph",
             "check_reference_retractions",
+            "contamination_vector_calculator",
+            "provenance_proof_generator",
             "escalate_to_human",
             "draft_compliance_report",
         }
@@ -149,7 +160,10 @@ class TestStrandsAgentService(unittest.TestCase):
         data = response.json()
         self.assertEqual(data["agent"], "strands")
         self.assertEqual(data["version"], "2.0.0")
-        self.assertEqual(data["tools_available"], 6)
+        self.assertEqual(data["agent_power_level"], "ULTIMATE_SOVEREIGN_BOSS")
+        self.assertEqual(data["tools_available"], 10)
+        self.assertEqual(len(data["consensus_registries"]), 4)
+        self.assertIn("HMAC-SHA256", data["provenance_security"])
         self.assertTrue(len(data["result"]) > 0)
         self.assertIn("mode", data)
         self.assertIn("status_label", data)
@@ -412,13 +426,79 @@ class TestStrandsAgentService(unittest.TestCase):
         finally:
             semantic_scholar_graph._tool_func = orig_ss
 
+    def test_openalex_global_registry_tool(self):
+        """Verify OpenAlex global registry tool returns synchronized benchmark data for retracted works."""
+        doi = "10.1038/nature13358"
+        res = openalex_global_registry(doi)
+        self.assertTrue(res["is_retracted"])
+        self.assertEqual(res["status"], "confirmed_true")
+        self.assertIn("Stimulus-triggered", res["title"])
+        self.assertIn("OpenAlex", res["source"])
+
+    def test_pubmed_retraction_verifier_tool(self):
+        """Verify PubMed / NIH NLM retraction verifier returns MeSH retraction publication terms."""
+        doi = "10.1038/nature13358"
+        res = pubmed_retraction_verifier(doi)
+        self.assertTrue(res["is_retracted"])
+        self.assertEqual(res["pubmed_status"], "confirmed_true")
+        self.assertIn("Retracted Publication", res["mesh_terms"])
+        self.assertIn("PubMed", res["source"])
+
+    def test_contamination_vector_calculator_tool(self):
+        """Verify quantitative contamination vector calculus calculates structural CSI score and alternative path."""
+        res = contamination_vector_calculator(
+            root_doi="10.1016/j.stem.2015.01.002",
+            retracted_ref_doi="10.1038/nature13358",
+            citation_context="methodology",
+        )
+        self.assertEqual(res["root_doi"], "10.1016/j.stem.2015.01.002")
+        self.assertEqual(res["retracted_foundation_doi"], "10.1038/nature13358")
+        self.assertEqual(res["dependency_depth"], 2)
+        self.assertGreater(res["contamination_severity_index"], 0.7)
+        self.assertEqual(res["blast_radius_classification"], "CRITICAL_METHODOLOGICAL_RISK")
+        self.assertIn("recommended_recovery_path", res)
+        self.assertEqual(res["recommended_recovery_path"]["action"], "REPLACE_CITATION")
+
+    def test_provenance_proof_generator_cryptographic_seal(self):
+        """Verify HMAC-SHA256 cryptographic provenance proof assembly with tamper evidence."""
+        proof = provenance_proof_generator(
+            doi="10.1038/nature13358",
+            decision="QUARANTINE_CLAIM",
+            registries_checked=["Crossref REST API", "Retraction Watch Database", "OpenAlex Global Registry", "PubMed Central / NIH NLM"],
+        )
+        self.assertTrue(proof["proof_id"].startswith("PROOF-SHA256-"))
+        self.assertEqual(proof["decision"], "QUARANTINE_CLAIM")
+        self.assertEqual(proof["registries_count"], 4)
+        self.assertTrue(proof["consensus_established"])
+        self.assertEqual(len(proof["hmac_sha256_seal"]), 64)  # 64 hex characters for SHA-256
+        self.assertEqual(len(proof["merkle_leaf_hash"]), 64)
+        self.assertEqual(proof["tamper_evidence"], "CRYPTOGRAPHICALLY_VERIFIED")
+
+    def test_multi_registry_consensus_in_scan_execution(self):
+        """Verify /scan establishes 4-way multi-registry consensus and attaches cryptographic provenance."""
+        payload = {"citations": [{"doi": "10.1038/nature13358", "title": "STAP Stem Cell Paper"}]}
+        response = client.post("/scan", json=payload)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["agent_power_level"], "ULTIMATE_SOVEREIGN_BOSS")
+        self.assertEqual(len(data["consensus_registries"]), 4)
+        
+        evidence = data["evidence"]["10.1038/nature13358"]
+        self.assertTrue(evidence["direct_retraction"])
+        self.assertIsNotNone(evidence.get("provenance_proof"))
+        self.assertTrue(evidence["provenance_proof"]["proof_id"].startswith("PROOF-SHA256-"))
+
     def test_tool_docstrings_enforce_negative_scoping(self):
-        """Verify tool docstrings contain explicit negative constraints to prevent mis-selection."""
+        """Verify tool docstrings contain explicit negative constraints to prevent mis-selection across all 10 tools."""
         tools = [
             crossref_lookup,
             retraction_watch_lookup,
+            openalex_global_registry,
+            pubmed_retraction_verifier,
             semantic_scholar_graph,
             check_reference_retractions,
+            contamination_vector_calculator,
+            provenance_proof_generator,
             escalate_to_human,
             draft_compliance_report,
         ]
@@ -429,9 +509,17 @@ class TestStrandsAgentService(unittest.TestCase):
                 self.assertIn("NEGATIVE CONSTRAINT", doc)
             elif name == "retraction_watch_lookup":
                 self.assertIn("NEGATIVE CONSTRAINT", doc)
+            elif name == "openalex_global_registry":
+                self.assertIn("NEGATIVE CONSTRAINT", doc)
+            elif name == "pubmed_retraction_verifier":
+                self.assertIn("NEGATIVE CONSTRAINT", doc)
             elif name == "semantic_scholar_graph":
                 self.assertIn("STRICT CONSTRAINT", doc)
             elif name == "check_reference_retractions":
+                self.assertIn("NEGATIVE CONSTRAINT", doc)
+            elif name == "contamination_vector_calculator":
+                self.assertIn("NEGATIVE CONSTRAINT", doc)
+            elif name == "provenance_proof_generator":
                 self.assertIn("NEGATIVE CONSTRAINT", doc)
             elif name == "escalate_to_human":
                 self.assertIn("NEGATIVE CONSTRAINT", doc)

@@ -25,11 +25,14 @@ import type { Citation } from '@workspace/api-client-react';
 import { useAuth } from '@/context/auth-context';
 import { CitationGraph } from './citation-graph';
 import { BlastRadius } from './blast-radius';
+import { WhyThisDecisionPanel } from './why-this-decision-panel';
+import { ContaminationCascade } from './contamination-cascade';
+import { HumanDecisionBoundary, HumanDecisionAction } from './human-decision-boundary';
 
 export interface InvestigationWorkspaceProps {
   citation: Citation;
   onClose: () => void;
-  onJudgment: (id: number, judgment: 'relevant' | 'not_relevant' | 'deferred', notes?: string) => Promise<void>;
+  onJudgment: (id: number, judgment: any, notes?: string, replacementDoi?: string) => Promise<void>;
   isSubmitting?: boolean;
 }
 
@@ -40,7 +43,7 @@ export function InvestigationWorkspace({
   isSubmitting = false,
 }: InvestigationWorkspaceProps) {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'overview' | 'matrix' | 'graph' | 'agent' | 'decision'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'why' | 'cascade' | 'matrix' | 'graph' | 'agent' | 'decision'>('overview');
   const [notes, setNotes] = useState('');
   const [showWhyAlert, setShowWhyAlert] = useState(true);
   const [showWhyNotQuarantine, setShowWhyNotQuarantine] = useState(true);
@@ -111,10 +114,12 @@ export function InvestigationWorkspace({
         <div className="flex items-center gap-1 mt-4 -mb-4 overflow-x-auto border-t border-[hsl(var(--border))] pt-2">
           {[
             { id: 'overview', label: 'Overview & Explainer' },
-            { id: 'matrix', label: 'Evidence Matrix' },
+            { id: 'why', label: 'Why This Decision?' },
+            { id: 'cascade', label: 'Contamination Cascade' },
             { id: 'graph', label: 'Citation Graph & Ripple' },
+            { id: 'matrix', label: 'Evidence Matrix' },
             { id: 'agent', label: 'Agent Activity Trace' },
-            { id: 'decision', label: 'Decision & Handoff' },
+            { id: 'decision', label: 'Human Decision Boundary' },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -432,120 +437,44 @@ export function InvestigationWorkspace({
           </div>
         )}
 
-        {/* TAB 5: DECISION & HANDOFF */}
+        {/* TAB: WHY THIS DECISION? */}
+        {activeTab === 'why' && (
+          <div className="space-y-6">
+            <WhyThisDecisionPanel
+              doi={citation.doi}
+              paperTitle={citation.title}
+              status={citation.status}
+            />
+          </div>
+        )}
+
+        {/* TAB: CONTAMINATION CASCADE */}
+        {activeTab === 'cascade' && (
+          <div className="space-y-6">
+            <ContaminationCascade />
+          </div>
+        )}
+
+        {/* TAB: HUMAN DECISION BOUNDARY */}
         {activeTab === 'decision' && (
           <div className="space-y-6">
-            {/* Agent to Human Handoff Card */}
-            <div className="rounded-xl border border-blue-500/30 bg-blue-500/10 p-5 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <UserCheck size={16} className="text-blue-600" />
-                  <span className="text-[13px] font-bold text-blue-900 dark:text-blue-200">
-                    Agent → Human Handoff Brief
-                  </span>
-                </div>
-                <span className="gg-mono text-[9px] font-bold rounded bg-blue-500/20 px-2 py-0.5 text-blue-800 dark:text-blue-200">
-                  PI Supervision Active
-                </span>
-              </div>
-
-              <div className="text-[11px] leading-relaxed text-[hsl(var(--foreground))] space-y-2">
-                <p>
-                  <strong>Guardian has verified:</strong>
-                  <br />
-                  ✓ DOI identity confirmed on Crossref
-                  <br />
-                  ✓ Direct paper is not retracted
-                  <br />
-                  ✓ Section 3.2 references retracted 2014 Obokata paper
-                </p>
-                <p>
-                  <strong>Guardian cannot determine:</strong>
-                  <br />
-                  ? Whether your specific grant proposal methodology depends on this cited mechanism
-                </p>
-                <p className="text-blue-800 dark:text-blue-300 font-semibold">
-                  <strong>Recommendation:</strong> Human PI domain review required.
-                </p>
-              </div>
-            </div>
-
-            {/* PI Scientific Rationale Input */}
-            <div className="space-y-2">
-              <label className="block text-[11px] font-bold text-[hsl(var(--foreground))]">
-                Principal Investigator Scientific Rationale (Saved to Institutional Memory):
-              </label>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="E.g., 'Our tissue scaffold hypothesis is biochemically independent of STAP pluripotency mechanisms and uses Yamanaka standard factors.'"
-                rows={3}
-                className="w-full rounded-lg border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-3 text-[11px] outline-none focus:border-amber-500"
-                data-testid="textarea-pi-notes"
-              />
-              <span className="text-[10px] text-[hsl(var(--muted-foreground))]">
-                This rationale becomes part of the lab's persistent research memory. Guardian will not reopen this case unless new evidence materially changes.
-              </span>
-            </div>
-
-            {/* 3 Main Action Decisions */}
-            <div className="grid sm:grid-cols-3 gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => onJudgment(citation.id, 'relevant', notes)}
-                disabled={isSubmitting}
-                className="flex flex-col items-start rounded-xl border border-red-500/40 bg-red-500/10 p-4 text-left hover:bg-red-500/20 transition-all disabled:opacity-50"
-                data-testid="btn-confirm-impact"
-              >
-                <div className="flex items-center gap-1.5 text-red-700 dark:text-red-300 font-bold text-[12px]">
-                  <XCircle size={14} /> Confirm Impact
-                </div>
-                <span className="mt-1 text-[10px] text-[hsl(var(--muted-foreground))]">
-                  Quarantine from grant drafts. Flag for replacement in proposal text.
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => onJudgment(citation.id, 'not_relevant', notes)}
-                disabled={isSubmitting}
-                className="flex flex-col items-start rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-left hover:bg-emerald-500/20 transition-all disabled:opacity-50"
-                data-testid="btn-mark-independent"
-              >
-                <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-300 font-bold text-[12px]">
-                  <CheckCircle2 size={14} /> Mark Independent
-                </div>
-                <span className="mt-1 text-[10px] text-[hsl(var(--muted-foreground))]">
-                  Declare dependency non-material. Clear citation for grant submission.
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => onJudgment(citation.id, 'deferred', notes)}
-                disabled={isSubmitting}
-                className="flex flex-col items-start rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.5)] p-4 text-left hover:bg-[hsl(var(--muted))] transition-all disabled:opacity-50"
-                data-testid="btn-defer-decision"
-              >
-                <div className="flex items-center gap-1.5 text-[hsl(var(--foreground))] font-bold text-[12px]">
-                  <Clock size={14} /> Defer Decision
-                </div>
-                <span className="mt-1 text-[10px] text-[hsl(var(--muted-foreground))]">
-                  Keep in Attention Queue while gathering experimental verification.
-                </span>
-              </button>
-            </div>
-
-            {/* Institutional Memory Preview */}
-            <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.2)] p-4 space-y-2">
-              <span className="gg-mono text-[9px] uppercase tracking-wider font-extrabold text-[hsl(var(--muted-foreground))]">
-                Lab Institutional Memory
-              </span>
-              <div className="text-[11px] text-[hsl(var(--muted-foreground))] space-y-1">
-                <div>• Previous Decision: <em>None recorded for this DOI</em></div>
-                <div>• Future sweeps: Guardian will reference this PI signoff across future grants.</div>
-              </div>
-            </div>
+            <HumanDecisionBoundary
+              citationId={citation.id}
+              citationTitle={citation.title}
+              citationDoi={citation.doi}
+              currentStatus={citation.status}
+              recommendedAction={
+                isPropagation
+                  ? "Replace Section 3.2 low-pH pluripotency citations with standardized Yamanaka transcription factors (Cell 2019)."
+                  : isRetracted
+                  ? "Quarantine citation permanently from active grant drafts."
+                  : "Citation verified clear across registries."
+              }
+              onDecision={async (action, notes, replacementDoi) => {
+                await onJudgment(citation.id, action, notes, replacementDoi);
+              }}
+              isSubmitting={isSubmitting}
+            />
           </div>
         )}
       </div>

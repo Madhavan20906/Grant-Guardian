@@ -14,6 +14,7 @@ import {
   Layers,
   Sparkles,
   HelpCircle,
+  FileWarning,
 } from 'lucide-react';
 import {
   useListCitations,
@@ -37,6 +38,7 @@ import {
 import { InvestigationWorkspace } from '@/components/investigation-workspace';
 import { CitationGraph } from '@/components/citation-graph';
 import { BlastRadius } from '@/components/blast-radius';
+import { ContaminationCascade } from '@/components/contamination-cascade';
 import { OnboardingEmptyState } from '@/components/onboarding-empty-state';
 
 export default function Citations() {
@@ -47,7 +49,7 @@ export default function Citations() {
   const [selected, setSelected] = useState<number | null>(null);
   const [judgmentSubmitting, setJudgmentSubmitting] = useState<number | null>(null);
   const [judgmentSuccess, setJudgmentSuccess] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'register' | 'graph' | 'blast'>('register');
+  const [activeTab, setActiveTab] = useState<'register' | 'cascade' | 'graph' | 'blast'>('register');
   const [newDoi, setNewDoi] = useState('');
   const [importSuccess, setImportSuccess] = useState<string | null>(null);
 
@@ -218,6 +220,17 @@ export default function Citations() {
             Citation Register
           </button>
           <button
+            onClick={() => setActiveTab('cascade')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
+              activeTab === 'cascade'
+                ? 'bg-rose-600 text-white shadow-xs'
+                : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]'
+            }`}
+            data-testid="tab-citations-cascade"
+          >
+            <FileWarning size={12} /> Signature: Contamination Cascade
+          </button>
+          <button
             onClick={() => setActiveTab('graph')}
             className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
               activeTab === 'graph'
@@ -246,6 +259,7 @@ export default function Citations() {
         </span>
       </div>
 
+      {activeTab === 'cascade' && <ContaminationCascade />}
       {activeTab === 'graph' && <CitationGraph />}
       {activeTab === 'blast' && <BlastRadius />}
 

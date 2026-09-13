@@ -238,13 +238,28 @@ router.post("/guardian/citations/:id/judgment", async (req, res, next) => {
     const id = Number(req.params.id);
     const judgment = String(req.body?.judgment ?? "");
     const notes = String(req.body?.notes ?? "").trim();
+    const replacementDoi = String(req.body?.replacementDoi ?? "").trim();
 
-    if (!["relevant", "not_relevant", "deferred"].includes(judgment)) {
-      return res.status(400).json({ error: "Invalid judgment. Must be 'relevant', 'not_relevant', or 'deferred'." });
+    const allowedJudgments = [
+      "relevant",
+      "not_relevant",
+      "deferred",
+      "accept",
+      "replace",
+      "quarantine",
+      "dismiss",
+      "escalate",
+    ];
+
+    if (!allowedJudgments.includes(judgment)) {
+      return res.status(400).json({
+        error: `Invalid judgment. Must be one of: ${allowedJudgments.join(", ")}`,
+      });
     }
 
     const userId = await resolveUserId(req);
-    const updatedCitation = await guardianStore.recordJudgment(id, userId, judgment as any, notes);
+    const combinedNotes = replacementDoi ? `${notes ? notes + " | " : ""}Replacement: ${replacementDoi}` : notes;
+    const updatedCitation = await guardianStore.recordJudgment(id, userId, judgment as any, combinedNotes);
     if (!updatedCitation) {
       return res.status(404).json({ error: "Citation not found" });
     }
@@ -279,7 +294,15 @@ router.get("/guardian/strands/status", async (_req, res) => {
     available: result.available,
     mode: result.mode,
     statusLabel: result.status_label,
-    tools: result.tools ?? 6,
+    powerLevel: result.agent_power_level ?? "ULTIMATE_SOVEREIGN_BOSS",
+    tools: result.tools ?? 10,
+    consensusRegistries: result.consensus_registries ?? [
+      "Crossref REST API",
+      "Retraction Watch Database",
+      "OpenAlex Global Registry",
+      "PubMed Central / NIH NLM",
+    ],
+    provenanceSecurity: result.provenance_security ?? "HMAC-SHA256 Cryptographic Evidence Seal",
     error: result.error,
   });
 });
