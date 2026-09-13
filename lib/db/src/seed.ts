@@ -604,7 +604,7 @@ export const demoActivities = [
   // User 1
   { id: 1, userId: 1, kind: "flagged", title: "Retraction signal caught: STAP Stem Cell Study", description: "Retraction Watch identified direct retraction notice for 10.1038/nature13358 (Obokata et al. 2014). Paper quarantined.", tone: "danger", createdAt: new Date() },
   { id: 2, userId: 1, kind: "escalation", title: "Propagation risk routed to PI: Lin et al. (2015)", description: "Semantic Scholar 1-hop graph found reference to retracted DOI 10.1038/nature13358. Escalated for human claim evaluation.", tone: "warning", createdAt: new Date() },
-  { id: 3, userId: 1, kind: "scan", title: "Guardian full desk sweep completed", description: "Scanned 5 citations using Crossref, Retraction Watch, and Semantic Scholar graph traversal. Strands Agent trace recorded.", tone: "neutral", createdAt: new Date() },
+  { id: 3, userId: 1, kind: "scan", title: "Autonomous multi-agent desk sweep completed", description: "Dynamically routed 5 citations across 3 branching paths: 1 direct retraction pruned early, 1 propagation cascade escalated, 3 verified clean with graph crawling. Durable session updated.", tone: "neutral", createdAt: new Date() },
   // User 2
   { id: 201, userId: 2, kind: "flagged", title: "Retraction caught: Cancer Genomic Signatures", description: "Retraction Watch confirmed direct retraction for 10.1126/science.1129064 (Potti et al. 2006). Quarantined from oncology grant drafts.", tone: "danger", createdAt: new Date() },
   { id: 202, userId: 2, kind: "escalation", title: "Propagation risk routed to PI: Baggerly et al. (2008)", description: "Citation graph identified 2nd-order reference to retracted signature paper. Escalated to Dr. Chen.", tone: "warning", createdAt: new Date() },

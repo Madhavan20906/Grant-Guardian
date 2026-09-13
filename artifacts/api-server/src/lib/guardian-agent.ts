@@ -42,12 +42,32 @@ export type StrandsPayload = {
   tools_available?: number;
   consensus_registries?: string[];
   provenance_security?: string;
+  subagent_architecture?: {
+    orchestrator: string;
+    citation_subagent: string;
+    governance_subagent: string;
+    delegation_pattern: string;
+    agent_tools: string[];
+  };
+  durable_session?: {
+    session_id: string;
+    sweeps_completed: number;
+    cached_clean_dois_count: number;
+    known_retracted_roots_count: number;
+    cumulative_tools_executed: number;
+    latency_saved_ms: number;
+    last_sweep_at?: string;
+  };
   tool_trace?: Array<{
     tool: string;
     citation_doi?: string;
+    agent_role?: string;
     timestamp: string;
     duration_ms: number;
     status: string;
+    thought_before_action?: string;
+    planning_rationale?: string;
+    decision_rule?: string;
     input: unknown;
     output: unknown;
   }>;
@@ -154,6 +174,8 @@ export async function runStrandsService(citations: CitationInput[]) {
         "PubMed Central / NIH NLM",
       ],
       provenance_security: payload.provenance_security ?? "HMAC-SHA256 Cryptographic Evidence Seal",
+      subagent_architecture: payload.subagent_architecture,
+      durable_session: payload.durable_session,
       tool_trace: payload.tool_trace ?? [],
       evidence: payload.evidence ?? {},
       decisions_recommended: payload.decisions_recommended ?? [],
