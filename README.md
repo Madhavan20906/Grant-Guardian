@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![AWS Bedrock](https://img.shields.io/badge/AWS-Bedrock%20AgentCore-FF9900?logo=amazon-aws)](agent-service/agentcore.json)
 [![Strands SDK](https://img.shields.io/badge/Strands-SDK%202.0-8b5cf6)](agent-service/main.py)
-[![Tests: 88 Passing](https://img.shields.io/badge/Tests-88%20Passing-10b981)](artifacts/api-server/src/routes/guardian.test.ts)
+[![Tests: 89 Passing](https://img.shields.io/badge/Tests-89%20Passing-10b981)](artifacts/api-server/src/routes/guardian.test.ts)
 
 > **Live Deployment & Verification**:
 > - **PI Web Application**: `https://grant-guardian.onrender.com` (or local `http://localhost:5173`)
