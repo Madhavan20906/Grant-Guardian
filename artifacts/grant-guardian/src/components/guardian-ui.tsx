@@ -27,6 +27,10 @@ import {
   UserPlus,
   LogIn,
   LogOut,
+  ArrowLeft,
+  ArrowRight,
+  Maximize2,
+  Minimize2,
   X,
   XCircle,
 } from 'lucide-react';
@@ -365,6 +369,105 @@ export function ScanButton({ isPending, onClick }: { isPending: boolean; onClick
   return <Button onClick={onClick} disabled={isPending} testId="button-run-scan">{isPending ? <><RefreshCw size={14} className="animate-spin" />Scanning desk</> : <><Play size={13} fill="currentColor" />Run scan</>}</Button>;
 }
 
-export function Drawer({ title, children, onClose }: { title: string; children: ReactNode; onClose: () => void }) {
-  return <div className="fixed inset-0 z-50 flex justify-end bg-[hsl(var(--primary)/.25)]" role="dialog" aria-modal="true" data-testid="drawer-detail"><button className="absolute inset-0 cursor-default" onClick={onClose} aria-label="Close detail" data-testid="button-close-drawer" /><section className="relative h-full w-full max-w-[480px] overflow-y-auto border-l border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 shadow-2xl"><div className="mb-8 flex items-center justify-between"><div className="gg-mono text-[10px] uppercase tracking-[.16em] text-[hsl(var(--muted-foreground))]">{title}</div><button type="button" onClick={onClose} className="rounded-md p-2 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]" aria-label="Close detail panel" data-testid="button-close-detail"><X size={17} /></button></div>{children}</section></div>;
+export function Drawer({
+  title,
+  children,
+  onClose,
+  initialCentered = false,
+}: {
+  title: string;
+  children: ReactNode;
+  onClose: () => void;
+  initialCentered?: boolean;
+}) {
+  const [isCentered, setIsCentered] = useState(initialCentered);
+
+  return (
+    <div
+      className={cx(
+        'fixed inset-0 z-50 flex bg-slate-950/70 backdrop-blur-xs transition-all duration-300',
+        isCentered ? 'items-center justify-center p-4 sm:p-6' : 'justify-end'
+      )}
+      role="dialog"
+      aria-modal="true"
+      data-testid="drawer-detail"
+    >
+      <button
+        className="absolute inset-0 cursor-default"
+        onClick={onClose}
+        aria-label="Close detail"
+        data-testid="button-close-drawer"
+      />
+      <section
+        className={cx(
+          'relative h-full overflow-y-auto bg-[hsl(var(--card))] shadow-2xl transition-all duration-300',
+          isCentered
+            ? 'w-full max-w-5xl max-h-[92vh] rounded-2xl border border-slate-700 dark:border-slate-800 p-6 sm:p-8'
+            : 'w-full max-w-[540px] border-l border-[hsl(var(--border))] p-6'
+        )}
+      >
+        {/* Left-Side Push Button attached to panel edge */}
+        <button
+          type="button"
+          onClick={() => setIsCentered(!isCentered)}
+          className={cx(
+            'absolute z-20 flex items-center gap-1.5 rounded-l-xl border border-slate-700 bg-slate-900/95 px-3 py-2 text-xs font-bold text-amber-300 shadow-2xl backdrop-blur transition-all hover:bg-slate-800 hover:border-amber-400 hover:text-white cursor-pointer',
+            isCentered
+              ? 'right-16 top-6 rounded-xl border border-r'
+              : '-left-[145px] top-20 border-r-0'
+          )}
+          title={isCentered ? 'Dock to right sidebar' : 'Push AI investigation to center stage'}
+          data-testid="button-push-to-center"
+        >
+          {isCentered ? (
+            <>
+              <ArrowRight size={14} className="text-amber-400 shrink-0" />
+              <span>Dock to Side</span>
+            </>
+          ) : (
+            <>
+              <ArrowLeft size={14} className="text-amber-400 shrink-0 animate-pulse" />
+              <span>Push to Center</span>
+            </>
+          )}
+        </button>
+
+        <div className="mb-6 flex items-center justify-between border-b border-[hsl(var(--border))] pb-3.5">
+          <div className="flex items-center gap-2.5">
+            <div className="gg-mono text-[11px] font-bold uppercase tracking-[.16em] text-[hsl(var(--muted-foreground))]">
+              {title}
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsCentered(!isCentered)}
+              className="flex items-center gap-1.5 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.4)] px-2.5 py-1 text-[11px] font-semibold text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition-colors"
+              title={isCentered ? 'Dock to right sidebar' : 'Push to center stage'}
+            >
+              {isCentered ? (
+                <>
+                  <Minimize2 size={13} className="text-amber-400" />
+                  <span>Dock Side</span>
+                </>
+              ) : (
+                <>
+                  <Maximize2 size={13} className="text-amber-400" />
+                  <span>Center Stage</span>
+                </>
+              )}
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-md p-1.5 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]"
+            aria-label="Close detail panel"
+            data-testid="button-close-detail"
+          >
+            <X size={17} />
+          </button>
+        </div>
+        {children}
+      </section>
+    </div>
+  );
 }
