@@ -339,20 +339,32 @@ class GuardianStore {
     await this.ensureReady();
     const sourceUserId = template === "oncology" ? 2 : 1;
     const user = await this.getUserById(userId);
-    const ownerName = user ? `${user.title} ${user.name}` : "Principal Investigator";
+    const ownerName = user
+      ? user.title && user.title.includes(user.name)
+        ? user.title
+        : `${user.title ? user.title + " " : ""}${user.name}`
+      : "Principal Investigator";
+    const proposalName = user?.proposalName || "Active Research Proposal";
 
     // Filter and clone citations
     const templateCitations = demoCitations.filter((c) => c.userId === sourceUserId);
-    const clonedCitations: CitationRecord[] = templateCitations.map((c, i) => ({
-      ...c,
-      id: this.memoryCitations.length + i + 1,
-      userId,
-      judgment: (c as any).judgment ?? "pending",
-      judgmentNotes: (c as any).judgmentNotes ?? null,
-      judgmentAt: (c as any).judgmentAt ?? null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }));
+    const clonedCitations: CitationRecord[] = templateCitations.map((c, i) => {
+      const meta = c.metadata ? JSON.parse(JSON.stringify(c.metadata)) : undefined;
+      if (meta?.graph?.cascade) {
+        meta.graph.cascade.project = proposalName;
+      }
+      return {
+        ...c,
+        id: this.memoryCitations.length + i + 1,
+        userId,
+        metadata: meta,
+        judgment: (c as any).judgment ?? "pending",
+        judgmentNotes: (c as any).judgmentNotes ?? null,
+        judgmentAt: (c as any).judgmentAt ?? null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+    });
 
     // Filter and clone deadlines
     const templateDeadlines = demoDeadlines.filter((d) => d.userId === sourceUserId);
@@ -369,6 +381,16 @@ class GuardianStore {
       ...a,
       id: this.memoryActivities.length + i + 1,
       userId,
+      title: a.title
+        .replace(/Dr\. Elena Rossi/g, ownerName)
+        .replace(/Dr\. Marcus Chen/g, ownerName)
+        .replace(/Dr\. Sarah Jenkins/g, ownerName)
+        .replace(/Dr\. Chen/g, ownerName),
+      description: a.description
+        .replace(/Dr\. Elena Rossi/g, ownerName)
+        .replace(/Dr\. Marcus Chen/g, ownerName)
+        .replace(/Dr\. Sarah Jenkins/g, ownerName)
+        .replace(/Dr\. Chen/g, ownerName),
       createdAt: new Date(Date.now() - (i + 1) * 3600000),
     }));
 

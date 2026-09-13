@@ -7,4 +7,5 @@ export {
   type UserProfile,
   FALLBACK_DEMO_USERS,
   FALLBACK_DEMO_USERS as PERSONAS,
+  formatDisplayName,
 } from './auth-context';

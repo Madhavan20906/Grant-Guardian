@@ -13,7 +13,7 @@ import {
   ExternalLink,
   UserPlus,
 } from 'lucide-react';
-import { useAuth } from '@/context/auth-context';
+import { useAuth, formatDisplayName } from '@/context/auth-context';
 import { usePersona } from '@/context/persona-context';
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -27,7 +27,7 @@ interface OnboardingEmptyStateProps {
 }
 
 export function OnboardingEmptyState({ onImportClick }: OnboardingEmptyStateProps) {
-  const { selectPersona, openAuthModal } = useAuth();
+  const { user, isAuthenticated, selectPersona, openAuthModal } = useAuth();
   const queryClient = useQueryClient();
   const [quickDoi, setQuickDoi] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -268,64 +268,131 @@ export function OnboardingEmptyState({ onImportClick }: OnboardingEmptyStateProp
         )}
       </div>
 
-      {/* Or Explore with Seeded Lab Personas */}
+      {/* Or Explore with Seeded Lab Personas / Benchmarks */}
       <div className="pt-4 border-t border-[hsl(var(--border))] space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-              Multi-Tenant Sandboxes & Custom Labs
+              {isAuthenticated ? 'Load Benchmark Datasets into Your Workspace' : 'Multi-Tenant Sandboxes & Custom Labs'}
             </h3>
             <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
-              Explore field-specific templates or register an isolated workspace for your own proposal.
+              {isAuthenticated
+                ? `Populate ${formatDisplayName(user)}'s workspace with real multi-hop retracted citations and compliance milestones.`
+                : 'Explore field-specific templates or register an isolated workspace for your own proposal.'}
             </p>
           </div>
-          <button
-            type="button"
-            onClick={openAuthModal}
-            className="flex items-center gap-1.5 rounded-lg border border-purple-500/40 bg-purple-500/10 px-3 py-1.5 text-xs font-bold text-purple-600 dark:text-purple-400 hover:bg-purple-500/20 transition-all self-start sm:self-auto"
-          >
-            <UserPlus size={13} />
-            Create Your Lab Account
-          </button>
+          {isAuthenticated ? (
+            <div className="flex items-center gap-1.5 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+              <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Workspace: {formatDisplayName(user)}</span>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={openAuthModal}
+              className="flex items-center gap-1.5 rounded-lg border border-purple-500/40 bg-purple-500/10 px-3 py-1.5 text-xs font-bold text-purple-600 dark:text-purple-400 hover:bg-purple-500/20 transition-all self-start sm:self-auto"
+            >
+              <UserPlus size={13} />
+              Create Your Lab Account
+            </button>
+          )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <button
             type="button"
-            onClick={() => selectPersona('elena')}
-            className="text-left rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-3.5 hover:border-blue-500 transition-all group"
+            onClick={async () => {
+              if (isAuthenticated) {
+                await handleLoadBenchmark();
+              } else {
+                selectPersona('elena');
+              }
+            }}
+            disabled={isSubmitting}
+            className="text-left rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-3.5 hover:border-blue-500 transition-all group disabled:opacity-50"
           >
             <div className="flex items-center justify-between">
-              <span className="font-bold text-xs text-[hsl(var(--foreground))] group-hover:text-blue-500">Dr. Elena Rossi</span>
+              <span className="font-bold text-xs text-[hsl(var(--foreground))] group-hover:text-blue-500">
+                {isAuthenticated ? 'Biomaterials & Tissue Eng. (12 Citations)' : 'Dr. Elena Rossi'}
+              </span>
               <ArrowRight size={12} className="text-[hsl(var(--muted-foreground))] group-hover:translate-x-0.5 transition-transform" />
             </div>
-            <div className="text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5">Biomaterials & Tissue Eng.</div>
+            <div className="text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5">
+              {isAuthenticated ? `Seed into ${user.name}'s Lab` : 'Biomaterials & Tissue Eng.'}
+            </div>
             <div className="text-[10px] text-red-600 dark:text-red-400 mt-2 font-mono">1 Retraction • 1 Propagation</div>
           </button>
 
           <button
             type="button"
-            onClick={() => selectPersona('marcus')}
-            className="text-left rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-3.5 hover:border-blue-500 transition-all group"
+            onClick={async () => {
+              if (isAuthenticated) {
+                setIsSubmitting(true);
+                setFeedback(null);
+                try {
+                  const res = await fetch('/api/guardian/seed', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ template: 'oncology' }),
+                  });
+                  if (res.ok) {
+                    const data = await res.json();
+                    setFeedback({
+                      type: 'success',
+                      message: data.message || `Loaded benchmark dataset into ${formatDisplayName(user)}'s workspace!`,
+                    });
+                    await Promise.all([
+                      queryClient.invalidateQueries({ queryKey: getListCitationsQueryKey() }),
+                      queryClient.invalidateQueries({ queryKey: getGetGuardianOverviewQueryKey() }),
+                      queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() }),
+                      queryClient.invalidateQueries({ queryKey: ['guardian', 'watch', 'status'] }),
+                    ]);
+                  }
+                } catch {
+                  setFeedback({ type: 'error', message: 'Failed to populate template.' });
+                } finally {
+                  setIsSubmitting(false);
+                }
+              } else {
+                selectPersona('marcus');
+              }
+            }}
+            disabled={isSubmitting}
+            className="text-left rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-3.5 hover:border-blue-500 transition-all group disabled:opacity-50"
           >
             <div className="flex items-center justify-between">
-              <span className="font-bold text-xs text-[hsl(var(--foreground))] group-hover:text-blue-500">Dr. Marcus Chen</span>
+              <span className="font-bold text-xs text-[hsl(var(--foreground))] group-hover:text-blue-500">
+                {isAuthenticated ? 'Computational Oncology Benchmark' : 'Dr. Marcus Chen'}
+              </span>
               <ArrowRight size={12} className="text-[hsl(var(--muted-foreground))] group-hover:translate-x-0.5 transition-transform" />
             </div>
-            <div className="text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5">Computational Oncology</div>
+            <div className="text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5">
+              {isAuthenticated ? `Seed into ${user.name}'s Lab` : 'Computational Oncology'}
+            </div>
             <div className="text-[10px] text-amber-600 dark:text-amber-400 mt-2 font-mono">Duke Microarray Trial</div>
           </button>
 
           <button
             type="button"
-            onClick={() => selectPersona('sarah')}
-            className="text-left rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-3.5 hover:border-blue-500 transition-all group"
+            onClick={async () => {
+              if (isAuthenticated) {
+                await handleLoadBenchmark();
+              } else {
+                selectPersona('sarah');
+              }
+            }}
+            disabled={isSubmitting}
+            className="text-left rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-3.5 hover:border-blue-500 transition-all group disabled:opacity-50"
           >
             <div className="flex items-center justify-between">
-              <span className="font-bold text-xs text-[hsl(var(--foreground))] group-hover:text-blue-500">Dr. Sarah Jenkins</span>
+              <span className="font-bold text-xs text-[hsl(var(--foreground))] group-hover:text-blue-500">
+                {isAuthenticated ? 'Translational Genomics Benchmark' : 'Dr. Sarah Jenkins'}
+              </span>
               <ArrowRight size={12} className="text-[hsl(var(--muted-foreground))] group-hover:translate-x-0.5 transition-transform" />
             </div>
-            <div className="text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5">Translational Genomics</div>
+            <div className="text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5">
+              {isAuthenticated ? `Seed into ${user.name}'s Lab` : 'Translational Genomics'}
+            </div>
             <div className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-2 font-mono">NIH R21 Active Watch</div>
           </button>
         </div>

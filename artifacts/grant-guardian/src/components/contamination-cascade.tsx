@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   FileWarning,
 } from 'lucide-react';
+import { useAuth, formatDisplayName } from '@/context/auth-context';
 
 export interface ContaminationTier {
   id: string;
@@ -86,8 +87,8 @@ export const DEFAULT_CONTAMINATION_CHAIN: ContaminationTier[] = [
     level: 4,
     badge: 'YOUR GRANT PROPOSAL',
     badgeColor: 'bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-800',
-    title: 'NSF CAREER: Bio-orthogonal Hydrogels for Neural Tissue Regeneration',
-    authors: 'Your Laboratory (Dr. Elena Rossi, PI)',
+    title: 'Active Research Grant Proposal Workspace',
+    authors: 'Your Laboratory (Principal Investigator)',
     venue: 'Active Grant Proposal Workspace',
     year: 2026,
     doi: 'PROPOSAL-2026-AIM-2',
@@ -104,10 +105,27 @@ export function ContaminationCascade({
 }: {
   chain?: ContaminationTier[];
 }) {
-  const [selectedTierId, setSelectedTierId] = useState<string>(chain[chain.length - 1].id);
+  const { user } = useAuth();
+  const userName = user.name || 'Your Laboratory';
+  const userTitle = formatDisplayName(user);
+  const userProposal = user.proposalName || 'Active Research Grant Proposal';
+
+  const dynamicChain = (chain || DEFAULT_CONTAMINATION_CHAIN).map((tier) => {
+    if (tier.id === 'tier-proposal' || tier.role === 'grant_proposal') {
+      return {
+        ...tier,
+        title: userProposal,
+        authors: `${user.labName || 'Your Laboratory'} (${userTitle || userName}, PI)`,
+        evidence: `Grant Guardian Dependency Engine: Multi-hop trace confirmed 2 hops from retracted root to ${userProposal} Aim 2.`,
+      };
+    }
+    return tier;
+  });
+
+  const [selectedTierId, setSelectedTierId] = useState<string>(dynamicChain[dynamicChain.length - 1].id);
   const [isTracing, setIsTracing] = useState(false);
 
-  const selected = chain.find((c) => c.id === selectedTierId) || chain[chain.length - 1];
+  const selected = dynamicChain.find((c) => c.id === selectedTierId) || dynamicChain[dynamicChain.length - 1];
 
   const triggerTraceAnimation = () => {
     setIsTracing(true);

@@ -118,17 +118,17 @@ export function CitationGraph({
   const currentNodes: GraphNode[] = [
     {
       id: 'grant',
-      label: `${activePersona.workspace || 'NSF Proposal'} (${activePersona.lab})`,
-      sublabel: `Active Research Grant · PI: ${activePersona.title}`,
-      authors: `${activePersona.name.split(' ').slice(-1)[0]} Lab`,
+      label: `${activePersona.workspace || 'Active Proposal Workspace'} (${activePersona.lab || 'Research Lab'})`,
+      sublabel: `Active Research Grant · PI: ${activePersona.title || activePersona.name}`,
+      authors: activePersona.lab || `${activePersona.name} Lab`,
       year: 2026,
       venue: 'Proposal Workspace',
-      doi: `PROPOSAL-2026-${activePersona.slug.toUpperCase()}`,
+      doi: `PROPOSAL-2026-${(activePersona.slug || 'lab').toUpperCase()}`,
       status: 'grant_root',
       hop: 0,
       claimsCount: 3,
       relationship: 'RESEARCH ROOT',
-      evidence: `Active lab submission workspace for ${activePersona.name}`,
+      evidence: `Active lab submission workspace for ${activePersona.title || activePersona.name}`,
     },
     ...DEFAULT_NODES.slice(1),
   ];

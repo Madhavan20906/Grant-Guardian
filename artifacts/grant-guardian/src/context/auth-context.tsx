@@ -46,12 +46,24 @@ export const HACKATHON_DEMO_USER: UserProfile = {
 
 export const FALLBACK_DEMO_USERS: UserProfile[] = [HACKATHON_DEMO_USER];
 
+export function formatDisplayName(user?: { name?: string; title?: string } | null): string {
+  if (!user) return 'Researcher';
+  const name = (user.name || '').trim();
+  const title = (user.title || '').trim();
+  if (!name) return 'Researcher';
+  if (!title) return name;
+  if (name.toLowerCase().startsWith(title.toLowerCase())) return name;
+  if (title.toLowerCase().includes(name.toLowerCase())) return title;
+  return `${title} ${name}`;
+}
+
 export function toPersona(user: UserProfile): Persona {
+  const displayName = formatDisplayName(user);
   return {
     id: user.id,
     slug: user.tenantSlug,
     name: user.name,
-    title: user.title,
+    title: displayName,
     lab: user.labName,
     institution: user.institution,
     initials: user.initials,
@@ -175,6 +187,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [user, token]);
 
+  // Synchronize authenticated session from server if token exists
+  useEffect(() => {
+    if (!token) return;
+    let cancelled = false;
+    const fetchCurrentUser = async () => {
+      try {
+        const res = await fetch('/api/auth/me', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (!cancelled && data && data.user) {
+            setUser(data.user);
+            if (typeof window !== 'undefined') {
+              localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(data.user));
+            }
+          }
+        }
+      } catch {
+        // Offline or server unreachable; preserve stored user
+      }
+    };
+    fetchCurrentUser();
+    return () => {
+      cancelled = true;
+    };
+  }, [token]);
+
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     const cleanEmail = email.trim().toLowerCase();
@@ -295,13 +335,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryClient.invalidateQueries();
   };
 
-  const demoLogin = async (_slugOrId?: string | number) => {
+  const demoLogin = async (slugOrId?: string | number) => {
     setIsLoading(true);
+    const targetSlug = slugOrId || HACKATHON_DEMO_USER.tenantSlug;
     try {
       const res = await fetch('/api/auth/demo-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slugOrId: HACKATHON_DEMO_USER.tenantSlug }),
+        body: JSON.stringify({ slugOrId: targetSlug }),
       });
       if (res.ok) {
         const data = await res.json();

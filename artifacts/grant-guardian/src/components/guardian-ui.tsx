@@ -35,7 +35,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import type { Activity, Citation, Deadline } from '@workspace/api-client-react';
-import { useAuth } from '@/context/auth-context';
+import { useAuth, formatDisplayName } from '@/context/auth-context';
 import { usePersona } from '@/context/persona-context';
 import { useTheme } from '@/context/theme-context';
 
@@ -86,7 +86,7 @@ export function PersonaSwitcher() {
         </span>
         <div className="flex flex-col text-left leading-none">
           <span className="text-[11px] font-bold text-slate-100">
-            {user.title && user.title.includes(user.name) ? user.title : `${user.title ? user.title + ' ' : ''}${user.name}`}
+            {formatDisplayName(user)}
           </span>
           <span className="font-mono text-[9px] text-slate-400">{user.email}</span>
         </div>
@@ -181,7 +181,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
             </div>
             <div className="min-w-0">
               <div className="truncate text-[11px] font-bold text-slate-200">
-                {activePersona.name}
+                {activePersona.title || activePersona.name}
               </div>
               <div className="font-mono truncate text-[9px] text-slate-400">
                 {activePersona.role}

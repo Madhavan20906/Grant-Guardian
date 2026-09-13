@@ -25,6 +25,7 @@ import {
 import { WhyThisDecisionPanel, DEFAULT_PROPAGATION_REASONING } from './why-this-decision-panel';
 import { ContaminationCascade } from './contamination-cascade';
 import { HumanDecisionBoundary, HumanDecisionAction } from './human-decision-boundary';
+import { useAuth, formatDisplayName } from '@/context/auth-context';
 
 export interface DemoStep {
   id: number;
@@ -165,7 +166,35 @@ export function InteractiveInvestigationModal({
   const [isPlaying, setIsPlaying] = useState(false);
   const [activeTab, setActiveTab] = useState<'reasoning' | 'why' | 'cascade' | 'decision'>('reasoning');
 
-  const currentStep = DEMO_INVESTIGATION_STEPS[currentStepIndex];
+  const { user } = useAuth();
+  const displayName = formatDisplayName(user);
+  const userProposal = user.proposalName || 'Active Grant Proposal Workspace';
+  const userLab = user.labName || 'Research Laboratory';
+
+  const rawStep = DEMO_INVESTIGATION_STEPS[currentStepIndex];
+  const currentStep = {
+    ...rawStep,
+    subheading:
+      rawStep.id === 1
+        ? `${userProposal} (${userLab})`
+        : rawStep.id === 7
+        ? `${displayName} reviews evidence and selects resolution (Accept, Replace, Quarantine, Dismiss, Escalate)`
+        : rawStep.subheading,
+    heading:
+      rawStep.id === 7
+        ? `Step 6: Principal Investigator (${displayName}) Decision & Audit Log`
+        : rawStep.heading,
+    agentThought:
+      rawStep.id === 5
+        ? `Comparing the downstream citation cascade against the citations in ${displayName}'s active proposal: ${userProposal}.`
+        : rawStep.id === 7
+        ? `Investigation concluded. Handing off full provenance trail to Principal Investigator ${displayName}.`
+        : rawStep.agentThought,
+    decisionRule:
+      rawStep.id === 7
+        ? `PI Action: ${displayName} reviews evidence and selects "REPLACE" with clean benchmark protocol. Rationale permanently saved to ${userLab} institutional memory.`
+        : rawStep.decisionRule,
+  };
 
   // Auto-play timer
   useEffect(() => {

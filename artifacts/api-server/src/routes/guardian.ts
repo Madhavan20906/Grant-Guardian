@@ -39,13 +39,36 @@ const resolveUserId = async (req: { query?: Record<string, any>; headers?: Recor
   return userId;
 };
 
+const formatUserTitle = (u?: { title?: string; name?: string } | null) => {
+  if (!u) return undefined;
+  const name = (u.name || "").trim();
+  const title = (u.title || "").trim();
+  if (!name) return undefined;
+  if (!title) return name;
+  if (name.toLowerCase().startsWith(title.toLowerCase())) return name;
+  if (title.toLowerCase().includes(name.toLowerCase())) return title;
+  return `${title} ${name}`;
+};
+
 const daysLeft = (date: Date) => Math.ceil((date.getTime() - Date.now()) / 86_400_000);
-const deadlineDto = (item: DeadlineRecord, defaultOwner?: string) => ({
-  ...item,
-  dueDate: item.dueDate.toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }),
-  daysLeft: daysLeft(item.dueDate),
-  owner: item.owner || defaultOwner || "Principal Investigator",
-});
+const deadlineDto = (item: DeadlineRecord, defaultOwner?: string) => {
+  let owner = item.owner;
+  const isDemoOrGeneric =
+    !owner ||
+    owner === "Dr. Elena Rossi" ||
+    owner === "Dr. Marcus Chen" ||
+    owner === "Dr. Sarah Jenkins" ||
+    owner === "Principal Investigator";
+  if (defaultOwner && isDemoOrGeneric) {
+    owner = defaultOwner;
+  }
+  return {
+    ...item,
+    dueDate: item.dueDate.toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }),
+    daysLeft: daysLeft(item.dueDate),
+    owner: owner || defaultOwner || "Principal Investigator",
+  };
+};
 
 router.get("/guardian/personas", (_req, res) => {
   return res.json(guardianStore.getPersonas());
@@ -75,7 +98,7 @@ router.get("/guardian/deadlines", async (req, res, next) => {
   try {
     const { userId, user } = await resolveUser(req);
     const rows = await guardianStore.getDeadlines(userId);
-    const defaultOwner = user ? `${user.title} ${user.name}` : undefined;
+    const defaultOwner = formatUserTitle(user);
     return res.json(ListDeadlinesResponse.parse(rows.map(item => deadlineDto(item, defaultOwner))));
   } catch (error) {
     return next(error);
@@ -90,7 +113,8 @@ router.post("/guardian/deadlines", async (req, res, next) => {
     const dueDateStr = String(req.body?.dueDate ?? "");
     const dueDate = dueDateStr ? new Date(dueDateStr) : new Date(Date.now() + 30 * 86400000);
     const progress = Number(req.body?.progress) || 10;
-    const owner = String(req.body?.owner || (user ? `${user.title} ${user.name}` : "Principal Investigator")).trim();
+    const defaultOwner = formatUserTitle(user);
+    const owner = String(req.body?.owner || defaultOwner || "Principal Investigator").trim();
 
     if (!title) {
       return res.status(400).json({ error: "Title is required" });
@@ -113,7 +137,6 @@ router.post("/guardian/deadlines", async (req, res, next) => {
       tone: "neutral",
     });
 
-    const defaultOwner = user ? `${user.title} ${user.name}` : undefined;
     return res.status(201).json(deadlineDto(created, defaultOwner));
   } catch (error) {
     return next(error);
@@ -153,15 +176,34 @@ router.post("/guardian/activity", async (req, res, next) => {
 
 router.get("/guardian/activity", async (req, res, next) => {
   try {
-    const userId = await resolveUserId(req);
+    const { userId, user } = await resolveUser(req);
     const rows = await guardianStore.getActivities(userId, 100);
+    const ownerName = formatUserTitle(user);
     return res.json(
       ListActivityResponse.parse(
-        rows.map((item) => ({
-          ...item,
-          id: item.id,
-          timestamp: item.createdAt.toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }),
-        }))
+        rows.map((item) => {
+          let desc = item.description;
+          let title = item.title;
+          if (ownerName && user && user.tenantSlug !== "elena") {
+            desc = desc
+              .replace(/Dr\. Elena Rossi/g, ownerName)
+              .replace(/Dr\. Marcus Chen/g, ownerName)
+              .replace(/Dr\. Sarah Jenkins/g, ownerName)
+              .replace(/Dr\. Chen/g, ownerName);
+            title = title
+              .replace(/Dr\. Elena Rossi/g, ownerName)
+              .replace(/Dr\. Marcus Chen/g, ownerName)
+              .replace(/Dr\. Sarah Jenkins/g, ownerName)
+              .replace(/Dr\. Chen/g, ownerName);
+          }
+          return {
+            ...item,
+            id: item.id,
+            title,
+            description: desc,
+            timestamp: item.createdAt.toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }),
+          };
+        })
       )
     );
   } catch (error) {

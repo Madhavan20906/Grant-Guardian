@@ -56,10 +56,12 @@ import { ContaminationCascade } from '@/components/contamination-cascade';
 import { WhyThisDecisionPanel } from '@/components/why-this-decision-panel';
 import { StrandsSovereignBossModal } from '@/components/strands-sovereign-boss-modal';
 import { usePersona } from '@/context/persona-context';
+import { useAuth, formatDisplayName } from '@/context/auth-context';
 
 export default function Overview() {
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
+  const { user } = useAuth();
   const { activePersona } = usePersona();
   const overviewQuery = useGetGuardianOverview();
   const citationsQuery = useListCitations();
@@ -224,11 +226,7 @@ export default function Overview() {
               <span>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }).toUpperCase()}</span>
             </div>
             <h1 className="mt-2 text-[32px] md:text-[40px] font-extrabold tracking-tight text-[hsl(var(--foreground))] leading-tight">
-              Good morning, <span>
-                {activePersona.title && activePersona.title.includes(activePersona.name)
-                  ? activePersona.title
-                  : `${activePersona.title ? activePersona.title + ' ' : ''}${activePersona.name}`}.
-              </span>
+              Good morning, <span>{formatDisplayName(user)}.</span>
             </h1>
             <p className="mt-1 text-[14px] text-[hsl(var(--muted-foreground))] font-normal">
               One calm surface for every agent decision that touches your lab.
