@@ -34,7 +34,6 @@ import type { Activity, Citation, Deadline } from '@workspace/api-client-react';
 import { useAuth } from '@/context/auth-context';
 import { usePersona } from '@/context/persona-context';
 import { useTheme } from '@/context/theme-context';
-import { AuthModal } from './auth-modal';
 
 export const cx = (...items: Array<string | false | null | undefined>) => items.filter(Boolean).join(' ');
 
@@ -66,11 +65,16 @@ const navItems = [
 ];
 
 export function PersonaSwitcher() {
-  const { user, isAuthenticated, selectPersona, tenants, openAuthModal, logout } = useAuth();
-  const [open, setOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const [, setLocation] = useLocation();
+
+  const handleSignOut = () => {
+    logout();
+    setLocation('/auth');
+  };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2.5">
       {/* Profile summary badge */}
       <div className="flex items-center gap-2.5 rounded-lg border border-slate-700/80 bg-slate-900 px-3 py-1.5 text-xs text-white shadow-xs">
         <span className="flex size-5 items-center justify-center rounded bg-amber-500/20 text-amber-400 text-[10px] font-black">
@@ -87,148 +91,17 @@ export function PersonaSwitcher() {
         </span>
       </div>
 
-      {/* Switch / Create Account Button */}
-      <div className="relative">
-        <button
-          type="button"
-          onClick={() => setOpen(!open)}
-          className="flex items-center gap-1.5 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shadow-2xs"
-          data-testid="button-persona-switcher"
-          title="Switch Account & Laboratory"
-        >
-          <UserPlus size={13} className="text-slate-500" />
-          <span className="text-[11px]">Switch / Create Account</span>
-        </button>
-
-      {open && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full mt-2.5 z-50 w-84 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
-            {/* Active Tenant Profile Summary */}
-            <div className="rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-3 mb-2.5">
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-[9px] font-bold uppercase tracking-wider text-slate-500">
-                  Active Workspace
-                </span>
-                <span className="font-mono rounded-md bg-emerald-500/15 border border-emerald-500/20 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-600 dark:text-emerald-400">
-                  {isAuthenticated ? 'Authenticated' : 'Sandbox Mode'}
-                </span>
-              </div>
-              <div className="mt-2.5 flex items-center gap-2.5">
-                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-slate-900 dark:bg-white text-xs font-black text-white dark:text-slate-900">
-                  {user.initials}
-                </div>
-                <div className="min-w-0">
-                  <div className="text-[12px] font-bold text-slate-900 dark:text-white truncate">
-                    {user.title && user.title.includes(user.name) ? user.title : `${user.title ? user.title + ' ' : ''}${user.name}`}
-                  </div>
-                  <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                    {user.labName}
-                  </div>
-                  <div className="font-mono text-[9.5px] text-slate-400 dark:text-slate-500 truncate">
-                    {user.institution}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="space-y-1 mb-2 pb-2 border-b border-slate-100 dark:border-slate-800">
-              <button
-                type="button"
-                onClick={() => {
-                  setOpen(false);
-                  openAuthModal();
-                }}
-                className="w-full flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left"
-              >
-                <UserPlus size={14} className="text-slate-500 shrink-0" />
-                <span>Create New Lab Account</span>
-              </button>
-              <Link
-                href="/settings"
-                onClick={() => setOpen(false)}
-                className="w-full flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left"
-              >
-                <Settings2 size={14} className="text-slate-500 shrink-0" />
-                <span>Lab & Profile Settings</span>
-              </Link>
-              {isAuthenticated ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setOpen(false);
-                    logout();
-                  }}
-                  className="w-full flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors text-left"
-                >
-                  <LogOut size={14} className="shrink-0" />
-                  <span>Sign Out of Account</span>
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setOpen(false);
-                    openAuthModal();
-                  }}
-                  className="w-full flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left"
-                >
-                  <LogIn size={14} className="shrink-0 text-slate-500" />
-                  <span>Sign In to Institutional Account</span>
-                </button>
-              )}
-            </div>
-
-            {/* Switch Personas / Evaluation Tenants */}
-            <div className="px-2 py-1 font-mono text-[9px] font-bold uppercase tracking-wider text-slate-400">
-              Switch Research Workspace
-            </div>
-            <div className="space-y-1 max-h-48 overflow-y-auto">
-              {tenants.map((p) => {
-                const selected = p.tenantSlug === user.tenantSlug;
-                return (
-                  <button
-                    key={p.tenantSlug || p.id}
-                    type="button"
-                    onClick={() => {
-                      selectPersona(p.tenantSlug || p.id);
-                      setOpen(false);
-                    }}
-                    className={cx(
-                      'w-full flex items-start gap-2 rounded-lg p-2 text-left transition-colors',
-                      selected
-                        ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-bold border border-slate-200 dark:border-slate-700'
-                        : 'hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-600 dark:text-slate-300'
-                    )}
-                  >
-                    <div
-                      className={cx(
-                        'flex size-6 shrink-0 items-center justify-center rounded text-[9px] font-bold mt-0.5',
-                        selected
-                          ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
-                      )}
-                    >
-                      {p.initials}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between text-[11px] font-bold leading-tight">
-                        <span>{p.title && p.title.includes(p.name) ? p.title : `${p.title ? p.title + ' ' : ''}${p.name}`}</span>
-                        {selected && <Check size={12} className="text-emerald-600 dark:text-emerald-400 shrink-0" />}
-                      </div>
-                      <div className="text-[10px] text-slate-400 truncate">
-                        {p.labName}
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </>
-      )}
-      </div>
+      {/* Only Sign Out Button */}
+      <button
+        type="button"
+        onClick={handleSignOut}
+        className="flex items-center gap-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 dark:bg-rose-950/30 px-3 py-1.5 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 hover:border-rose-500/50 transition-colors shadow-2xs cursor-pointer"
+        data-testid="button-sign-out"
+        title="Sign Out of Laboratory Account"
+      >
+        <LogOut size={13} className="shrink-0" />
+        <span className="text-[11px]">Sign Out</span>
+      </button>
     </div>
   );
 }
@@ -353,7 +226,6 @@ export function PageFrame({ children }: { children: ReactNode }) {
   const toggleSidebar = () => setSidebarOpen((current) => !current);
   return (
     <div className="min-h-[100dvh] bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
-      <AuthModal />
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="md:pl-[248px]">
         <TopBar onMenu={toggleSidebar} />

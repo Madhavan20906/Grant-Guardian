@@ -269,6 +269,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const match = tenants.find((t) => t.tenantSlug === clean || String(t.id) === clean || t.name.toLowerCase().includes(clean));
       if (match) {
         setUser(match);
+        setToken('demo-token-' + (match.tenantSlug || match.id));
+        setIsAuthModalOpen(false);
         queryClient.invalidateQueries();
       }
     } finally {
@@ -307,8 +309,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (typeof window !== 'undefined') {
       localStorage.removeItem(TOKEN_STORAGE_KEY);
       localStorage.removeItem(USER_STORAGE_KEY);
+      localStorage.removeItem('gg_persona_slug');
     }
-    // Switch to first demo profile or blank
     setUser(FALLBACK_DEMO_USERS[0]);
     queryClient.invalidateQueries();
   };
@@ -330,7 +332,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         tenants,
         isAuthModalOpen,
-        openAuthModal: () => setIsAuthModalOpen(true),
+        openAuthModal: () => {
+          setIsAuthModalOpen(true);
+          if (typeof window !== 'undefined') {
+            window.location.assign('/auth');
+          }
+        },
         closeAuthModal: () => setIsAuthModalOpen(false),
         login,
         register,
