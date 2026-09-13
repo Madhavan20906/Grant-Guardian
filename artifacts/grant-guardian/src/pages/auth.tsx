@@ -438,50 +438,51 @@ export default function AuthPage() {
                   className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs py-3 transition-all shadow-md disabled:opacity-50 mt-3 cursor-pointer"
                   data-testid="button-submit-register"
                 >
-                  {isLoading ? 'Configuring laboratory...' : 'Create laboratory workspace'}
+                  {isLoading ? 'Configuring laboratory...' : 'Create & Enter Laboratory Workspace'}
                   <ArrowRight size={15} />
                 </button>
               </form>
             )}
 
-            {/* Quick Demo Lab Workspaces */}
+            {/* Hackathon Demo Safety Option */}
             <div className="border-t border-slate-800 pt-5">
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">
                   <Sparkles size={13} className="text-amber-400" />
-                  <span>1-Click Sandbox & Demo Workspaces</span>
+                  <span>Hackathon Safety Demo Option</span>
                 </div>
-                <span className="font-mono text-[9.5px] text-emerald-400 font-semibold">
-                  Instant Test Access
+                <span className="font-mono text-[9px] text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded">
+                  Safety Fallback
                 </span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {tenants.map((t) => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => handleDemoClick(t.tenantSlug || t.id)}
-                    disabled={isLoading}
-                    className="flex flex-col items-start p-3 rounded-xl border border-slate-800 bg-slate-950/60 hover:bg-slate-800/80 hover:border-slate-700 text-left transition-all group cursor-pointer"
-                    data-testid={`button-demo-${t.tenantSlug || t.id}`}
-                  >
-                    <div className="flex items-center gap-2 w-full mb-1">
-                      <span className="flex size-5 items-center justify-center rounded-md bg-amber-500/20 text-amber-300 text-[10px] font-bold shrink-0 border border-amber-500/30">
-                        {t.initials}
-                      </span>
-                      <span className="text-xs font-bold text-slate-200 group-hover:text-amber-300 truncate">
-                        {t.title} {t.name}
-                      </span>
+              <p className="text-[11px] text-slate-400 mb-3">
+                Need a pre-seeded benchmark workspace for live hackathon evaluation? Launch this 1-click fallback.
+              </p>
+              <button
+                type="button"
+                onClick={() => handleDemoClick('elena')}
+                disabled={isLoading}
+                className="w-full flex items-center justify-between p-3.5 rounded-xl border border-slate-800 bg-slate-950/60 hover:bg-slate-800/80 hover:border-amber-500/40 text-left transition-all group cursor-pointer"
+                data-testid="button-demo-safety"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className="flex size-7 items-center justify-center rounded-lg bg-amber-500/20 text-amber-300 text-xs font-bold shrink-0 border border-amber-500/30">
+                    ER
+                  </span>
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-slate-200 group-hover:text-amber-300 truncate">
+                      Dr. Elena Rossi · Materials Science & Biomaterials Lab
                     </div>
-                    <span className="text-[10.5px] text-slate-400 truncate w-full">
-                      {t.labName}
-                    </span>
-                    <span className="font-mono text-[9px] text-slate-500 truncate w-full mt-0.5">
-                      {t.focus}
-                    </span>
-                  </button>
-                ))}
-              </div>
+                    <div className="font-mono text-[9.5px] text-slate-400 truncate mt-0.5">
+                      NSF CAREER Proposal · Pre-seeded Benchmark Data
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 text-[11px] font-semibold text-amber-400 shrink-0 ml-2">
+                  <span>Enter Demo</span>
+                  <ArrowRight size={13} />
+                </div>
+              </button>
             </div>
           </div>
 

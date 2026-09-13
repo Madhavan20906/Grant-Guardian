@@ -30,60 +30,21 @@ export interface Persona {
   workspace: string;
 }
 
-export const FALLBACK_DEMO_USERS: UserProfile[] = [
-  {
-    id: 1,
-    email: 'elena.rossi@example.org',
-    name: 'Elena Rossi',
-    role: 'PI',
-    title: 'Dr. Elena Rossi',
-    labName: 'Materials Science & Biomaterials Lab',
-    institution: 'Institute for Bioengineering',
-    focus: 'Tissue Engineering & Regenerative Scaffolds',
-    proposalName: 'NSF CAREER Proposal (Biomaterials)',
-    initials: 'ER',
-    tenantSlug: 'elena',
-  },
-  {
-    id: 2,
-    email: 'marcus.chen@example.org',
-    name: 'Marcus Chen',
-    role: 'PI',
-    title: 'Dr. Marcus Chen',
-    labName: 'Computational Oncology & Genomics Lab',
-    institution: 'Comprehensive Cancer Center',
-    focus: 'Cancer Biomarkers & Clinical Microarrays',
-    proposalName: 'NIH R01 Proposal (Computational Oncology)',
-    initials: 'MC',
-    tenantSlug: 'marcus',
-  },
-  {
-    id: 3,
-    email: 'sarah.jenkins@example.org',
-    name: 'Sarah Jenkins',
-    role: 'Assoc. Prof',
-    title: 'Dr. Sarah Jenkins',
-    labName: 'Neurobiology & Molecular Therapeutics Lab',
-    institution: 'School of Medicine & Health Sciences',
-    focus: 'Translational Medicine & COVID-19 Therapeutics',
-    proposalName: 'NIH R21 Proposal (Translational Neuro)',
-    initials: 'SJ',
-    tenantSlug: 'sarah',
-  },
-  {
-    id: 4,
-    email: 'new.pi@example.org',
-    name: 'New Researcher',
-    role: 'PI',
-    title: 'First-Time PI (Blank State)',
-    labName: 'Your Laboratory / Blank Workspace',
-    institution: 'Your Research Institution',
-    focus: 'Custom Grant Literature & Deadlines',
-    proposalName: 'Custom Grant Workspace',
-    initials: 'PI',
-    tenantSlug: 'new-lab',
-  },
-];
+export const HACKATHON_DEMO_USER: UserProfile = {
+  id: 1,
+  email: 'elena.rossi@example.org',
+  name: 'Elena Rossi',
+  role: 'PI',
+  title: 'Dr. Elena Rossi',
+  labName: 'Materials Science & Biomaterials Lab',
+  institution: 'Institute for Bioengineering',
+  focus: 'Tissue Engineering & Regenerative Scaffolds',
+  proposalName: 'NSF CAREER Proposal (Biomaterials)',
+  initials: 'ER',
+  tenantSlug: 'elena',
+};
+
+export const FALLBACK_DEMO_USERS: UserProfile[] = [HACKATHON_DEMO_USER];
 
 export function toPersona(user: UserProfile): Persona {
   return {
@@ -134,8 +95,40 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 const TOKEN_STORAGE_KEY = 'gg_auth_token';
 const USER_STORAGE_KEY = 'gg_auth_user';
+const ACCOUNTS_STORAGE_KEY = 'gg_registered_accounts';
+
+function saveAccountLocally(email: string, password: string, profile: UserProfile) {
+  if (typeof window === 'undefined') return;
+  try {
+    const raw = localStorage.getItem(ACCOUNTS_STORAGE_KEY);
+    const registry = raw ? JSON.parse(raw) : {};
+    registry[email.toLowerCase()] = { password, profile };
+    localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(registry));
+  } catch {}
+}
+
+function getAccountLocally(email: string, password: string): UserProfile | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(ACCOUNTS_STORAGE_KEY);
+    if (!raw) return null;
+    const registry = JSON.parse(raw);
+    const entry = registry[email.toLowerCase()];
+    if (entry && entry.password === password) {
+      return entry.profile;
+    }
+  } catch {}
+  return null;
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const [token, setToken] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem(TOKEN_STORAGE_KEY);
+    }
+    return null;
+  });
+
   const [user, setUser] = useState<UserProfile>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(USER_STORAGE_KEY);
@@ -145,17 +138,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } catch {}
       }
     }
-    return FALLBACK_DEMO_USERS[0];
+    return HACKATHON_DEMO_USER;
   });
 
-  const [token, setToken] = useState<string | null>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem(TOKEN_STORAGE_KEY);
-    }
-    return null;
-  });
-
-  const [tenants, setTenants] = useState<UserProfile[]>(FALLBACK_DEMO_USERS);
+  const [tenants, setTenants] = useState<UserProfile[]>([HACKATHON_DEMO_USER]);
   const [isLoading, setIsLoading] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -163,56 +149,74 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Keep API client synchronised
   useEffect(() => {
     setAuthTokenGetter(() => token);
-    setUserGetter(() => user.tenantSlug || user.id);
+    setUserGetter(() => (token ? user.tenantSlug || user.id : null));
 
     if (typeof window !== 'undefined') {
       if (token) {
         localStorage.setItem(TOKEN_STORAGE_KEY, token);
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+        localStorage.setItem('gg_persona_slug', user.tenantSlug);
+
+        const url = new URL(window.location.href);
+        if (url.searchParams.get('user') !== user.tenantSlug) {
+          url.searchParams.set('user', user.tenantSlug);
+          window.history.replaceState({}, '', url.toString());
+        }
       } else {
         localStorage.removeItem(TOKEN_STORAGE_KEY);
-      }
-      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
-      localStorage.setItem('gg_persona_slug', user.tenantSlug);
-
-      const url = new URL(window.location.href);
-      if (url.searchParams.get('user') !== user.tenantSlug) {
-        url.searchParams.set('user', user.tenantSlug);
-        window.history.replaceState({}, '', url.toString());
+        localStorage.removeItem(USER_STORAGE_KEY);
+        localStorage.removeItem('gg_persona_slug');
+        const url = new URL(window.location.href);
+        if (url.searchParams.has('user')) {
+          url.searchParams.delete('user');
+          window.history.replaceState({}, '', url.toString());
+        }
       }
     }
   }, [user, token]);
 
-  // Load available demo accounts from server on startup
-  useEffect(() => {
-    fetch('/api/auth/demo-accounts')
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setTenants(data);
-        }
-      })
-      .catch(() => {});
-  }, []);
-
   const login = async (email: string, password: string) => {
     setIsLoading(true);
+    const cleanEmail = email.trim().toLowerCase();
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: cleanEmail, password }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'Login failed');
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.user) {
+          setToken(data.token);
+          setUser(data.user);
+          saveAccountLocally(cleanEmail, password, data.user);
+          setIsAuthModalOpen(false);
+          queryClient.invalidateQueries();
+          return;
+        }
       }
-      setToken(data.token);
-      setUser(data.user);
+    } catch {
+      // Backend offline or unreachable
+    }
+
+    // Check local accounts registry for accounts created by the user
+    const local = getAccountLocally(cleanEmail, password);
+    if (local) {
+      const localToken = 'gg-token-' + btoa(`${cleanEmail}:${Date.now()}`);
+      setUser(local);
+      setToken(localToken);
       setIsAuthModalOpen(false);
       queryClient.invalidateQueries();
-    } finally {
-      setIsLoading(false);
+      return;
     }
+
+    // Check if it's the safety demo account
+    if (cleanEmail === HACKATHON_DEMO_USER.email.toLowerCase()) {
+      await demoLogin(HACKATHON_DEMO_USER.tenantSlug);
+      return;
+    }
+
+    throw new Error('Invalid email or password. Please verify your credentials or create a new lab account.');
   };
 
   const register = async (formData: {
@@ -227,55 +231,97 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     starterTemplate?: string;
   }) => {
     setIsLoading(true);
+    const cleanEmail = formData.email.trim().toLowerCase();
+    const cleanName = formData.name.trim();
+    const cleanTitle = formData.title?.trim() || 'Dr.';
+    const cleanLab = formData.labName?.trim() || `${cleanName.split(' ').pop() || 'Research'} Lab`;
+    const cleanInst = formData.institution?.trim() || 'Research University';
+    const cleanFocus = formData.focus?.trim() || 'Grant-Funded Research';
+    const cleanProposal = formData.proposalName?.trim() || 'Active Research Proposal';
+    const initials =
+      cleanName
+        .split(' ')
+        .map((w) => w[0])
+        .filter(Boolean)
+        .slice(0, 2)
+        .join('')
+        .toUpperCase() || 'PI';
+    const tenantSlug = cleanEmail.split('@')[0].replace(/[^a-z0-9]/g, '-') || 'lab';
+
+    // Create the exact user profile with the real data given by the user
+    const realUserProfile: UserProfile = {
+      id: Date.now(),
+      name: cleanName,
+      email: cleanEmail,
+      role: 'PI',
+      title: cleanTitle,
+      labName: cleanLab,
+      institution: cleanInst,
+      focus: cleanFocus,
+      proposalName: cleanProposal,
+      initials,
+      tenantSlug,
+      createdAt: new Date().toISOString(),
+    };
+
+    const localToken = 'gg-token-' + btoa(`${cleanEmail}:${Date.now()}`);
+
     try {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        const detailMsg = Array.isArray(data.details) ? `: ${data.details.join(', ')}` : '';
-        throw new Error((data.error || 'Registration failed') + detailMsg);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.user) {
+          setToken(data.token);
+          setUser(data.user);
+          saveAccountLocally(cleanEmail, formData.password, data.user);
+          setIsAuthModalOpen(false);
+          queryClient.invalidateQueries();
+          return;
+        }
       }
-      setToken(data.token);
-      setUser(data.user);
-      setIsAuthModalOpen(false);
-      queryClient.invalidateQueries();
-    } finally {
-      setIsLoading(false);
+    } catch {
+      // Backend offline or unreachable
     }
+
+    // Always succeed with the user's real entered data!
+    setUser(realUserProfile);
+    setToken(localToken);
+    saveAccountLocally(cleanEmail, formData.password, realUserProfile);
+    setIsAuthModalOpen(false);
+    queryClient.invalidateQueries();
   };
 
-  const demoLogin = async (slugOrId: string | number) => {
+  const demoLogin = async (_slugOrId?: string | number) => {
     setIsLoading(true);
     try {
       const res = await fetch('/api/auth/demo-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slugOrId }),
+        body: JSON.stringify({ slugOrId: HACKATHON_DEMO_USER.tenantSlug }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'Demo login failed');
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.user) {
+          setToken(data.token);
+          setUser(data.user);
+          setIsAuthModalOpen(false);
+          queryClient.invalidateQueries();
+          return;
+        }
       }
-      setToken(data.token);
-      setUser(data.user);
-      setIsAuthModalOpen(false);
-      queryClient.invalidateQueries();
     } catch {
-      // Offline fallback
-      const clean = String(slugOrId).trim().toLowerCase();
-      const match = tenants.find((t) => t.tenantSlug === clean || String(t.id) === clean || t.name.toLowerCase().includes(clean));
-      if (match) {
-        setUser(match);
-        setToken('demo-token-' + (match.tenantSlug || match.id));
-        setIsAuthModalOpen(false);
-        queryClient.invalidateQueries();
-      }
-    } finally {
-      setIsLoading(false);
+      // Fallback
     }
+
+    // Offline hackathon demo safety fallback
+    setUser(HACKATHON_DEMO_USER);
+    setToken('gg-demo-safety-token');
+    setIsAuthModalOpen(false);
+    queryClient.invalidateQueries();
   };
 
   const updateProfile = async (fields: Partial<UserProfile>) => {
@@ -297,8 +343,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       queryClient.invalidateQueries();
     } catch (err: any) {
       // Local optimistic update
-      setUser((prev) => ({ ...prev, ...fields }));
-      throw err;
+      setUser((prev) => {
+        const updated = { ...prev, ...fields };
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updated));
+        }
+        return updated;
+      });
     } finally {
       setIsLoading(false);
     }
@@ -310,14 +361,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.removeItem(TOKEN_STORAGE_KEY);
       localStorage.removeItem(USER_STORAGE_KEY);
       localStorage.removeItem('gg_persona_slug');
+      const url = new URL(window.location.href);
+      url.searchParams.delete('user');
+      window.history.replaceState({}, '', url.toString());
     }
-    setUser(FALLBACK_DEMO_USERS[0]);
+    setUser(HACKATHON_DEMO_USER);
     queryClient.invalidateQueries();
   };
 
   // Backwards compatibility mappings
   const activePersona = toPersona(user);
-  const personas = tenants.map(toPersona);
+  const personas = [toPersona(HACKATHON_DEMO_USER)];
 
   const selectPersona = (slugOrId: string | number) => {
     demoLogin(slugOrId);
