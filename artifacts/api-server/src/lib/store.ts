@@ -674,6 +674,47 @@ class GuardianStore {
     return record;
   }
 
+  async updateDeadline(
+    id: number,
+    userId: number,
+    updates: { status?: "on_track" | "due_soon" | "attention"; progress?: number; owner?: string }
+  ): Promise<DeadlineRecord | null> {
+    let updatedRecord: DeadlineRecord | null = null;
+
+    if (isDatabaseConfigured) {
+      try {
+        const updateValues: Record<string, any> = {};
+        if (updates.status !== undefined) updateValues.status = updates.status;
+        if (updates.progress !== undefined) updateValues.progress = updates.progress;
+        if (updates.owner !== undefined) updateValues.owner = updates.owner;
+
+        const [row] = await db
+          .update(deadlines)
+          .set(updateValues)
+          .where(and(eq(deadlines.id, id), eq(deadlines.userId, userId)))
+          .returning();
+
+        if (row) {
+          updatedRecord = row as DeadlineRecord;
+        }
+      } catch (err) {
+        logger.warn({ err, id, operation: "updateDeadline" }, "Database unavailable for updateDeadline; updating memory store");
+      }
+    }
+
+    const memTarget = this.memoryDeadlines.find(d => d.id === id && d.userId === userId);
+    if (memTarget) {
+      if (updates.status !== undefined) memTarget.status = updates.status;
+      if (updates.progress !== undefined) memTarget.progress = updates.progress;
+      if (updates.owner !== undefined) memTarget.owner = updates.owner;
+      if (!updatedRecord) {
+        updatedRecord = memTarget;
+      }
+    }
+
+    return updatedRecord;
+  }
+
 
   async getActivities(userId: number, limit = 100): Promise<ActivityRecord[]> {
     if (!isDatabaseConfigured) {

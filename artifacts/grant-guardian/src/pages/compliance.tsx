@@ -130,6 +130,28 @@ export default function Compliance() {
     }
   };
 
+  const handleMarkSubmitted = async (id: number) => {
+    try {
+      const res = await fetch(`/api/guardian/deadlines/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: 'on_track',
+          progress: 100,
+          submitted: true,
+        }),
+      });
+      if (res.ok) {
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: getListDeadlinesQueryKey() }),
+          queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() }),
+        ]);
+      }
+    } catch {
+      // error handled gracefully
+    }
+  };
+
   return (
     <div className="gg-stagger space-y-6">
       <SectionHeading
@@ -243,6 +265,7 @@ export default function Compliance() {
                   key={deadline.id}
                   deadline={deadline}
                   onDraft={() => draftReport(deadline.id)}
+                  onMarkSubmitted={() => handleMarkSubmitted(deadline.id)}
                 />
               ))}
           </section>

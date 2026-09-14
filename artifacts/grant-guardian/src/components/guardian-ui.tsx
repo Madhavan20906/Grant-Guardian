@@ -418,7 +418,9 @@ export function DeadlineRow({
   onDraft: () => void;
   onMarkSubmitted?: () => void;
 }) {
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const initiallySubmitted = (deadline.progress ?? 0) >= 100 || (deadline.status as string) === 'clear' || (deadline.status as string) === 'submitted';
+  const [isSubmitted, setIsSubmitted] = useState(initiallySubmitted);
+  const effectiveSubmitted = isSubmitted || initiallySubmitted;
   const isUrgentTrigger = deadline.daysLeft <= 14 && (deadline.progress ?? 0) < 80;
 
   return (
@@ -432,13 +434,13 @@ export function DeadlineRow({
             <span className="gg-mono text-[9px] uppercase tracking-[.12em] text-[hsl(var(--muted-foreground))] font-bold">
               {deadline.type}
             </span>
-            <StatusPill value={isSubmitted ? 'clear' : deadline.status} kind="deadline" />
-            {isUrgentTrigger && !isSubmitted && (
+            <StatusPill value={effectiveSubmitted ? 'clear' : deadline.status} kind="deadline" />
+            {isUrgentTrigger && !effectiveSubmitted && (
               <span className="rounded-md bg-[hsl(var(--muted))] border border-[hsl(var(--border))] px-2 py-0.5 font-mono text-[9px] font-bold text-[hsl(var(--foreground))] flex items-center gap-1">
                 ⚡ 14-Day Trigger Active (&lt;80% prep)
               </span>
             )}
-            {isSubmitted && (
+            {effectiveSubmitted && (
               <span className="rounded-md bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 font-mono text-[9px] font-bold text-emerald-600 dark:text-emerald-400">
                 ✓ PI Signed &amp; Filed Externally
               </span>
@@ -460,7 +462,7 @@ export function DeadlineRow({
 
           <div className="flex items-center gap-2">
             {/* Clean theme-blended Draft Report Button */}
-            {!isSubmitted && (
+            {!effectiveSubmitted && (
               <button
                 type="button"
                 onClick={onDraft}
@@ -473,14 +475,14 @@ export function DeadlineRow({
               </button>
             )}
 
-            {!isSubmitted ? (
+            {!effectiveSubmitted ? (
               <button
                 type="button"
                 onClick={() => {
                   setIsSubmitted(true);
                   if (onMarkSubmitted) onMarkSubmitted();
                 }}
-                className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:bg-[hsl(var(--muted))] px-2.5 py-1.5 text-[10px] font-semibold text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors"
+                className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:bg-[hsl(var(--muted))] px-2.5 py-1.5 text-[10px] font-semibold text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors cursor-pointer"
                 title="Mark this deadline officially submitted by PI to external agency portal"
               >
                 Mark Submitted
@@ -496,15 +498,15 @@ export function DeadlineRow({
       <div className="mt-3.5 space-y-1.5">
         <div className="flex items-center justify-between text-[10px] text-[hsl(var(--muted-foreground))]">
           <span className="flex items-center gap-1">
-            <span className="font-bold text-[hsl(var(--foreground))]">Preparation Readiness:</span> {deadline.progress ?? 0}%
+            <span className="font-bold text-[hsl(var(--foreground))]">Preparation Readiness:</span> {effectiveSubmitted ? 100 : (deadline.progress ?? 0)}%
             <span className="text-[9px] opacity-75">(audit artifacts &amp; narrative completeness, not time elapsed)</span>
           </span>
-          <span className="gg-mono font-bold text-[hsl(var(--foreground))]">{isSubmitted ? 100 : (deadline.progress ?? 0)}%</span>
+          <span className="gg-mono font-bold text-[hsl(var(--foreground))]">{effectiveSubmitted ? 100 : (deadline.progress ?? 0)}%</span>
         </div>
         <div className="h-2 w-full overflow-hidden rounded-full bg-[hsl(var(--muted))]">
           <div
             className="h-full rounded-full transition-all bg-slate-700 dark:bg-slate-300"
-            style={{ width: `${Math.min(100, isSubmitted ? 100 : (deadline.progress ?? 0))}%` }}
+            style={{ width: `${Math.min(100, effectiveSubmitted ? 100 : (deadline.progress ?? 0))}%` }}
           />
         </div>
       </div>

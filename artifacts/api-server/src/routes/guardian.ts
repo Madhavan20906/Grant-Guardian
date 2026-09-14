@@ -143,6 +143,62 @@ router.post("/guardian/deadlines", async (req, res, next) => {
   }
 });
 
+router.patch("/guardian/deadlines/:id", async (req, res, next) => {
+  try {
+    const { userId, user } = await resolveUser(req);
+    const id = Number(req.params.id);
+    if (!id || isNaN(id)) {
+      return res.status(400).json({ error: "Valid deadline ID is required" });
+    }
+
+    const updates: {
+      status?: "on_track" | "due_soon" | "attention";
+      progress?: number;
+      owner?: string;
+    } = {};
+
+    if (req.body?.status !== undefined) {
+      const s = String(req.body.status).trim();
+      if (s === "on_track" || s === "due_soon" || s === "attention") {
+        updates.status = s;
+      }
+    }
+
+    if (req.body?.progress !== undefined) {
+      const p = Number(req.body.progress);
+      if (!isNaN(p) && p >= 0 && p <= 100) {
+        updates.progress = p;
+      }
+    }
+
+    if (req.body?.owner !== undefined) {
+      updates.owner = String(req.body.owner).trim();
+    }
+
+    const updated = await guardianStore.updateDeadline(id, userId, updates);
+    if (!updated) {
+      return res.status(404).json({ error: "Deadline not found" });
+    }
+
+    const defaultOwner = formatUserTitle(user);
+
+    // If marked 100% or on_track, log an activity entry for the decision audit trail
+    if (updates.progress === 100 || req.body?.submitted === true) {
+      await guardianStore.addActivity({
+        userId,
+        kind: "clear",
+        title: `Compliance milestone filed externally: ${updated.title}`,
+        description: `Marked officially submitted by PI (${defaultOwner || "Principal Investigator"}) to external sponsor portal. Progress registered at 100%.`,
+        tone: "success",
+      });
+    }
+
+    return res.json(deadlineDto(updated, defaultOwner));
+  } catch (error) {
+    return next(error);
+  }
+});
+
 router.post("/guardian/activity", async (req, res, next) => {
   try {
     const userId = await resolveUserId(req);
