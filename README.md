@@ -413,8 +413,8 @@ pnpm run test:python
 - `artifacts/api-server/`: Node.js / Express backend with deterministic safety guardrails (`classifyDecision()`), PostgreSQL Drizzle ORM store with fast connection fallback, and autonomous watch engine.
 - `artifacts/grant-guardian/`: React 18 + Vite frontend with Tailwind CSS, Lucide icons, live Strands Agent status banners, First-Time Onboarding empty state, and human-in-the-loop decision drawers.
 - `lib/db/`: Database schemas, migrations, seed datasets, and multi-tenant persona profiles.
-- `docs/`: Standalone architecture diagram (`architecture-diagram.svg`), architecture specification (`ARCHITECTURE.md`), and timestamped video walkthrough script (`DEMO_VIDEO_SCRIPT.md`).
-- `.github/workflows/`: CI workflow running automated build and all 89 tests on Node.js and Python 3.11.
+- `docs/`: Standalone architecture diagram (`architecture-diagram.svg`) and architecture specification (`ARCHITECTURE.md`).
+- `.github/workflows/`: CI workflow running automated build and all 90 tests on Node.js and Python 3.11.
 
 ---
 

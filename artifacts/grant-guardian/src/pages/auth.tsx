@@ -433,19 +433,19 @@ export default function AuthPage() {
               </form>
             )}
 
-            {/* Hackathon Demo Safety Option */}
+            {/* Hackathon Demo Option */}
             <div className="border-t border-slate-800 pt-5">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">
                   <Sparkles size={13} className="text-amber-400" />
-                  <span>Hackathon Safety Demo Option</span>
+                  <span>Hackathon Demo Option</span>
                 </div>
                 <span className="font-mono text-[9px] text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded">
-                  Safety Fallback
+                  1-Click Workspace
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 mb-3">
-                Need a pre-seeded benchmark workspace for live hackathon evaluation? Launch this 1-click fallback.
+                Need a pre-seeded benchmark workspace for live hackathon evaluation? Launch with 1 click.
               </p>
               <button
                 type="button"
