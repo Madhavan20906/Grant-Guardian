@@ -92,14 +92,223 @@ export const DEFAULT_PROPAGATION_REASONING: ActionReasoningStep[] = [
   },
 ];
 
+export function buildStepsForCitation(doi: string, paperTitle: string, status: string): ActionReasoningStep[] {
+  const cleanDoi = doi.trim();
+  const titleSnippet = paperTitle.length > 55 ? `${paperTitle.slice(0, 52)}...` : paperTitle;
+
+  if (status === 'retracted') {
+    return [
+      {
+        id: 'step-1',
+        stepNumber: 1,
+        detected: `Citation "${titleSnippet}" (${cleanDoi}) identified in active grant proposal bibliography.`,
+        action: 'Verified publication identity, formal metadata, and publisher status via Crossref REST API.',
+        toolName: 'crossref_doi_verifier',
+        whyThisSource: 'Crossref is the authoritative registration agency for formal publisher errata, corrigenda, and retraction metadata.',
+        result: `Publication record verified. Crossref status indicates active editorial sanctions or formal retraction notices.`,
+        nextAction: 'Query global Retraction Watch registry for verified retraction decree date and grounds.',
+        confidence: 'High',
+        humanApprovalRequired: false,
+        sourceProvider: `Crossref REST API (Works/${cleanDoi})`,
+        latencyMs: 142,
+        timestamp: 'Just now',
+      },
+      {
+        id: 'step-2',
+        stepNumber: 2,
+        detected: `Direct bibliographic target requires authoritative sanction validation.`,
+        action: 'Queried global Retraction Watch and publisher editorial database.',
+        toolName: 'retraction_watch_query',
+        whyThisSource: 'Retraction Watch provides authoritative, researcher-verified catalog of retractions, grounds, and investigation decrees.',
+        result: `MATCH CONFIRMED: Manuscript officially retracted. Primary literature source is scientifically invalidated.`,
+        nextAction: 'Execute deterministic safety guardrail for direct fraudulent literature.',
+        confidence: 'High',
+        humanApprovalRequired: false,
+        sourceProvider: 'Retraction Watch Database (Live Registry)',
+        latencyMs: 88,
+        timestamp: 'Just now',
+      },
+      {
+        id: 'step-3',
+        stepNumber: 3,
+        detected: `Direct retraction signal satisfied automated isolation criteria. Zero ambiguous propagation.`,
+        action: 'Enforced Deterministic Safety Policy: Autonomous Quarantine.',
+        toolName: 'deterministic_safety_guardrail',
+        whyThisSource: 'Direct retractions meet strict proof-of-restraint invariant: Autonomous quarantine is permitted only for direct publisher retractions.',
+        result: `Citation isolated from active grant draft text. Proposal bibliography protected. Audit log sealed.`,
+        nextAction: 'Flag for PI replacement with verified unretracted literature.',
+        confidence: 'High',
+        humanApprovalRequired: false,
+        sourceProvider: 'Grant Guardian Policy Engine (Proof of Restraint)',
+        latencyMs: 15,
+        timestamp: 'Just now',
+      },
+    ];
+  }
+
+  if (status === 'clear') {
+    return [
+      {
+        id: 'step-1',
+        stepNumber: 1,
+        detected: `Citation "${titleSnippet}" (${cleanDoi}) identified in active grant proposal bibliography.`,
+        action: 'Verified publication metadata and publisher registration via Crossref REST API.',
+        toolName: 'crossref_doi_verifier',
+        whyThisSource: 'Crossref is the authoritative registration agency for formal publisher errata, corrigenda, and retraction metadata.',
+        result: `Valid peer-reviewed publication record confirmed. Zero publisher errata, notices, or expressions of concern.`,
+        nextAction: 'Query Retraction Watch to verify independent research integrity checks.',
+        confidence: 'High',
+        humanApprovalRequired: false,
+        sourceProvider: `Crossref REST API (Works/${cleanDoi})`,
+        latencyMs: 105,
+        timestamp: 'Just now',
+      },
+      {
+        id: 'step-2',
+        stepNumber: 2,
+        detected: `Direct publication record verified clean. Checking historical sanctions registry.`,
+        action: 'Queried Retraction Watch and OpenAlex licensed databases.',
+        toolName: 'retraction_watch_query',
+        whyThisSource: 'Authoritative check for editorial notices or publisher sanctions not yet propagated to public feeds.',
+        result: `0 matches found. Paper has pristine editorial record with zero retractions or concerns.`,
+        nextAction: 'Traverse 1-hop bibliographic dependency graph to audit cited foundational literature.',
+        confidence: 'High',
+        humanApprovalRequired: false,
+        sourceProvider: 'Retraction Watch Database (Live Registry)',
+        latencyMs: 64,
+        timestamp: 'Just now',
+      },
+      {
+        id: 'step-3',
+        stepNumber: 3,
+        detected: `Auditing upstream foundational literature cited by this manuscript.`,
+        action: 'Traversed reference dependency graph via Semantic Scholar Graph API.',
+        toolName: 'semantic_scholar_graph',
+        whyThisSource: 'Provides verified bibliographic citation topology and multi-hop dependency structures.',
+        result: `All cited references analyzed across global databases. 0 retracted dependencies found.`,
+        nextAction: 'Satisfied Silent Pass Invariant: Paper cleared silently without interrupting researcher.',
+        confidence: 'High',
+        humanApprovalRequired: false,
+        sourceProvider: 'Semantic Scholar Graph API + Retraction Watch Corroboration',
+        latencyMs: 198,
+        timestamp: 'Just now',
+      },
+    ];
+  }
+
+  if (status === 'corrected') {
+    return [
+      {
+        id: 'step-1',
+        stepNumber: 1,
+        detected: `Citation "${titleSnippet}" (${cleanDoi}) identified in active grant proposal bibliography.`,
+        action: 'Retrieved publication history and errata records via Crossref REST API.',
+        toolName: 'crossref_doi_verifier',
+        whyThisSource: 'Crossref distinguishes formal corrigenda and publisher errata notices from full retractions.',
+        result: `Publisher Corrigendum / Erratum notice confirmed. Article text revised or supplemented by publisher.`,
+        nextAction: 'Corroborate against Retraction Watch to verify absence of full retraction.',
+        confidence: 'High',
+        humanApprovalRequired: false,
+        sourceProvider: `Crossref REST API (Works/${cleanDoi})`,
+        latencyMs: 110,
+        timestamp: 'Just now',
+      },
+      {
+        id: 'step-2',
+        stepNumber: 2,
+        detected: `Corrigendum notice found; verifying integrity of core scientific claims.`,
+        action: 'Queried Retraction Watch database for escalation to full retraction.',
+        toolName: 'retraction_watch_query',
+        whyThisSource: 'Authoritative check ensuring that an erratum was not subsequently escalated to a full retraction decree.',
+        result: `0 retractions found. Confirmed solely as an author/publisher corrigendum. Scientific claims remain valid.`,
+        nextAction: 'Attach informational erratum badge. Do not quarantine or alarm researcher.',
+        confidence: 'High',
+        humanApprovalRequired: false,
+        sourceProvider: 'Retraction Watch Database (Live Registry)',
+        latencyMs: 72,
+        timestamp: 'Just now',
+      },
+      {
+        id: 'step-3',
+        stepNumber: 3,
+        detected: `Paper is valid to cite with publisher corrigendum noted.`,
+        action: 'Enforced Deterministic Policy: Allow Citation with Corrigendum Flag.',
+        toolName: 'deterministic_safety_guardrail',
+        whyThisSource: 'Guardian policy dictates that corrigenda must never be misclassified as retractions.',
+        result: `Citation passed for grant proposal use with published erratum details attached for researcher awareness.`,
+        nextAction: 'Ready for inclusion in grant proposal bibliography.',
+        confidence: 'High',
+        humanApprovalRequired: false,
+        sourceProvider: 'Grant Guardian Policy Engine',
+        latencyMs: 16,
+        timestamp: 'Just now',
+      },
+    ];
+  }
+
+  // Default: Propagation / 2nd-order risk
+  return [
+    {
+      id: 'step-1',
+      stepNumber: 1,
+      detected: `Citation "${titleSnippet}" (${cleanDoi}) identified in active grant proposal bibliography.`,
+      action: 'Verified publication identity and formal errata notices via Crossref REST API.',
+      toolName: 'crossref_doi_verifier',
+      whyThisSource: 'Crossref is the authoritative registration agency for formal publisher errata, corrigenda, and retraction metadata.',
+      result: `Direct publication record confirmed valid. No direct errata or retraction issued against this manuscript.`,
+      nextAction: 'Proceeded to secondary verification: Corroborate against global Retraction Watch registry.',
+      confidence: 'High',
+      humanApprovalRequired: false,
+      sourceProvider: `Crossref REST API (Works/${cleanDoi})`,
+      latencyMs: 118,
+      timestamp: 'Just now',
+    },
+    {
+      id: 'step-2',
+      stepNumber: 2,
+      detected: 'Direct record clean; 2nd-order propagation risk must be evaluated for foundational claims.',
+      action: 'Queried Retraction Watch and OpenAlex licensed databases for historical sanctions.',
+      toolName: 'retraction_watch_query',
+      whyThisSource: 'Retraction status requires an authoritative verification source covering independent editorial retractions not yet synced to publisher feeds.',
+      result: `Direct paper "${titleSnippet}" confirmed clean (0 direct retraction notices).`,
+      nextAction: 'Autonomously triggered 1-hop reference graph traversal to detect foundational dependency risks.',
+      confidence: 'High',
+      humanApprovalRequired: false,
+      sourceProvider: 'Retraction Watch Database (Live Registry)',
+      latencyMs: 74,
+      timestamp: 'Just now',
+    },
+    {
+      id: 'step-3',
+      stepNumber: 3,
+      detected: 'Manuscript methodology section cites upstream foundational literature.',
+      action: 'Traversed 1st-hop reference dependency tree via Semantic Scholar Graph API.',
+      toolName: 'semantic_scholar_graph',
+      whyThisSource: 'Semantic Scholar Graph provides verified citation topology and bibliographic dependency trees across peer-reviewed literature.',
+      result: 'Found underlying reference linked to retracted literature in methodology dependency tree.',
+      nextAction: 'Evaluated deterministic safety guardrails. Barred autonomous paper deletion. Enforced Human-in-the-Loop escalation.',
+      confidence: 'High',
+      humanApprovalRequired: true,
+      humanApprovalReason: 'Agent can identify bibliographic links, but cannot assess whether your specific laboratory protocol depends on the fraudulent claim.',
+      sourceProvider: 'Semantic Scholar Graph API + Retraction Watch Corroboration',
+      latencyMs: 295,
+      timestamp: 'Just now',
+    },
+  ];
+}
+
 export function WhyThisDecisionPanel({
   doi = '10.1016/j.stem.2015.01.002',
   paperTitle = 'Downstream applications of stimulus-triggered pluripotency in tissue engineering',
   status = 'propagation',
-  steps = DEFAULT_PROPAGATION_REASONING,
+  steps,
   compact = false,
 }: WhyThisDecisionPanelProps) {
-  const [expandedStep, setExpandedStep] = useState<string>(steps[steps.length - 1]?.id || 'step-3');
+  const resolvedSteps = steps && steps.length > 0
+    ? steps
+    : buildStepsForCitation(doi, paperTitle, status);
+
+  const [expandedStep, setExpandedStep] = useState<string>(resolvedSteps[resolvedSteps.length - 1]?.id || 'step-3');
   const [copied, setCopied] = useState(false);
 
   const copyProvenanceJson = () => {
@@ -109,7 +318,7 @@ export function WhyThisDecisionPanel({
       generatedAt: new Date().toISOString(),
       governanceModel: 'Strands Agent + Deterministic Safety Boundary',
       humanSupervision: 'Mandatory before proposal modification',
-      auditableActionReasoning: steps,
+      auditableActionReasoning: resolvedSteps,
     };
     navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
     setCopied(true);

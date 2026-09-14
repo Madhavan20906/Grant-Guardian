@@ -61,6 +61,7 @@ export default function Citations() {
   const [judgmentSubmitting, setJudgmentSubmitting] = useState<number | null>(null);
   const [judgmentSuccess, setJudgmentSuccess] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'register' | 'cascade' | 'graph' | 'blast'>('register');
+  const [cascadeCitationId, setCascadeCitationId] = useState<number | null>(null);
   const [newDoi, setNewDoi] = useState('');
   const [isImporting, setIsImporting] = useState(false);
   const [importSuccess, setImportSuccess] = useState<string | null>(null);
@@ -458,7 +459,41 @@ export default function Citations() {
         </span>
       </div>
 
-      {activeTab === 'cascade' && <ContaminationCascade />}
+      {activeTab === 'cascade' && (
+        <div className="space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3.5 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.25)]">
+            <div className="flex items-center gap-2">
+              <span className="flex size-6 items-center justify-center rounded-md bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] border border-[hsl(var(--border))]">
+                <GitFork size={13} />
+              </span>
+              <div>
+                <span className="text-xs font-bold text-[hsl(var(--foreground))]">Inspect Cascade for Target Citation:</span>
+                <p className="text-[10px] text-[hsl(var(--muted-foreground))]">Select any paper from your registered bibliography to trace its specific multi-hop lineage</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <select
+                value={cascadeCitationId ?? ''}
+                onChange={(e) => setCascadeCitationId(e.target.value ? Number(e.target.value) : null)}
+                className="h-8.5 rounded-lg border border-[hsl(var(--input))] bg-[hsl(var(--card))] px-3 text-xs font-semibold text-[hsl(var(--foreground))] outline-none focus:border-blue-500 transition-all cursor-pointer max-w-[280px] truncate"
+                data-testid="select-cascade-target"
+              >
+                <option value="">Signature Demo Cascade (Lin / Obokata 2014)</option>
+                {allRawCitations.map((c: Citation) => (
+                  <option key={c.id} value={c.id}>
+                    [{c.status.toUpperCase()}] {c.title.length > 35 ? `${c.title.slice(0, 32)}...` : c.title} ({c.year})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <ContaminationCascade
+            citation={allRawCitations.find((c: Citation) => c.id === cascadeCitationId)}
+          />
+        </div>
+      )}
       {activeTab === 'graph' && <CitationGraph />}
       {activeTab === 'blast' && <BlastRadius />}
 

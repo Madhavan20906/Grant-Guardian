@@ -146,36 +146,88 @@ export function InvestigationWorkspace({
         {activeTab === 'overview' && (
           <div className="space-y-6">
             {/* Why You're Seeing This Callout */}
-            <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 space-y-3">
+            <div className={`rounded-xl border p-4 space-y-3 ${
+              isRetracted
+                ? 'border-rose-500/30 bg-rose-500/5'
+                : isPropagation
+                ? 'border-amber-500/30 bg-amber-500/5'
+                : 'border-emerald-500/30 bg-emerald-500/5'
+            }`}>
               <button
                 type="button"
                 onClick={() => setShowWhyAlert(!showWhyAlert)}
-                className="flex items-center justify-between w-full text-left"
+                className="flex items-center justify-between w-full text-left cursor-pointer"
               >
                 <div className="flex items-center gap-2">
-                  <HelpCircle size={15} className="text-amber-600" />
-                  <span className="text-[12px] font-bold text-amber-900 dark:text-amber-200">
-                    Why you're seeing this alert
+                  <HelpCircle size={15} className={isRetracted ? 'text-rose-600' : isPropagation ? 'text-amber-600' : 'text-emerald-600'} />
+                  <span className={`text-[12px] font-bold ${
+                    isRetracted ? 'text-rose-900 dark:text-rose-200' : isPropagation ? 'text-amber-900 dark:text-amber-200' : 'text-emerald-900 dark:text-emerald-200'
+                  }`}>
+                    {isRetracted
+                      ? "Why you're seeing this alert: Direct Editorial Retraction"
+                      : isPropagation
+                      ? "Why you're seeing this alert: 2nd-Order Dependency Cascade"
+                      : "Why this citation passed: Sound Scientific Foundation"}
                   </span>
                 </div>
-                {showWhyAlert ? <ChevronUp size={14} className="text-amber-600" /> : <ChevronDown size={14} className="text-amber-600" />}
+                {showWhyAlert ? (
+                  <ChevronUp size={14} className={isRetracted ? 'text-rose-600' : isPropagation ? 'text-amber-600' : 'text-emerald-600'} />
+                ) : (
+                  <ChevronDown size={14} className={isRetracted ? 'text-rose-600' : isPropagation ? 'text-amber-600' : 'text-emerald-600'} />
+                )}
               </button>
 
               {showWhyAlert && (
-                <div className="space-y-2 text-[11px] text-[hsl(var(--foreground))] pt-2 border-t border-amber-500/20">
-                  <p className="leading-relaxed">
-                    Guardian detected a 2nd-order propagation relationship:
-                  </p>
-                  <div className="font-mono text-[10px] bg-[hsl(var(--card))] p-3 rounded-lg border border-amber-500/20 space-y-1">
-                    <div>Your proposal: {user.proposalName} ({user.labName})</div>
-                    <div className="text-amber-600 font-bold">  ↓ cites</div>
-                    <div>Paper A: Lin et al., Cell Stem Cell (2015)</div>
-                    <div className="text-red-600 font-bold">  ↓ relies on (Sec 3.2)</div>
-                    <div className="text-red-700 dark:text-red-300 font-extrabold">Paper B: Obokata et al., Nature (2014) ⚠️ RETRACTED</div>
-                  </div>
-                  <p className="text-[11px] leading-relaxed text-[hsl(var(--muted-foreground))]">
-                    <strong>Crucial distinction:</strong> Lin et al. is not itself retracted. Guardian therefore <em>did NOT</em> automatically quarantine your citation. Human scientific judgment is required to assess whether your specific claim relies on the retracted stimulus findings.
-                  </p>
+                <div className={`space-y-2 text-[11px] text-[hsl(var(--foreground))] pt-2 border-t ${
+                  isRetracted ? 'border-rose-500/20' : isPropagation ? 'border-amber-500/20' : 'border-emerald-500/20'
+                }`}>
+                  {isRetracted ? (
+                    <>
+                      <p className="leading-relaxed">
+                        Guardian verified a <strong>direct primary retraction decree</strong> issued by the publisher:
+                      </p>
+                      <div className="font-mono text-[10px] bg-[hsl(var(--card))] p-3 rounded-lg border border-rose-500/20 space-y-1">
+                        <div>Target Paper: {citation.title}</div>
+                        <div className="text-rose-600 font-bold">  DOI: {citation.doi}</div>
+                        <div className="text-rose-700 dark:text-rose-300 font-extrabold">  Status: RETRACTED (Formal Notice Verified via Retraction Watch)</div>
+                      </div>
+                      <p className="text-[11px] leading-relaxed text-[hsl(var(--muted-foreground))]">
+                        <strong>Deterministic Safety Invariant:</strong> Direct retractions satisfy strict auto-quarantine criteria. Guardian has automatically blocked this reference from being incorporated into proposal drafts.
+                      </p>
+                    </>
+                  ) : isPropagation ? (
+                    <>
+                      <p className="leading-relaxed">
+                        Guardian detected a <strong>2nd-order propagation relationship</strong>:
+                      </p>
+                      <div className="font-mono text-[10px] bg-[hsl(var(--card))] p-3 rounded-lg border border-amber-500/20 space-y-1">
+                        <div>Your proposal: {user.proposalName} ({user.labName})</div>
+                        <div className="text-amber-600 font-bold">  ↓ cites directly</div>
+                        <div>Paper A: {citation.title} ({citation.venue} {citation.year})</div>
+                        <div className="text-rose-600 font-bold">  ↓ relies on upstream foundational reference</div>
+                        <div className="text-rose-700 dark:text-rose-300 font-extrabold">
+                          Paper B: {citation.metadata?.graph?.cascade?.retractedPaper || 'Upstream Root Literature'} ⚠️ RETRACTED
+                        </div>
+                      </div>
+                      <p className="text-[11px] leading-relaxed text-[hsl(var(--muted-foreground))]">
+                        <strong>Crucial distinction:</strong> {citation.authors} is not itself retracted. Guardian therefore <em>did NOT</em> automatically delete or alter your citation. Human scientific domain judgment is required to evaluate claim reliance.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="leading-relaxed">
+                        Guardian confirmed this citation satisfies the <strong>Silent Pass Policy</strong>:
+                      </p>
+                      <div className="font-mono text-[10px] bg-[hsl(var(--card))] p-3 rounded-lg border border-emerald-500/20 space-y-1">
+                        <div>Target Paper: {citation.title} ({citation.year})</div>
+                        <div className="text-emerald-600 font-bold">  Crossref: Valid publication record</div>
+                        <div className="text-emerald-700 dark:text-emerald-300 font-extrabold">  Retraction Watch & Graph: 0 retractions, 0 tainted references</div>
+                      </div>
+                      <p className="text-[11px] leading-relaxed text-[hsl(var(--muted-foreground))]">
+                        Pristine editorial standing across publisher feeds and citation graphs. This reference presents zero risk to your research proposal.
+                      </p>
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -186,7 +238,7 @@ export function InvestigationWorkspace({
                 <button
                   type="button"
                   onClick={() => setShowWhyNotQuarantine(!showWhyNotQuarantine)}
-                  className="flex items-center justify-between w-full text-left"
+                  className="flex items-center justify-between w-full text-left cursor-pointer"
                 >
                   <div className="flex items-center gap-2">
                     <ShieldCheck size={15} className="text-blue-600" />
@@ -202,7 +254,7 @@ export function InvestigationWorkspace({
                     <ul className="space-y-1 font-medium text-[11px]">
                       <li className="flex items-center gap-1.5 text-emerald-600">✓ Retraction in underlying reference verified</li>
                       <li className="flex items-center gap-1.5 text-emerald-600">✓ Citation relationship confirmed via Semantic Scholar</li>
-                      <li className="flex items-center gap-1.5 text-amber-600">✕ Direct retraction of Lin et al. was NOT found</li>
+                      <li className="flex items-center gap-1.5 text-amber-600">✕ Direct retraction of {citation.authors} was NOT found</li>
                       <li className="flex items-center gap-1.5 text-amber-600">✕ Scientific invalidity cannot be declared by AI</li>
                     </ul>
                     <div className="rounded bg-blue-500/10 p-2 text-[10px] text-blue-800 dark:text-blue-300 font-mono font-bold">
@@ -231,52 +283,54 @@ export function InvestigationWorkspace({
                 </span>
                 <div className="text-[12px] font-bold font-mono truncate">{citation.doi}</div>
                 <div className="text-[11px] text-emerald-600 font-bold">
-                  Crossref Verified · Retraction Watch Clean (Direct)
+                  Crossref Verified · Retraction Watch {isRetracted ? 'Flagged' : 'Clean (Direct)'}
                 </div>
               </div>
             </div>
 
             {/* Recovery Path & Alternative Evidence Finder */}
-            <div className="rounded-xl border border-purple-500/30 bg-purple-500/5 p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Sparkles size={15} className="text-purple-600" />
-                  <span className="text-[12px] font-bold text-purple-900 dark:text-purple-200">
-                    Recovery Path: Recommended Alternative Evidence
-                  </span>
-                </div>
-                <span className="rounded bg-purple-500/20 px-2 py-0.5 gg-mono text-[8px] font-extrabold text-purple-700 dark:text-purple-300">
-                  ASSISTANT RECOVERY
-                </span>
-              </div>
-              <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
-                If you decide this dependency compromises your proposal, Guardian identified independent, unretracted alternative literature:
-              </p>
-
-              <div className="rounded-lg border border-purple-500/30 bg-[hsl(var(--card))] p-3 space-y-2">
+            {(isPropagation || isRetracted) && (
+              <div className="rounded-xl border border-purple-500/30 bg-purple-500/5 p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-[12px] font-bold text-[hsl(var(--foreground))]">
-                    Takahashi & Yamanaka (2019) · Cell Review
-                  </span>
-                  <span className="inline-flex items-center gap-1 rounded bg-emerald-500/15 px-2 py-0.5 text-[8px] font-bold text-emerald-700 dark:text-emerald-300">
-                    ✓ Clean Literature Record
+                  <div className="flex items-center gap-2">
+                    <Sparkles size={15} className="text-purple-600" />
+                    <span className="text-[12px] font-bold text-purple-900 dark:text-purple-200">
+                      Recovery Path: Recommended Alternative Evidence
+                    </span>
+                  </div>
+                  <span className="rounded bg-purple-500/20 px-2 py-0.5 gg-mono text-[8px] font-extrabold text-purple-700 dark:text-purple-300">
+                    ASSISTANT RECOVERY
                   </span>
                 </div>
-                <p className="text-[10px] text-[hsl(var(--muted-foreground))]">
-                  Independent lineage using Yamanaka factor induction. Provides the exact biocompatible scaffold compatibility without relying on low-pH stimuli.
+                <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
+                  Guardian identified independent, unretracted alternative literature to remediate proposal risk:
                 </p>
-                <div className="pt-2 flex items-center justify-between text-[10px]">
-                  <span className="gg-mono text-[hsl(var(--muted-foreground))]">DOI: 10.1016/j.cell.2019.08.019</span>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('decision')}
-                    className="text-purple-600 font-bold hover:underline"
-                  >
-                    Adopt Alternative in Decision →
-                  </button>
+
+                <div className="rounded-lg border border-purple-500/30 bg-[hsl(var(--card))] p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[12px] font-bold text-[hsl(var(--foreground))]">
+                      Takahashi & Yamanaka (2019) · Cell Review
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded bg-emerald-500/15 px-2 py-0.5 text-[8px] font-bold text-emerald-700 dark:text-emerald-300">
+                      ✓ Clean Literature Record
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-[hsl(var(--muted-foreground))]">
+                    Independent lineage using verified factor induction. Provides robust protocol foundation without relying on compromised findings.
+                  </p>
+                  <div className="pt-2 flex items-center justify-between text-[10px]">
+                    <span className="gg-mono text-[hsl(var(--muted-foreground))]">DOI: 10.1016/j.cell.2019.08.019</span>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('decision')}
+                      className="text-purple-600 font-bold hover:underline cursor-pointer"
+                    >
+                      Adopt Alternative in Decision →
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         )}
 
@@ -290,8 +344,14 @@ export function InvestigationWorkspace({
                   Granular multi-dimensional assessment separating verified evidence from scientific human judgment.
                 </p>
               </div>
-              <span className="gg-mono text-[9px] font-bold rounded bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 px-2 py-1">
-                Calibrated Assessment
+              <span className={`gg-mono text-[9px] font-bold rounded px-2 py-1 ${
+                isRetracted
+                  ? 'bg-rose-500/20 text-rose-700 dark:text-rose-300'
+                  : isPropagation
+                  ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300'
+                  : 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300'
+              }`}>
+                {isRetracted ? 'Retraction Confirmed' : isPropagation ? 'Propagation Evaluated' : 'Verified Pristine'}
               </span>
             </div>
 
@@ -308,33 +368,67 @@ export function InvestigationWorkspace({
                 <tbody className="divide-y divide-[hsl(var(--border))]">
                   <tr>
                     <td className="px-4 py-3 font-bold">Retraction evidence</td>
-                    <td className="px-4 py-3 text-emerald-600 font-bold">🟢 Strong</td>
-                    <td className="px-4 py-3 text-[hsl(var(--muted-foreground))]">Retraction Watch Registry (Notice confirmed)</td>
+                    <td className={`px-4 py-3 font-bold ${isRetracted ? 'text-rose-600' : isPropagation ? 'text-amber-600' : 'text-emerald-600'}`}>
+                      {isRetracted ? '🔴 Retracted (Direct)' : isPropagation ? '🟡 Upstream Retraction' : '🟢 0 Retractions Found'}
+                    </td>
+                    <td className="px-4 py-3 text-[hsl(var(--muted-foreground))]">
+                      {isRetracted
+                        ? 'Retraction Watch Database: Primary notice confirmed'
+                        : isPropagation
+                        ? `Retraction Watch: ${citation.metadata?.graph?.cascade?.retractedPaper || '10.1038/nature13358'} flagged`
+                        : 'Retraction Watch Database: Clean literature record'}
+                    </td>
                     <td className="px-4 py-3 gg-mono text-[10px]">Autonomous Verify</td>
                   </tr>
                   <tr>
                     <td className="px-4 py-3 font-bold">DOI identity & metadata</td>
                     <td className="px-4 py-3 text-emerald-600 font-bold">🟢 Verified</td>
-                    <td className="px-4 py-3 text-[hsl(var(--muted-foreground))]">Crossref API (10.1016/j.stem.2015.01.002)</td>
+                    <td className="px-4 py-3 text-[hsl(var(--muted-foreground))]">Crossref API ({citation.doi})</td>
                     <td className="px-4 py-3 gg-mono text-[10px]">Autonomous Verify</td>
                   </tr>
                   <tr>
                     <td className="px-4 py-3 font-bold">Citation relationship</td>
-                    <td className="px-4 py-3 text-emerald-600 font-bold">🟢 Verified</td>
-                    <td className="px-4 py-3 text-[hsl(var(--muted-foreground))]">Semantic Scholar Graph (Referenced in Sec 3.2)</td>
+                    <td className="px-4 py-3 text-emerald-600 font-bold">
+                      {isPropagation ? '🟡 2nd-Order Dependency' : '🟢 Direct Bibliography'}
+                    </td>
+                    <td className="px-4 py-3 text-[hsl(var(--muted-foreground))]">
+                      {isPropagation
+                        ? 'Semantic Scholar Graph: Cited foundational dependency verified'
+                        : 'Proposal Ingestion Engine: Bibliography reference indexed'}
+                    </td>
                     <td className="px-4 py-3 gg-mono text-[10px]">Autonomous Traverse</td>
                   </tr>
                   <tr>
                     <td className="px-4 py-3 font-bold">Scientific dependency</td>
-                    <td className="px-4 py-3 text-amber-600 font-bold">🟡 Uncertain</td>
-                    <td className="px-4 py-3 text-[hsl(var(--muted-foreground))]">Domain claim interaction cannot be inferred by AI</td>
-                    <td className="px-4 py-3 gg-mono text-[10px] text-amber-700">HUMAN DOMAIN</td>
+                    <td className={`px-4 py-3 font-bold ${isPropagation ? 'text-amber-600' : 'text-emerald-600'}`}>
+                      {isPropagation ? '🟡 Domain Assessment Needed' : isRetracted ? '🔴 Direct Contamination' : '🟢 Methodologically Sound'}
+                    </td>
+                    <td className="px-4 py-3 text-[hsl(var(--muted-foreground))]">
+                      {isPropagation
+                        ? 'Specific claim overlap cannot be assumed by AI'
+                        : isRetracted
+                        ? 'Primary data invalidation directly taints citations'
+                        : '0 tainted references across cited bibliography'}
+                    </td>
+                    <td className="px-4 py-3 gg-mono text-[10px] text-amber-700">
+                      {isPropagation ? 'HUMAN DOMAIN' : 'SYSTEM INVARIANT'}
+                    </td>
                   </tr>
                   <tr>
                     <td className="px-4 py-3 font-bold">Impact on grant proposal</td>
-                    <td className="px-4 py-3 text-amber-600 font-bold">🟠 Human Review</td>
-                    <td className="px-4 py-3 text-[hsl(var(--muted-foreground))]">Principal Investigator assessment required</td>
-                    <td className="px-4 py-3 gg-mono text-[10px] text-amber-700">PI AUTHORITY</td>
+                    <td className={`px-4 py-3 font-bold ${isPropagation ? 'text-amber-600' : isRetracted ? 'text-rose-600' : 'text-emerald-600'}`}>
+                      {isPropagation ? '🟠 Human Decision Gate' : isRetracted ? '🔴 Quarantined from Draft' : '🟢 Safe for Submission'}
+                    </td>
+                    <td className="px-4 py-3 text-[hsl(var(--muted-foreground))]">
+                      {isPropagation
+                        ? 'Principal Investigator domain judgment required'
+                        : isRetracted
+                        ? 'Deterministic safety policy isolated reference'
+                        : 'Silent pass invariant enforced'}
+                    </td>
+                    <td className="px-4 py-3 gg-mono text-[10px]">
+                      {isPropagation ? 'PI AUTHORITY' : 'POLICY ENGINE'}
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -352,7 +446,7 @@ export function InvestigationWorkspace({
         {/* TAB 3: GRAPH & RIPPLE */}
         {activeTab === 'graph' && (
           <div className="space-y-6">
-            <CitationGraph compact={false} selectedNodeId="lin2015" />
+            <CitationGraph compact={false} selectedNodeId={citation.status === 'retracted' ? 'obokata2014' : citation.status === 'clear' ? 'jumper2021' : 'lin2015'} />
             <BlastRadius />
           </div>
         )}
@@ -364,7 +458,7 @@ export function InvestigationWorkspace({
               <div>
                 <h3 className="text-[14px] font-bold">Observable Agent Tool Selection & Trace</h3>
                 <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
-                  No hidden chain-of-thought. Inspect exact API calls, parameters, and deterministic policies.
+                  No hidden chain-of-thought. Inspect exact API calls, parameters, and deterministic policies for {citation.doi}.
                 </p>
               </div>
               <span className="rounded bg-purple-500/20 px-2 py-0.5 gg-mono text-[9px] font-bold text-purple-700 dark:text-purple-300">
@@ -382,55 +476,91 @@ export function InvestigationWorkspace({
                   <span className="gg-mono text-[10px] text-emerald-600">✓ 200 OK · 120ms</span>
                 </div>
                 <div className="text-[11px] text-[hsl(var(--foreground))] font-mono">
-                  Input: {'{ doi: "10.1016/j.stem.2015.01.002" }'}
+                  Input: {JSON.stringify({ doi: citation.doi })}
                 </div>
                 <div className="text-[10px] text-[hsl(var(--muted-foreground))]">
-                  Output: Verified publication status. No errata, expressions of concern, or direct retractions registered with Crossref.
+                  Output: Verified publication status. Indexed in {citation.venue || 'Registry'} ({citation.year}). Metadata corroborated.
                 </div>
               </div>
 
-              <div className="rounded-xl border border-emerald-500/30 bg-[hsl(var(--card))] p-3.5 space-y-1.5 shadow-sm">
+              <div className={`rounded-xl border p-3.5 space-y-1.5 shadow-sm ${
+                isRetracted ? 'border-rose-500/30 bg-rose-500/5' : 'border-emerald-500/30 bg-[hsl(var(--card))]'
+              }`}>
                 <div className="flex items-center justify-between text-[11px]">
-                  <span className="font-extrabold flex items-center gap-1.5 text-emerald-700 dark:text-emerald-300">
+                  <span className={`font-extrabold flex items-center gap-1.5 ${
+                    isRetracted ? 'text-rose-700 dark:text-rose-300' : 'text-emerald-700 dark:text-emerald-300'
+                  }`}>
                     <ShieldCheck size={13} /> 2. TOOL: retraction_watch_query
                   </span>
-                  <span className="gg-mono text-[10px] text-emerald-600">✓ 200 OK · 76ms</span>
+                  <span className={`gg-mono text-[10px] ${isRetracted ? 'text-rose-600' : 'text-emerald-600'}`}>
+                    {isRetracted ? '⚠ 1 Retraction Notice Found · 88ms' : '✓ 200 OK · 76ms'}
+                  </span>
                 </div>
                 <div className="text-[11px] text-[hsl(var(--foreground))] font-mono">
-                  Input: {'{ query: "10.1016/j.stem.2015.01.002" }'}
+                  Input: {JSON.stringify({ query: citation.doi })}
                 </div>
                 <div className="text-[10px] text-[hsl(var(--muted-foreground))]">
-                  Output: Direct paper has 0 matches. Clean record.
+                  {isRetracted
+                    ? `Output: Formal retraction decree registered. Grounds: Data manipulation & unreproducible protocol.`
+                    : 'Output: Direct paper has 0 matches. Clean record.'}
                 </div>
               </div>
 
-              <div className="rounded-xl border border-amber-500/30 bg-[hsl(var(--card))] p-3.5 space-y-1.5 shadow-sm">
+              <div className={`rounded-xl border p-3.5 space-y-1.5 shadow-sm ${
+                isPropagation ? 'border-amber-500/30 bg-[hsl(var(--card))]' : 'border-emerald-500/30 bg-[hsl(var(--card))]'
+              }`}>
                 <div className="flex items-center justify-between text-[11px]">
-                  <span className="font-extrabold flex items-center gap-1.5 text-amber-700 dark:text-amber-300">
+                  <span className={`font-extrabold flex items-center gap-1.5 ${
+                    isPropagation ? 'text-amber-700 dark:text-amber-300' : 'text-emerald-700 dark:text-emerald-300'
+                  }`}>
                     <GitFork size={13} /> 3. TOOL: semantic_scholar_reference_graph
                   </span>
-                  <span className="gg-mono text-[10px] text-amber-600">⚠ 1 Flagged Dependency · 315ms</span>
+                  <span className={`gg-mono text-[10px] ${isPropagation ? 'text-amber-600' : 'text-emerald-600'}`}>
+                    {isPropagation ? '⚠ 1 Flagged Dependency · 315ms' : '✓ 0 Retracted Links · 198ms'}
+                  </span>
                 </div>
                 <div className="text-[11px] text-[hsl(var(--foreground))] font-mono">
-                  Input: {'{ doi: "10.1016/j.stem.2015.01.002", depth: 1 }'}
+                  Input: {JSON.stringify({ doi: citation.doi, depth: 1 })}
                 </div>
                 <div className="text-[10px] text-[hsl(var(--muted-foreground))]">
-                  Output: 44 references traversed. Reference #18 links to 10.1038/nature13358 (Retracted Nature 2014 study).
+                  {isPropagation
+                    ? `Output: Bibliographic graph traversed. Found reference linking to retracted root (${citation.metadata?.graph?.cascade?.retractedPaper || '10.1038/nature13358'}).`
+                    : isRetracted
+                    ? `Output: Primary source directly retracted. Traversal halted under direct isolation invariant.`
+                    : 'Output: Reference dependencies audited across registries. 0 retracted links found.'}
                 </div>
               </div>
 
-              <div className="rounded-xl border border-purple-500/30 bg-[hsl(var(--card))] p-3.5 space-y-1.5 shadow-sm">
+              <div className={`rounded-xl border p-3.5 space-y-1.5 shadow-sm ${
+                isRetracted
+                  ? 'border-rose-500/30 bg-rose-500/5'
+                  : isPropagation
+                  ? 'border-purple-500/30 bg-[hsl(var(--card))]'
+                  : 'border-emerald-500/30 bg-[hsl(var(--card))]'
+              }`}>
                 <div className="flex items-center justify-between text-[11px]">
-                  <span className="font-extrabold flex items-center gap-1.5 text-purple-700 dark:text-purple-300">
+                  <span className={`font-extrabold flex items-center gap-1.5 ${
+                    isRetracted ? 'text-rose-700 dark:text-rose-300' : isPropagation ? 'text-purple-700 dark:text-purple-300' : 'text-emerald-700 dark:text-emerald-300'
+                  }`}>
                     <ShieldAlert size={13} /> 4. SAFETY POLICY: deterministic_guardrail
                   </span>
-                  <span className="gg-mono text-[10px] text-purple-600">🛡️ Auto-Quarantine Blocked · 14ms</span>
+                  <span className={`gg-mono text-[10px] ${isRetracted ? 'text-rose-600' : isPropagation ? 'text-purple-600' : 'text-emerald-600'}`}>
+                    {isRetracted ? '🛡️ Auto-Quarantine Enforced · 12ms' : isPropagation ? '🛡️ Auto-Quarantine Blocked · 14ms' : '✓ Silent Pass Enforced · 8ms'}
+                  </span>
                 </div>
                 <div className="text-[11px] text-[hsl(var(--foreground))] font-mono">
-                  Rule evaluated: {'{ relation: "second_order", direct_retraction: false }'}
+                  Rule evaluated: {JSON.stringify({
+                    direct_retraction: isRetracted,
+                    second_order_propagation: isPropagation,
+                    status: citation.status,
+                  })}
                 </div>
                 <div className="text-[10px] text-[hsl(var(--muted-foreground))]">
-                  Action enforced: Automatic deletion/quarantine blocked. Second-order scientific invalidity cannot be assumed. Escalating to human decision inbox.
+                  {isRetracted
+                    ? 'Action enforced: Automatic isolation from proposal draft text. Citation permanently quarantined to shield research integrity.'
+                    : isPropagation
+                    ? 'Action enforced: Automatic deletion/quarantine blocked. Second-order scientific invalidity cannot be assumed. Escalating to human decision inbox.'
+                    : 'Action enforced: Citation cleared silently. Zero notifications generated to protect researcher concentration.'}
                 </div>
               </div>
             </div>
@@ -451,7 +581,7 @@ export function InvestigationWorkspace({
         {/* TAB: CONTAMINATION CASCADE */}
         {activeTab === 'cascade' && (
           <div className="space-y-6">
-            <ContaminationCascade />
+            <ContaminationCascade citation={citation} />
           </div>
         )}
 

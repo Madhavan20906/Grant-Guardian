@@ -826,12 +826,14 @@ export default function Overview() {
           </div>
         </div>
 
-        {activeViewTab === 'cascade' && <ContaminationCascade />}
+        {activeViewTab === 'cascade' && (
+          <ContaminationCascade citation={selectedCitation || undefined} />
+        )}
         {activeViewTab === 'why' && (
           <WhyThisDecisionPanel
-            doi="10.1016/j.stem.2015.01.002"
-            paperTitle="Downstream applications of stimulus-triggered pluripotency in tissue engineering"
-            status="propagation"
+            doi={selectedCitation?.doi || "10.1016/j.stem.2015.01.002"}
+            paperTitle={selectedCitation?.title || "Downstream applications of stimulus-triggered pluripotency in tissue engineering"}
+            status={selectedCitation?.status || "propagation"}
           />
         )}
         {activeViewTab === 'graph' && <CitationGraph />}
