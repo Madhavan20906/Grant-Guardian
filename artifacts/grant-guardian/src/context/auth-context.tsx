@@ -161,31 +161,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Keep API client synchronised
   useEffect(() => {
     setAuthTokenGetter(() => token);
-    setUserGetter(() => (token ? user.tenantSlug || user.id : null));
+    setUserGetter(() => user?.tenantSlug || String(user?.id || 'elena'));
 
     if (typeof window !== 'undefined') {
       if (token) {
         localStorage.setItem(TOKEN_STORAGE_KEY, token);
-        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
-        localStorage.setItem('gg_persona_slug', user.tenantSlug);
-
-        const url = new URL(window.location.href);
-        if (url.searchParams.get('user') !== user.tenantSlug) {
-          url.searchParams.set('user', user.tenantSlug);
-          window.history.replaceState({}, '', url.toString());
-        }
       } else {
         localStorage.removeItem(TOKEN_STORAGE_KEY);
-        localStorage.removeItem(USER_STORAGE_KEY);
-        localStorage.removeItem('gg_persona_slug');
-        const url = new URL(window.location.href);
-        if (url.searchParams.has('user')) {
-          url.searchParams.delete('user');
-          window.history.replaceState({}, '', url.toString());
-        }
+      }
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+      localStorage.setItem('gg_persona_slug', user.tenantSlug || 'elena');
+
+      const url = new URL(window.location.href);
+      if (user.tenantSlug && url.searchParams.get('user') !== user.tenantSlug) {
+        url.searchParams.set('user', user.tenantSlug);
+        window.history.replaceState({}, '', url.toString());
       }
     }
-  }, [user, token]);
+  }, [token, user]);
 
   // Synchronize authenticated session from server if token exists
   useEffect(() => {

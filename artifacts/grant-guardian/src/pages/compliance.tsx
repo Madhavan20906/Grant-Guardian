@@ -1,12 +1,16 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { FileText, Plus, Sparkles, X, Download, FileDown, Printer, Copy, Check } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { getListActivityQueryKey, getListDeadlinesQueryKey, useDraftComplianceReport, useListDeadlines, type Deadline } from '@workspace/api-client-react';
 import { Button, DeadlineRow, Drawer, EmptyBlock, ErrorBlock, LoadingBlock, SectionHeading, StatusPill } from '@/components/guardian-ui';
+import { apiRequest, getSubmittedDeadlineIds, markDeadlineSubmittedLocal, isDeadlineSubmittedLocal, addLocalActivity } from '@/lib/api';
+import { useAuth, formatDisplayName } from '@/context/auth-context';
 
 export default function Compliance() {
   const queryClient = useQueryClient();
   const query = useListDeadlines();
+  const { user } = useAuth();
+  const [submittedIds, setSubmittedIds] = useState<Set<number>>(getSubmittedDeadlineIds);
   const draftMutation = useDraftComplianceReport();
   const [draft, setDraft] = useState<{ id: number; deadlineId: number; title: string; status: string; body: string } | null>(null);
   const [draftError, setDraftError] = useState('');
@@ -20,7 +24,25 @@ export default function Compliance() {
   const [newProgress, setNewProgress] = useState('25');
   const [isAdding, setIsAdding] = useState(false);
 
-  const deadlines = Array.isArray(query.data) ? query.data : [];
+  const rawDeadlines = Array.isArray(query.data) ? query.data : [];
+  const deadlines = useMemo(() => {
+    return rawDeadlines.map((d: Deadline) => {
+      const isSub =
+        (d.progress ?? 0) >= 100 ||
+        (d.status as string) === 'clear' ||
+        (d.status as string) === 'submitted' ||
+        submittedIds.has(d.id) ||
+        isDeadlineSubmittedLocal(d.id);
+      if (isSub) {
+        return {
+          ...d,
+          status: 'clear' as const,
+          progress: 100,
+        };
+      }
+      return d;
+    });
+  }, [rawDeadlines, submittedIds]);
   const attention = deadlines.filter((deadline: Deadline) => deadline.status === 'attention').length;
 
   const draftReport = (id: number) => {
@@ -105,9 +127,8 @@ export default function Compliance() {
     try {
       const days = parseInt(newDays, 10) || 14;
       const dueDate = new Date(Date.now() + days * 86400000).toISOString();
-      const res = await fetch('/api/guardian/deadlines', {
+      const res = await apiRequest('/api/guardian/deadlines', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: newTitle.trim(),
           type: newType,
@@ -131,24 +152,46 @@ export default function Compliance() {
   };
 
   const handleMarkSubmitted = async (id: number) => {
+    // 1. Immediately record in localStorage so state is persisted across pages & reloads
+    markDeadlineSubmittedLocal(id);
+    setSubmittedIds(new Set(getSubmittedDeadlineIds()));
+
+    // 2. Add local activity log so /activity immediately has this milestone
+    const target = deadlines.find((d: Deadline) => d.id === id);
+    const title = target?.title || 'Compliance milestone';
+    const ownerName = formatDisplayName(user);
+    addLocalActivity({
+      title: `Compliance milestone filed externally: ${title}`,
+      description: `Marked officially submitted by PI (${ownerName}) to external sponsor portal. Progress registered at 100%.`,
+      kind: 'clear',
+      tone: 'success',
+    });
+
+    // 3. Optimistically update React Query cache for instant zero-latency UI update
+    queryClient.setQueryData(getListDeadlinesQueryKey(), (old: Deadline[] | undefined) => {
+      if (!Array.isArray(old)) return old;
+      return old.map((d) =>
+        d.id === id ? { ...d, status: 'clear' as const, progress: 100 } : d
+      );
+    });
+
+    // 4. Send persistent PATCH to server with active user credentials
     try {
-      const res = await fetch(`/api/guardian/deadlines/${id}`, {
+      await apiRequest(`/api/guardian/deadlines/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           status: 'on_track',
           progress: 100,
           submitted: true,
         }),
       });
-      if (res.ok) {
-        await Promise.all([
-          queryClient.invalidateQueries({ queryKey: getListDeadlinesQueryKey() }),
-          queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() }),
-        ]);
-      }
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: getListDeadlinesQueryKey() }),
+        queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() }),
+      ]);
     } catch {
-      // error handled gracefully
+      // LocalStorage and optimistic cache preserve state
     }
   };
 

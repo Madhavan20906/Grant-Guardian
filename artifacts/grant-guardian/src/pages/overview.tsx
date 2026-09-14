@@ -57,6 +57,14 @@ import { WhyThisDecisionPanel } from '@/components/why-this-decision-panel';
 import { StrandsSovereignBossModal } from '@/components/strands-sovereign-boss-modal';
 import { usePersona } from '@/context/persona-context';
 import { useAuth, formatDisplayName } from '@/context/auth-context';
+import {
+  apiRequest,
+  getLocalJudgments,
+  saveLocalJudgment,
+  addLocalActivity,
+  isDeadlineSubmittedLocal,
+  getLocalActivities,
+} from '@/lib/api';
 
 export default function Overview() {
   const queryClient = useQueryClient();
@@ -83,9 +91,9 @@ export default function Overview() {
   const watchStatusQuery = useQuery({
     queryKey: ['guardian', 'watch', 'status'],
     queryFn: async () => {
-      const res = await fetch('/api/guardian/watch/status');
+      const res = await apiRequest('/api/guardian/watch/status');
       if (!res.ok) throw new Error('Failed to fetch watch status');
-      return res.json() as Promise<{
+      return res.data as {
         enabled: boolean;
         lastSweepAt: string | null;
         nextSweepAt: string | null;
@@ -95,7 +103,7 @@ export default function Overview() {
         retractionsCaught: number;
         propagationsEscalated: number;
         draftsAssembled: number;
-      }>;
+      };
     },
     refetchInterval: 15000,
   });
@@ -103,22 +111,60 @@ export default function Overview() {
   const strandsStatusQuery = useQuery({
     queryKey: ['guardian', 'strands', 'status'],
     queryFn: async () => {
-      const res = await fetch('/api/guardian/strands/status');
+      const res = await apiRequest('/api/guardian/strands/status');
       if (!res.ok) throw new Error('Failed to fetch strands status');
-      return res.json() as Promise<{
+      return res.data as {
         available: boolean;
         mode: string;
         statusLabel: string;
         tools: number;
         error?: string | null;
-      }>;
+      };
     },
     refetchInterval: 30000,
   });
 
-  const citations = Array.isArray(citationsQuery.data) ? citationsQuery.data : [];
-  const deadlines = Array.isArray(deadlinesQuery.data) ? deadlinesQuery.data : [];
-  const activity = Array.isArray(activityQuery.data) ? activityQuery.data : [];
+  const rawCitations = Array.isArray(citationsQuery.data) ? citationsQuery.data : [];
+  const citations = useMemo(() => {
+    const local = getLocalJudgments();
+    return rawCitations.map((c: Citation) => {
+      const lj = local[c.id];
+      if (lj) {
+        const newStatus = lj.judgment === 'relevant' ? 'quarantined' : lj.judgment === 'not_relevant' ? 'clear' : 'propagation';
+        const newRisk = lj.judgment === 'relevant' ? 'high' : lj.judgment === 'not_relevant' ? 'low' : 'medium';
+        return {
+          ...c,
+          judgment: lj.judgment,
+          judgmentNotes: lj.notes || (c as any).judgmentNotes,
+          status: newStatus as any,
+          risk: newRisk as any,
+        };
+      }
+      return c;
+    });
+  }, [rawCitations]);
+
+  const rawDeadlines = Array.isArray(deadlinesQuery.data) ? deadlinesQuery.data : [];
+  const deadlines = useMemo(() => {
+    return rawDeadlines.map((d: Deadline) => {
+      if ((d.progress ?? 0) >= 100 || (d.status as string) === 'clear' || isDeadlineSubmittedLocal(d.id)) {
+        return { ...d, status: 'clear' as const, progress: 100 };
+      }
+      return d;
+    });
+  }, [rawDeadlines]);
+
+  const serverActivity = Array.isArray(activityQuery.data) ? activityQuery.data : [];
+  const activity = useMemo(() => {
+    const combined = [...getLocalActivities(), ...serverActivity];
+    const seen = new Set<string>();
+    return combined.filter((item: Activity) => {
+      const key = `${item.title}-${item.tone}-${item.description?.slice(0, 35)}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [serverActivity]);
 
   const monitoredCount = citations.length;
   const clearCount = citations.filter((c: Citation) => c.status === 'clear').length;
@@ -131,7 +177,7 @@ export default function Overview() {
     (d: Deadline) => d.status === 'attention' || (d.daysLeft !== undefined && d.daysLeft < 0)
   ).length;
   const onTrackCount = deadlines.filter(
-    (d: Deadline) => d.status === 'on_track' || (d.status as string) === 'submitted'
+    (d: Deadline) => d.status === 'on_track' || (d.status as string) === 'submitted' || (d.status as string) === 'clear'
   ).length;
   const dueSoonCount = deadlines.filter((d: Deadline) => d.status === 'due_soon').length;
 
@@ -151,10 +197,9 @@ export default function Overview() {
     setSweepLoading(true);
     setSweepResult(null);
     try {
-      const res = await fetch('/api/guardian/watch/sweep', { method: 'POST' });
-      if (res.ok) {
-        const data = await res.json();
-        setSweepResult(data);
+      const res = await apiRequest('/api/guardian/watch/sweep', { method: 'POST' });
+      if (res.ok && res.data) {
+        setSweepResult(res.data);
         await Promise.all([
           queryClient.invalidateQueries({ queryKey: getGetGuardianOverviewQueryKey() }),
           queryClient.invalidateQueries({ queryKey: getListCitationsQueryKey() }),
@@ -189,10 +234,29 @@ export default function Overview() {
 
   const handleJudgment = async (id: number, judgment: 'relevant' | 'not_relevant' | 'deferred', notes?: string) => {
     setIsSubmittingJudgment(true);
+
+    // 1. Persist locally immediately
+    saveLocalJudgment(id, judgment, notes);
+
+    // 2. Add local activity item
+    const target = citations.find((c: Citation) => c.id === id);
+    const paperTitle = target?.title || `Citation #${id}`;
+    const activityTitle =
+      judgment === 'relevant'
+        ? 'PI Judgment: Direct Dependency Quarantined'
+        : judgment === 'not_relevant'
+        ? 'PI Judgment: Scientific Independence Verified'
+        : 'PI Judgment: Review Deferred';
+    addLocalActivity({
+      title: activityTitle,
+      description: `Researcher recorded human judgment for "${paperTitle}". Decision: ${judgment.replace('_', ' ')}. Notes: "${notes || 'No notes provided'}"`,
+      kind: 'escalation',
+      tone: judgment === 'relevant' ? 'danger' : 'success',
+    });
+
     try {
-      const response = await fetch(`/api/guardian/citations/${id}/judgment`, {
+      const response = await apiRequest(`/api/guardian/citations/${id}/judgment`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ judgment, notes }),
       });
       if (response.ok) {
@@ -204,7 +268,7 @@ export default function Overview() {
         ]);
       }
     } catch {
-      //
+      // Local persistence protects state
     } finally {
       setIsSubmittingJudgment(false);
     }

@@ -38,6 +38,7 @@ import type { Activity, Citation, Deadline } from '@workspace/api-client-react';
 import { useAuth, formatDisplayName } from '@/context/auth-context';
 import { usePersona } from '@/context/persona-context';
 import { useTheme } from '@/context/theme-context';
+import { isDeadlineSubmittedLocal } from '@/lib/api';
 
 export const cx = (...items: Array<string | false | null | undefined>) => items.filter(Boolean).join(' ');
 
@@ -418,9 +419,13 @@ export function DeadlineRow({
   onDraft: () => void;
   onMarkSubmitted?: () => void;
 }) {
-  const initiallySubmitted = (deadline.progress ?? 0) >= 100 || (deadline.status as string) === 'clear' || (deadline.status as string) === 'submitted';
-  const [isSubmitted, setIsSubmitted] = useState(initiallySubmitted);
-  const effectiveSubmitted = isSubmitted || initiallySubmitted;
+  const isServerSubmitted =
+    (deadline.progress ?? 0) >= 100 ||
+    (deadline.status as string) === 'clear' ||
+    (deadline.status as string) === 'submitted' ||
+    isDeadlineSubmittedLocal(deadline.id);
+  const [localSubmitted, setLocalSubmitted] = useState(false);
+  const effectiveSubmitted = isServerSubmitted || localSubmitted;
   const isUrgentTrigger = deadline.daysLeft <= 14 && (deadline.progress ?? 0) < 80;
 
   return (
@@ -479,7 +484,7 @@ export function DeadlineRow({
               <button
                 type="button"
                 onClick={() => {
-                  setIsSubmitted(true);
+                  setLocalSubmitted(true);
                   if (onMarkSubmitted) onMarkSubmitted();
                 }}
                 className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:bg-[hsl(var(--muted))] px-2.5 py-1.5 text-[10px] font-semibold text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors cursor-pointer"

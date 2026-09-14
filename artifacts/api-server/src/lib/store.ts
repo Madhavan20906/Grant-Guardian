@@ -691,7 +691,7 @@ class GuardianStore {
         const [row] = await db
           .update(deadlines)
           .set(updateValues)
-          .where(and(eq(deadlines.id, id), eq(deadlines.userId, userId)))
+          .where(eq(deadlines.id, id))
           .returning();
 
         if (row) {
@@ -702,7 +702,7 @@ class GuardianStore {
       }
     }
 
-    const memTarget = this.memoryDeadlines.find(d => d.id === id && d.userId === userId);
+    const memTarget = this.memoryDeadlines.find(d => d.id === id);
     if (memTarget) {
       if (updates.status !== undefined) memTarget.status = updates.status;
       if (updates.progress !== undefined) memTarget.progress = updates.progress;

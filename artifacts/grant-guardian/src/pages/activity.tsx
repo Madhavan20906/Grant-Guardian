@@ -28,6 +28,7 @@ import {
 } from '@/components/guardian-ui';
 import { EvidenceTimeline } from '@/components/evidence-timeline';
 import { TrustCenter } from '@/components/trust-center';
+import { apiRequest, getLocalActivities, addLocalActivity } from '@/lib/api';
 
 export default function ActivityPage() {
   const queryClient = useQueryClient();
@@ -48,15 +49,25 @@ export default function ActivityPage() {
     setIsSignoffPending(item.id);
     setHumanDecisions((prev) => ({ ...prev, [item.id]: decisionLabel }));
 
+    const title = `PI Signoff: ${decisionLabel}`;
+    const description = `Decision executed by Principal Investigator for "${item.title}". Policy safety condition ratified and audit log sealed.`;
+    const tone = decisionLabel.includes('Quarantine') ? 'danger' : 'success';
+
+    addLocalActivity({
+      title,
+      description,
+      kind: 'escalation',
+      tone,
+    });
+
     try {
-      await fetch('/api/guardian/activity', {
+      await apiRequest('/api/guardian/activity', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title: `PI Signoff: ${decisionLabel}`,
-          description: `Decision executed by Principal Investigator for "${item.title}". Policy safety condition ratified and audit log sealed.`,
+          title,
+          description,
           kind: 'escalation',
-          tone: decisionLabel.includes('Quarantine') ? 'danger' : 'success',
+          tone,
         }),
       });
       await queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() });
@@ -70,7 +81,7 @@ export default function ActivityPage() {
   const handleTriggerSweep = async () => {
     setIsSweepPending(true);
     try {
-      await fetch('/api/guardian/sweep/run', { method: 'POST' });
+      await apiRequest('/api/guardian/sweep/run', { method: 'POST' });
       await queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() });
     } catch (err) {
       console.error('Failed to run sweep:', err);
@@ -79,18 +90,22 @@ export default function ActivityPage() {
     }
   };
 
-  const rawActivity = Array.isArray(query.data) ? query.data : [];
+  const serverActivities = Array.isArray(query.data) ? query.data : [];
+  const localActivities = useMemo(() => getLocalActivities(), []);
 
-  // Deduplicate consecutive sweep events within 2 minutes to eliminate double-fire glitches
+  // Deduplicate consecutive events while ensuring local events show immediately at top
   const deduplicatedActivity = useMemo(() => {
+    const combined = [...localActivities, ...serverActivities];
     const seen = new Set<string>();
-    return rawActivity.filter((item: Activity) => {
+    return combined.filter((item: Activity) => {
       const key = `${item.title}-${item.tone}-${item.description?.slice(0, 35)}`;
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
     });
-  }, [rawActivity]);
+  }, [serverActivities, localActivities]);
+
+  const rawActivity = deduplicatedActivity;
 
   const activity = useMemo(
     () => deduplicatedActivity.filter((item: Activity) => tone === 'all' || item.tone === tone),

@@ -40,6 +40,7 @@ import { CitationGraph } from '@/components/citation-graph';
 import { BlastRadius } from '@/components/blast-radius';
 import { ContaminationCascade } from '@/components/contamination-cascade';
 import { OnboardingEmptyState } from '@/components/onboarding-empty-state';
+import { apiRequest, getLocalJudgments, saveLocalJudgment, addLocalActivity } from '@/lib/api';
 
 export default function Citations() {
   const query = useListCitations();
@@ -56,45 +57,85 @@ export default function Citations() {
   const [importError, setImportError] = useState<string | null>(null);
 
   const rawCitations = Array.isArray(query.data) ? query.data : [];
+
+  // Merge server citations with locally saved judgments to prevent state reverting across pages
+  const citationsWithJudgments = useMemo(() => {
+    const local = getLocalJudgments();
+    return rawCitations.map((c: Citation) => {
+      const lj = local[c.id];
+      if (lj) {
+        const newStatus = lj.judgment === 'relevant' ? 'quarantined' : lj.judgment === 'not_relevant' ? 'clear' : 'propagation';
+        const newRisk = lj.judgment === 'relevant' ? 'high' : lj.judgment === 'not_relevant' ? 'low' : 'medium';
+        return {
+          ...c,
+          judgment: lj.judgment,
+          judgmentNotes: lj.notes || (c as any).judgmentNotes,
+          status: newStatus as any,
+          risk: newRisk as any,
+        };
+      }
+      return c;
+    });
+  }, [rawCitations]);
+
   const citations = useMemo(() => {
-    return rawCitations.filter((citation: Citation) => {
+    return citationsWithJudgments.filter((citation: Citation) => {
       const matchesSearch = `${citation.title} ${citation.authors} ${citation.venue} ${citation.doi}`
         .toLowerCase()
         .includes(search.toLowerCase());
       return matchesSearch && (status === 'all' || citation.status === status);
     });
-  }, [rawCitations, search, status]);
+  }, [citationsWithJudgments, search, status]);
 
   // Citations that require human judgment (propagation risks pending review)
   const pendingEscalations = useMemo(() => {
-    return rawCitations.filter(
+    return citationsWithJudgments.filter(
       (c: any) =>
         c.status === 'propagation' ||
         (c.risk === 'medium' && c.judgment !== 'relevant' && c.judgment !== 'not_relevant')
     );
-  }, [rawCitations]);
+  }, [citationsWithJudgments]);
 
-  const selectedCitation = rawCitations.find((citation: Citation) => citation.id === selected);
+  const selectedCitation = citationsWithJudgments.find((citation: Citation) => citation.id === selected);
 
   const handleJudgment = async (id: number, judgment: 'relevant' | 'not_relevant' | 'deferred', notes?: string) => {
     setJudgmentSubmitting(id);
     setJudgmentSuccess(null);
+
+    // 1. Immediately record in localStorage so state is sealed across navigation & refresh
+    saveLocalJudgment(id, judgment, notes);
+
+    // 2. Add local activity log so /activity immediately records the decision
+    const target = citationsWithJudgments.find((c: Citation) => c.id === id);
+    const paperTitle = target?.title || `Citation #${id}`;
+    const activityTitle =
+      judgment === 'relevant'
+        ? 'PI Judgment: Direct Dependency Quarantined'
+        : judgment === 'not_relevant'
+        ? 'PI Judgment: Scientific Independence Verified'
+        : 'PI Judgment: Review Deferred';
+    addLocalActivity({
+      title: activityTitle,
+      description: `Researcher recorded human judgment for "${paperTitle}". Decision: ${judgment.replace('_', ' ')}. Notes: "${notes || 'No notes provided'}"`,
+      kind: 'escalation',
+      tone: judgment === 'relevant' ? 'danger' : 'success',
+    });
+
     try {
-      const response = await fetch(`/api/guardian/citations/${id}/judgment`, {
+      const response = await apiRequest(`/api/guardian/citations/${id}/judgment`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ judgment, notes }),
       });
       if (response.ok) {
         setJudgmentSuccess(`Decision stored: Marked as ${judgment.replace('_', ' ')}. Rationale recorded in lab memory.`);
-        await Promise.all([
-          queryClient.invalidateQueries({ queryKey: getListCitationsQueryKey() }),
-          queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() }),
-          queryClient.invalidateQueries({ queryKey: getGetGuardianOverviewQueryKey() }),
-        ]);
       }
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: getListCitationsQueryKey() }),
+        queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() }),
+        queryClient.invalidateQueries({ queryKey: getGetGuardianOverviewQueryKey() }),
+      ]);
     } catch {
-      // Graceful error state
+      // Local storage already has the decision
     } finally {
       setJudgmentSubmitting(null);
     }
@@ -108,16 +149,15 @@ export default function Citations() {
     setImportSuccess(null);
     setImportError(null);
     try {
-      const res = await fetch('/api/guardian/citations/import', {
+      const res = await apiRequest('/api/guardian/citations/import', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: `DOI: ${doi}` }),
       });
       if (res.ok) {
         setImportSuccess(`DOI ${doi} registered. Running autonomous Crossref & OpenAlex scan...`);
         setNewDoi('');
         try {
-          await fetch('/api/guardian/scan', { method: 'POST' });
+          await apiRequest('/api/guardian/scan', { method: 'POST' });
         } catch {
           // Non-blocking scan
         }
@@ -129,8 +169,7 @@ export default function Citations() {
         setImportSuccess(`DOI ${doi} verified against Crossref & OpenAlex.`);
         setTimeout(() => setImportSuccess(null), 5000);
       } else {
-        const err = await res.json().catch(() => ({}));
-        setImportError(err.error || 'Could not parse DOI. Please use format like 10.1038/nature13358.');
+        setImportError(res.error || 'Could not parse DOI. Please use format like 10.1038/nature13358.');
         setTimeout(() => setImportError(null), 5000);
       }
     } catch {
