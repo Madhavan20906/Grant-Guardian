@@ -975,6 +975,7 @@ class GuardianStore {
     citationId: number;
     status: string;
     risk: string;
+    title?: string;
     detail?: string | null;
     graph?: any;
     providerStatus?: any;
@@ -984,20 +985,24 @@ class GuardianStore {
     for (const d of decisions) {
       if (isDatabaseConfigured) {
         try {
+          const updateData: any = {
+            status: d.status as any,
+            risk: d.risk as any,
+            detail: d.detail,
+            metadata: {
+              graph: d.graph,
+              providers: d.providerStatus,
+              trace: d.trace,
+              retractedReferences: d.retractedReferences,
+            },
+            updatedAt: new Date(),
+          };
+          if (d.title && typeof d.title === "string" && d.title.trim()) {
+            updateData.title = d.title.trim();
+          }
           await db
             .update(citations)
-            .set({
-              status: d.status as any,
-              risk: d.risk as any,
-              detail: d.detail,
-              metadata: {
-                graph: d.graph,
-                providers: d.providerStatus,
-                trace: d.trace,
-                retractedReferences: d.retractedReferences,
-              },
-              updatedAt: new Date(),
-            })
+            .set(updateData)
             .where(eq(citations.id, d.citationId));
         } catch (err) {
           logger.warn({ err, citationId: d.citationId, operation: "saveCitationDecisions" }, "Database unavailable to save scan decision; updating memory store");
@@ -1006,6 +1011,9 @@ class GuardianStore {
 
       const memTarget = this.memoryCitations.find(c => c.id === d.citationId);
       if (memTarget) {
+        if (d.title && typeof d.title === "string" && d.title.trim()) {
+          memTarget.title = d.title.trim();
+        }
         memTarget.status = d.status;
         memTarget.risk = d.risk;
         memTarget.detail = d.detail ?? null;

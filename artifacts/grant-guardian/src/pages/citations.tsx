@@ -51,7 +51,9 @@ export default function Citations() {
   const [judgmentSuccess, setJudgmentSuccess] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'register' | 'cascade' | 'graph' | 'blast'>('register');
   const [newDoi, setNewDoi] = useState('');
+  const [isImporting, setIsImporting] = useState(false);
   const [importSuccess, setImportSuccess] = useState<string | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
 
   const rawCitations = Array.isArray(query.data) ? query.data : [];
   const citations = useMemo(() => {
@@ -98,12 +100,45 @@ export default function Citations() {
     }
   };
 
-  const handleQuickImport = (e: React.FormEvent) => {
+  const handleQuickImport = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newDoi.trim()) return;
-    setImportSuccess(`DOI ${newDoi.trim()} registered. Guardian started autonomous verification across Crossref.`);
-    setNewDoi('');
-    setTimeout(() => setImportSuccess(null), 4000);
+    const doi = newDoi.trim();
+    if (!doi || isImporting) return;
+    setIsImporting(true);
+    setImportSuccess(null);
+    setImportError(null);
+    try {
+      const res = await fetch('/api/guardian/citations/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: `DOI: ${doi}` }),
+      });
+      if (res.ok) {
+        setImportSuccess(`DOI ${doi} registered. Running autonomous Crossref & OpenAlex scan...`);
+        setNewDoi('');
+        try {
+          await fetch('/api/guardian/scan', { method: 'POST' });
+        } catch {
+          // Non-blocking scan
+        }
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: getListCitationsQueryKey() }),
+          queryClient.invalidateQueries({ queryKey: getGetGuardianOverviewQueryKey() }),
+          queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() }),
+        ]);
+        setImportSuccess(`DOI ${doi} verified against Crossref & OpenAlex.`);
+        setTimeout(() => setImportSuccess(null), 5000);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        setImportError(err.error || 'Could not parse DOI. Please use format like 10.1038/nature13358.');
+        setTimeout(() => setImportError(null), 5000);
+      }
+    } catch {
+      setImportError('Network error connecting to Guardian API server.');
+      setTimeout(() => setImportError(null), 5000);
+    } finally {
+      setIsImporting(false);
+    }
   };
 
   return (
@@ -131,21 +166,35 @@ export default function Citations() {
             type="text"
             value={newDoi}
             onChange={(e) => setNewDoi(e.target.value)}
+            disabled={isImporting}
             placeholder="Paste DOI (e.g. 10.1038/s41586-021-03819-2) or PubMed ID..."
-            className="h-9 flex-1 w-full rounded-md border border-[hsl(var(--input))] bg-[hsl(var(--background))] px-3 text-[11px] outline-none placeholder:text-[hsl(var(--muted-foreground))] focus:border-blue-500"
+            className="h-9 flex-1 w-full rounded-md border border-[hsl(var(--input))] bg-[hsl(var(--background))] px-3 text-[11px] outline-none placeholder:text-[hsl(var(--muted-foreground))] focus:border-blue-500 disabled:opacity-50"
             data-testid="input-quick-doi"
           />
           <button
             type="submit"
-            className="h-9 w-full sm:w-auto rounded-md bg-[hsl(var(--primary))] px-4 text-[11px] font-bold text-[hsl(var(--primary-foreground))] hover:opacity-90"
+            disabled={isImporting}
+            className="h-9 w-full sm:w-auto rounded-md bg-[hsl(var(--primary))] px-4 text-[11px] font-bold text-[hsl(var(--primary-foreground))] hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer"
             data-testid="btn-add-doi"
           >
-            Track in Guardian
+            {isImporting ? (
+              <>
+                <Sparkles size={13} className="animate-spin text-amber-300" />
+                <span>Investigating Live...</span>
+              </>
+            ) : (
+              <span>Track in Guardian</span>
+            )}
           </button>
         </form>
         {importSuccess && (
           <div className="mt-2 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
             ✓ {importSuccess}
+          </div>
+        )}
+        {importError && (
+          <div className="mt-2 text-[10px] font-bold text-red-600 dark:text-red-400">
+            ✕ {importError}
           </div>
         )}
       </div>

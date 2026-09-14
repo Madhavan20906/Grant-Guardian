@@ -533,6 +533,7 @@ export async function runGuardianAgent(citations: CitationInput[]) {
     let directRetraction = false;
     let propagation = false;
     let rwData: any = null;
+    let crossrefData: any = null;
     let crossrefRelations: Record<string, unknown> = {};
     let graph: any = null;
     let liveRefDetails: Array<{ doi: string; reason?: string; title?: string; source?: string }> = [];
@@ -715,7 +716,7 @@ export async function runGuardianAgent(citations: CitationInput[]) {
 
       graph = traversePropagationGraph(citation, graphSource, known, liveRefHits.retractedDetails);
       rwData = rwResult.data as { match?: boolean; retracted?: boolean; reason?: string; source?: string } | null;
-      const crossrefData = crossrefResult.data as { relation?: Record<string, unknown>; is_retracted?: boolean; retraction_reason?: string } | null;
+      crossrefData = crossrefResult.data as { relation?: Record<string, unknown>; is_retracted?: boolean; retraction_reason?: string; title?: string } | null;
       crossrefRelations = crossrefData?.relation ?? {};
       const crossrefRetracted = Boolean(crossrefRelations["is-retracted-by"] || crossrefData?.is_retracted);
       directRetraction = rwData?.match === true || rwData?.retracted === true || crossrefRetracted;
@@ -839,10 +840,16 @@ export async function runGuardianAgent(citations: CitationInput[]) {
       });
     }
 
+    const resolvedTitle =
+      (typeof crossrefData?.title === "string" && crossrefData.title.trim()) ||
+      (typeof rwData?.title === "string" && rwData.title.trim()) ||
+      (typeof agentEvidence?.title === "string" && agentEvidence.title.trim()) ||
+      citation.title;
+
     decisions.push({
       citationId: citation.id,
       doi: citation.doi,
-      title: citation.title,
+      title: resolvedTitle,
       status,
       risk,
       detail,

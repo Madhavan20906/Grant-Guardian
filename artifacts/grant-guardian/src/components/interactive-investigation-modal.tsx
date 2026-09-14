@@ -216,24 +216,24 @@ export function InteractiveInvestigationModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-md animate-fadeIn" data-testid="interactive-investigation-modal">
-      <div className="flex flex-col w-full max-w-5xl max-h-[92vh] rounded-2xl bg-[#0f172a] border border-slate-800 shadow-2xl overflow-hidden text-slate-100">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-md animate-fadeIn" data-testid="interactive-investigation-modal">
+      <div className="flex flex-col w-full max-w-5xl max-h-[92vh] rounded-2xl bg-[hsl(var(--card))] border border-[hsl(var(--border))] shadow-2xl overflow-hidden text-[hsl(var(--foreground))]">
         {/* Top Control Bar */}
-        <div className="border-b border-slate-800 p-4 bg-slate-950/70 flex flex-wrap items-center justify-between gap-3">
+        <div className="border-b border-[hsl(var(--border))] p-4 bg-[hsl(var(--muted)/.3)] flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <span className="flex size-8 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 shadow-xs">
+            <span className="flex size-8 items-center justify-center rounded-xl bg-amber-500/15 text-amber-500 border border-amber-500/30 shadow-xs">
               <Sparkles size={16} />
             </span>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-mono text-[9px] uppercase font-bold tracking-widest text-amber-400">
+                <span className="font-mono text-[9px] uppercase font-bold tracking-widest text-amber-500">
                   Interactive Agent Walkthrough
                 </span>
-                <span className="rounded bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 font-mono text-[9px] font-extrabold text-amber-300">
+                <span className="rounded bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 font-mono text-[9px] font-extrabold text-amber-500">
                   37 Citations Sweep Demo
                 </span>
               </div>
-              <h2 className="text-[16px] font-extrabold text-white">
+              <h2 className="text-[16px] font-extrabold text-[hsl(var(--foreground))]">
                 Autonomous Investigation &amp; Contamination Detection
               </h2>
             </div>
@@ -259,13 +259,13 @@ export function InteractiveInvestigationModal({
               type="button"
               onClick={() => setCurrentStepIndex((prev) => Math.max(0, prev - 1))}
               disabled={currentStepIndex === 0}
-              className="rounded-lg border border-slate-700 bg-slate-800/80 p-1.5 text-slate-300 hover:bg-slate-700 hover:text-white disabled:opacity-40"
+              className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-1.5 text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] disabled:opacity-40 transition-colors"
               title="Previous Step"
             >
               <ChevronLeft size={16} />
             </button>
 
-            <span className="font-mono text-[11px] font-bold text-slate-300 px-1">
+            <span className="font-mono text-[11px] font-bold text-[hsl(var(--muted-foreground))] px-1">
               {currentStepIndex + 1} / {DEMO_INVESTIGATION_STEPS.length}
             </span>
 
@@ -273,7 +273,7 @@ export function InteractiveInvestigationModal({
               type="button"
               onClick={() => setCurrentStepIndex((prev) => Math.min(DEMO_INVESTIGATION_STEPS.length - 1, prev + 1))}
               disabled={currentStepIndex === DEMO_INVESTIGATION_STEPS.length - 1}
-              className="rounded-lg border border-slate-700 bg-slate-800/80 p-1.5 text-slate-300 hover:bg-slate-700 hover:text-white disabled:opacity-40"
+              className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-1.5 text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] disabled:opacity-40 transition-colors"
               title="Next Step"
             >
               <ChevronRight size={16} />
@@ -285,7 +285,7 @@ export function InteractiveInvestigationModal({
                 setCurrentStepIndex(0);
                 setIsPlaying(false);
               }}
-              className="rounded-lg border border-slate-700 bg-slate-800/80 p-1.5 text-slate-400 hover:text-white hover:bg-slate-700"
+              className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-1.5 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition-colors"
               title="Reset Demo"
             >
               <RotateCcw size={14} />
@@ -294,7 +294,7 @@ export function InteractiveInvestigationModal({
             <button
               type="button"
               onClick={onClose}
-              className="ml-2 rounded-lg border border-slate-700 bg-slate-800/60 px-2.5 py-1 text-[12px] font-bold text-slate-400 hover:text-white hover:bg-slate-700"
+              className="ml-2 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-2.5 py-1 text-[12px] font-bold text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition-colors"
             >
               ✕
             </button>
@@ -302,7 +302,7 @@ export function InteractiveInvestigationModal({
         </div>
 
         {/* Progress Step Bar */}
-        <div className="grid grid-cols-7 border-b border-slate-800 bg-slate-950/50">
+        <div className="grid grid-cols-7 border-b border-[hsl(var(--border))] bg-[hsl(var(--muted)/.2)]">
           {DEMO_INVESTIGATION_STEPS.map((s, idx) => {
             const isCurrent = idx === currentStepIndex;
             const isCompleted = idx < currentStepIndex;
@@ -313,10 +313,10 @@ export function InteractiveInvestigationModal({
                 onClick={() => setCurrentStepIndex(idx)}
                 className={`py-2 px-1 text-center transition-all border-b-2 font-mono text-[9px] font-bold truncate ${
                   isCurrent
-                    ? 'border-amber-400 text-amber-300 bg-amber-500/10'
+                    ? 'border-amber-500 text-amber-500 bg-amber-500/10 font-black'
                     : isCompleted
-                    ? 'border-emerald-500 text-emerald-400 bg-emerald-500/5'
-                    : 'border-transparent text-slate-500 hover:text-slate-300'
+                    ? 'border-emerald-500 text-emerald-500 bg-emerald-500/10'
+                    : 'border-transparent text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted)/.3)]'
                 }`}
               >
                 Step {s.id}: {s.badge.split(':')[0]}
@@ -326,7 +326,7 @@ export function InteractiveInvestigationModal({
         </div>
 
         {/* Modal View Tabs */}
-        <div className="flex items-center gap-2 border-b border-slate-800 px-6 pt-3 bg-slate-950/30">
+        <div className="flex items-center gap-2 border-b border-[hsl(var(--border))] px-6 pt-3 bg-[hsl(var(--muted)/.15)]">
           {[
             { id: 'reasoning', label: '1. Autonomous Decision Flow', icon: Cpu },
             { id: 'why', label: '2. "Why this decision?" Panel', icon: Fingerprint },
@@ -341,8 +341,8 @@ export function InteractiveInvestigationModal({
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`flex items-center gap-1.5 pb-2.5 px-3 text-[12px] font-bold border-b-2 transition-all ${
                   activeTab === tab.id
-                    ? 'border-amber-400 text-amber-300'
-                    : 'border-transparent text-slate-400 hover:text-slate-200'
+                    ? 'border-amber-500 text-amber-500'
+                    : 'border-transparent text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
                 }`}
                 data-testid={`modal-tab-${tab.id}`}
               >
@@ -358,19 +358,19 @@ export function InteractiveInvestigationModal({
           {activeTab === 'reasoning' && (
             <div className="space-y-6">
               {/* Step Banner */}
-              <div className="rounded-2xl border border-slate-800 bg-gradient-to-r from-slate-900 via-slate-900/95 to-[#0f172a] p-5 shadow-xs space-y-2">
+              <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.25)] p-5 shadow-xs space-y-2">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="font-mono text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                  <span className="font-mono text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-500 border border-amber-500/30">
                     {currentStep.stageTitle}
                   </span>
-                  <span className="font-mono text-[10px] font-bold text-slate-400">
+                  <span className="font-mono text-[10px] font-bold text-[hsl(var(--muted-foreground))]">
                     Step {currentStep.id} of {DEMO_INVESTIGATION_STEPS.length}
                   </span>
                 </div>
-                <h3 className="text-[20px] font-extrabold text-white">
+                <h3 className="text-[20px] font-extrabold text-[hsl(var(--foreground))]">
                   {currentStep.heading}
                 </h3>
-                <p className="text-[12px] text-slate-400">
+                <p className="text-[12px] text-[hsl(var(--muted-foreground))]">
                   {currentStep.subheading}
                 </p>
               </div>
@@ -378,78 +378,79 @@ export function InteractiveInvestigationModal({
               {/* Visibly Conditional Flow Details */}
               <div className="grid md:grid-cols-2 gap-4">
                 {/* Left Card: Agent Reasoning & Decision Rule */}
-                <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 space-y-4 shadow-xs">
+                <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 space-y-4 shadow-xs">
                   <div className="space-y-2">
-                    <div className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase text-amber-400 tracking-wider">
+                    <div className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase text-amber-500 tracking-wider">
                       <Cpu size={13} />
                       Agent Autonomous Reasoning
                     </div>
-                    <p className="text-[13px] text-slate-200 leading-relaxed font-medium">
+                    <p className="text-[13px] text-[hsl(var(--foreground))] leading-relaxed font-medium">
                       {currentStep.agentThought}
                     </p>
                   </div>
 
-                  <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3.5 space-y-1">
-                    <div className="font-mono text-[10px] font-bold uppercase text-slate-400">
+                  <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.35)] p-3.5 space-y-1">
+                    <div className="font-mono text-[10px] font-bold uppercase text-[hsl(var(--muted-foreground))]">
                       Discovery / Observation
                     </div>
-                    <p className="text-[12px] text-slate-100 font-semibold">
+                    <p className="text-[12px] text-[hsl(var(--foreground))] font-semibold">
                       {currentStep.discovery}
                     </p>
                   </div>
 
                   <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3.5 space-y-1">
-                    <div className="font-mono text-[10px] font-bold uppercase text-amber-400">
+                    <div className="font-mono text-[10px] font-bold uppercase text-amber-500">
                       Autonomous Decision Rule Enforced
                     </div>
-                    <p className="text-[12px] text-amber-200 font-medium">
+                    <p className="text-[12px] text-amber-600 dark:text-amber-300 font-medium">
                       {currentStep.decisionRule}
                     </p>
                   </div>
                 </div>
 
                 {/* Right Card: Tool Dispatch & Next Action */}
-                <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 space-y-4 shadow-xs flex flex-col justify-between">
+                <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 space-y-4 shadow-xs flex flex-col justify-between">
                   {currentStep.toolInvoked ? (
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="font-mono text-[10px] uppercase font-bold text-slate-400">
+                        <span className="font-mono text-[10px] uppercase font-bold text-[hsl(var(--muted-foreground))]">
                           Selected Tool Execution
                         </span>
-                        <span className="rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 px-2 py-0.5 font-mono text-[9px] font-bold">
+                        <span className="rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-500 px-2 py-0.5 font-mono text-[9px] font-bold">
                           ✓ 200 OK
                         </span>
                       </div>
-                      <div className="rounded-xl bg-slate-950 border border-slate-800 text-slate-200 p-3 font-mono text-[11px] space-y-2 overflow-x-auto">
-                        <div className="text-emerald-400 font-bold">
+                      <div className="rounded-xl bg-[hsl(var(--muted)/.4)] border border-[hsl(var(--border))] text-[hsl(var(--foreground))] p-3.5 font-mono text-[11px] space-y-2 overflow-x-auto">
+                        <div className="text-emerald-500 font-bold">
                           TOOL: {currentStep.toolInvoked}
                         </div>
                         {currentStep.inputPayload && (
                           <div>
-                            <span className="text-slate-400">Input:</span>{' '}
+                            <span className="text-[hsl(var(--muted-foreground))]">Input:</span>{' '}
                             {JSON.stringify(currentStep.inputPayload)}
                           </div>
                         )}
                         {currentStep.outputPayload && (
                           <div>
-                            <span className="text-slate-400">Output:</span>{' '}
+                            <span className="text-[hsl(var(--muted-foreground))]">Output:</span>{' '}
                             {JSON.stringify(currentStep.outputPayload)}
                           </div>
                         )}
                       </div>
                     </div>
                   ) : (
-                    <div className="rounded-xl border border-dashed border-slate-800 p-4 text-center text-[12px] text-slate-400">
-                      Pre-screening phase: Evaluating bibliography against local and cached registers.
+                    <div className="rounded-xl border border-dashed border-[hsl(var(--border))] bg-[hsl(var(--muted)/.2)] p-6 text-center text-[12px] text-[hsl(var(--muted-foreground))] flex flex-col items-center justify-center gap-2.5">
+                      <Sparkles size={20} className="text-amber-500/70 animate-pulse" />
+                      <span>Pre-screening phase: Evaluating bibliography against Crossref and cached integrity registers.</span>
                     </div>
                   )}
 
-                  <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4 flex items-center justify-between gap-3">
+                  <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.35)] p-4 flex items-center justify-between gap-3">
                     <div>
-                      <span className="font-mono text-[9px] uppercase font-bold text-slate-400 block">
+                      <span className="font-mono text-[9px] uppercase font-bold text-[hsl(var(--muted-foreground))] block">
                         Subsequent Agent Decision
                       </span>
-                      <p className="text-[12px] font-bold text-slate-100">
+                      <p className="text-[12px] font-bold text-[hsl(var(--foreground))]">
                         {currentStep.nextStepRationale}
                       </p>
                     </div>
