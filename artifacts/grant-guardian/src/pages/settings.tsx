@@ -301,16 +301,17 @@ export default function Settings() {
               testId="toggle-quiet-hours"
             />
           </div>
-        </section>
 
-        <div className="flex items-center justify-end gap-3">
-          <span className="text-xs text-[hsl(var(--muted-foreground))] font-medium">
-            {prefSaved ? '✓ Preferences saved to workspace' : 'Changes are not saved yet'}
-          </span>
-          <Button onClick={savePreferences} testId="button-save-preferences">
-            {prefSaved && <Check size={14} />}Save preferences
-          </Button>
-        </div>
+          <div className="flex items-center justify-between border-t border-[hsl(var(--border))] bg-gradient-to-b from-transparent to-[hsl(var(--muted)/.15)] px-6 py-4">
+            <span className="text-xs text-[hsl(var(--muted-foreground))] font-medium">
+              {prefSaved ? '✓ Preferences saved to workspace' : 'Changes are not saved yet'}
+            </span>
+            <Button onClick={savePreferences} testId="button-save-preferences">
+              {prefSaved ? <Check size={14} /> : <Save size={14} />}
+              Save preferences
+            </Button>
+          </div>
+        </section>
       </div>
     </div>
   );

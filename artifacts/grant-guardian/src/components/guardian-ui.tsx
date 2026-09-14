@@ -414,6 +414,26 @@ export function EmptyBlock({ title, detail, action }: { title: string; detail: s
   );
 }
 
+function buildSparklinePath(data: number[]): string {
+  if (data.length < 2) return '';
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min;
+  const padX = 2;
+  const padY = 4;
+  const width = 64 - padX * 2;
+  const height = 24 - padY * 2;
+
+  return data
+    .map((val, idx) => {
+      const x = padX + (idx * width) / (data.length - 1);
+      const normY = range === 0 ? 0.5 : (val - min) / range;
+      const y = 24 - padY - normY * height;
+      return `${idx === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`;
+    })
+    .join(' ');
+}
+
 export function StatCard({
   label,
   value,
@@ -479,18 +499,9 @@ export function StatCard({
         </div>
         {sparklineData && sparklineData.length > 1 && (
           <div className="h-8 w-20 opacity-80 group-hover:opacity-100 transition-opacity">
-            <svg viewBox="0 0 64 24" className="h-full w-full overflow-visible">
-              <defs>
-                <linearGradient id={`grad-${label.replaceAll(' ', '')}`} x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor={currentTone.sparkColor} stopOpacity="0.3" />
-                  <stop offset="100%" stopColor={currentTone.sparkColor} stopOpacity="0.0" />
-                </linearGradient>
-              </defs>
+            <svg viewBox="0 0 64 24" className="h-full w-full overflow-hidden">
               <path
-                d={`M 0 ${24 - sparklineData[0] * 3} ${sparklineData
-                  .slice(1)
-                  .map((d, i) => `L ${(i + 1) * (64 / (sparklineData.length - 1))} ${Math.max(2, 22 - d * 3)}`)
-                  .join(' ')}`}
+                d={buildSparklinePath(sparklineData)}
                 fill="none"
                 stroke={currentTone.sparkColor}
                 strokeWidth="2.2"

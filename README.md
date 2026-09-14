@@ -11,7 +11,9 @@
 > - **Express API Service**: `https://grant-guardian-api.onrender.com` (or local `http://localhost:3001`)
 > - **Python Strands Agent (FastAPI)**: `https://grant-guardian-strands.onrender.com` (or local `http://localhost:8010`)
 > - **Architecture Specification & Diagram**: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · [docs/architecture-diagram.svg](docs/architecture-diagram.svg)
-> - **Demo Video Script & Walkthrough**: [docs/DEMO_VIDEO_SCRIPT.md](docs/DEMO_VIDEO_SCRIPT.md)
+> - **AWS Builder Center Series (Bonus Submission)**:
+>   - [Part 1: Building Grant Guardian on AWS Bedrock & Strands](https://builder.aws.com/content/3JJch4QjsrB29idCCi4gvHP97S9/agents-for-humans-building-grant-guardian-a-safety-first-autonomous-research-integrity-agent-on-aws-bedrock-and-strands)
+>   - [Part 2: Enforcing Adversarial Immunity & Restraint with 89 Tests](https://builder.aws.com/content/3JJfV5D7qDF9IAuVLW5w5I3ljhc/agents-for-humans-enforcing-adversarial-immunity-and-restraint-in-agentic-ai-with-89-automated-tests)
 
 ---
 
