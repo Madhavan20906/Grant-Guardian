@@ -21,6 +21,7 @@ import {
   FileCheck,
   ExternalLink,
   BookOpen,
+  X,
 } from 'lucide-react';
 import { WhyThisDecisionPanel, DEFAULT_PROPAGATION_REASONING } from './why-this-decision-panel';
 import { ContaminationCascade } from './contamination-cascade';
@@ -216,20 +217,20 @@ export function InteractiveInvestigationModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-md animate-fadeIn" data-testid="interactive-investigation-modal">
-      <div className="flex flex-col w-full max-w-5xl max-h-[92vh] rounded-2xl bg-[hsl(var(--card))] border border-[hsl(var(--border))] shadow-2xl overflow-hidden text-[hsl(var(--foreground))]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-3 sm:p-5 backdrop-blur-md animate-fadeIn" data-testid="interactive-investigation-modal">
+      <div className="flex flex-col w-full max-w-5xl max-h-[90vh] rounded-2xl bg-[hsl(var(--card))] border border-[hsl(var(--border))] shadow-2xl overflow-hidden text-[hsl(var(--foreground))] ring-1 ring-black/5 dark:ring-white/10">
         {/* Top Control Bar */}
-        <div className="border-b border-[hsl(var(--border))] p-4 bg-[hsl(var(--muted)/.3)] flex flex-wrap items-center justify-between gap-3">
+        <div className="border-b border-[hsl(var(--border))] p-4 bg-[hsl(var(--card))] flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <span className="flex size-8 items-center justify-center rounded-xl bg-amber-500/15 text-amber-500 border border-amber-500/30 shadow-xs">
+            <span className="flex size-8 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 shadow-xs">
               <Sparkles size={16} />
             </span>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-mono text-[9px] uppercase font-bold tracking-widest text-amber-500">
+                <span className="font-mono text-[9px] uppercase font-bold tracking-widest text-emerald-600 dark:text-emerald-400">
                   Interactive Agent Walkthrough
                 </span>
-                <span className="rounded bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 font-mono text-[9px] font-extrabold text-amber-500">
+                <span className="rounded bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 font-mono text-[9px] font-extrabold text-emerald-600 dark:text-emerald-400">
                   37 Citations Sweep Demo
                 </span>
               </div>
@@ -247,11 +248,11 @@ export function InteractiveInvestigationModal({
               className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-bold transition-all shadow-2xs ${
                 isPlaying
                   ? 'bg-amber-600 text-white hover:bg-amber-500'
-                  : 'bg-amber-500 text-slate-950 hover:bg-amber-400 font-extrabold'
+                  : 'bg-emerald-600 text-white hover:bg-emerald-500 font-extrabold'
               }`}
               data-testid="btn-demo-autoplay"
             >
-              {isPlaying ? <Pause size={12} /> : <Play size={12} />}
+              {isPlaying ? <Pause size={12} /> : <Play size={12} className="fill-current" />}
               <span>{isPlaying ? 'Pause Sweep' : 'Auto-Play Sweep'}</span>
             </button>
 
@@ -259,7 +260,7 @@ export function InteractiveInvestigationModal({
               type="button"
               onClick={() => setCurrentStepIndex((prev) => Math.max(0, prev - 1))}
               disabled={currentStepIndex === 0}
-              className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-1.5 text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] disabled:opacity-40 transition-colors"
+              className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--muted))] p-1.5 text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted)/.8)] disabled:opacity-40 transition-colors"
               title="Previous Step"
             >
               <ChevronLeft size={16} />
@@ -273,7 +274,7 @@ export function InteractiveInvestigationModal({
               type="button"
               onClick={() => setCurrentStepIndex((prev) => Math.min(DEMO_INVESTIGATION_STEPS.length - 1, prev + 1))}
               disabled={currentStepIndex === DEMO_INVESTIGATION_STEPS.length - 1}
-              className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-1.5 text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] disabled:opacity-40 transition-colors"
+              className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--muted))] p-1.5 text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted)/.8)] disabled:opacity-40 transition-colors"
               title="Next Step"
             >
               <ChevronRight size={16} />
@@ -285,7 +286,7 @@ export function InteractiveInvestigationModal({
                 setCurrentStepIndex(0);
                 setIsPlaying(false);
               }}
-              className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-1.5 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition-colors"
+              className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--muted))] p-1.5 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted)/.8)] transition-colors"
               title="Reset Demo"
             >
               <RotateCcw size={14} />
@@ -294,9 +295,10 @@ export function InteractiveInvestigationModal({
             <button
               type="button"
               onClick={onClose}
-              className="ml-2 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-2.5 py-1 text-[12px] font-bold text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition-colors"
+              className="ml-1 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--muted))] p-1.5 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted)/.8)] transition-colors cursor-pointer"
+              title="Close modal"
             >
-              ✕
+              <X size={15} />
             </button>
           </div>
         </div>
@@ -313,9 +315,9 @@ export function InteractiveInvestigationModal({
                 onClick={() => setCurrentStepIndex(idx)}
                 className={`py-2 px-1 text-center transition-all border-b-2 font-mono text-[9px] font-bold truncate ${
                   isCurrent
-                    ? 'border-amber-500 text-amber-500 bg-amber-500/10 font-black'
+                    ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 font-black'
                     : isCompleted
-                    ? 'border-emerald-500 text-emerald-500 bg-emerald-500/10'
+                    ? 'border-emerald-500/40 text-emerald-600/70 dark:text-emerald-400/70 bg-emerald-500/5'
                     : 'border-transparent text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted)/.3)]'
                 }`}
               >
@@ -326,7 +328,7 @@ export function InteractiveInvestigationModal({
         </div>
 
         {/* Modal View Tabs */}
-        <div className="flex items-center gap-2 border-b border-[hsl(var(--border))] px-6 pt-3 bg-[hsl(var(--muted)/.15)]">
+        <div className="flex items-center gap-2 border-b border-[hsl(var(--border))] px-6 pt-3 bg-[hsl(var(--card))]">
           {[
             { id: 'reasoning', label: '1. Autonomous Decision Flow', icon: Cpu },
             { id: 'why', label: '2. "Why this decision?" Panel', icon: Fingerprint },
@@ -339,9 +341,9 @@ export function InteractiveInvestigationModal({
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-1.5 pb-2.5 px-3 text-[12px] font-bold border-b-2 transition-all ${
+                className={`flex items-center gap-1.5 pb-2.5 px-3 text-[12px] font-bold border-b-2 transition-all cursor-pointer ${
                   activeTab === tab.id
-                    ? 'border-amber-500 text-amber-500'
+                    ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400'
                     : 'border-transparent text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
                 }`}
                 data-testid={`modal-tab-${tab.id}`}
@@ -358,16 +360,16 @@ export function InteractiveInvestigationModal({
           {activeTab === 'reasoning' && (
             <div className="space-y-6">
               {/* Step Banner */}
-              <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.25)] p-5 shadow-xs space-y-2">
+              <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.3)] p-5 shadow-xs space-y-2">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="font-mono text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-500 border border-amber-500/30">
+                  <span className="font-mono text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
                     {currentStep.stageTitle}
                   </span>
                   <span className="font-mono text-[10px] font-bold text-[hsl(var(--muted-foreground))]">
                     Step {currentStep.id} of {DEMO_INVESTIGATION_STEPS.length}
                   </span>
                 </div>
-                <h3 className="text-[20px] font-extrabold text-[hsl(var(--foreground))]">
+                <h3 className="text-[18px] sm:text-[20px] font-extrabold text-[hsl(var(--foreground))]">
                   {currentStep.heading}
                 </h3>
                 <p className="text-[12px] text-[hsl(var(--muted-foreground))]">
@@ -380,7 +382,7 @@ export function InteractiveInvestigationModal({
                 {/* Left Card: Agent Reasoning & Decision Rule */}
                 <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 space-y-4 shadow-xs">
                   <div className="space-y-2">
-                    <div className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase text-amber-500 tracking-wider">
+                    <div className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase text-emerald-600 dark:text-emerald-400 tracking-wider">
                       <Cpu size={13} />
                       Agent Autonomous Reasoning
                     </div>
@@ -398,11 +400,11 @@ export function InteractiveInvestigationModal({
                     </p>
                   </div>
 
-                  <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3.5 space-y-1">
-                    <div className="font-mono text-[10px] font-bold uppercase text-amber-500">
+                  <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3.5 space-y-1">
+                    <div className="font-mono text-[10px] font-bold uppercase text-emerald-600 dark:text-emerald-400">
                       Autonomous Decision Rule Enforced
                     </div>
-                    <p className="text-[12px] text-amber-600 dark:text-amber-300 font-medium">
+                    <p className="text-[12px] text-emerald-700 dark:text-emerald-300 font-medium">
                       {currentStep.decisionRule}
                     </p>
                   </div>
@@ -416,12 +418,12 @@ export function InteractiveInvestigationModal({
                         <span className="font-mono text-[10px] uppercase font-bold text-[hsl(var(--muted-foreground))]">
                           Selected Tool Execution
                         </span>
-                        <span className="rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-500 px-2 py-0.5 font-mono text-[9px] font-bold">
+                        <span className="rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 font-mono text-[9px] font-bold">
                           ✓ 200 OK
                         </span>
                       </div>
                       <div className="rounded-xl bg-[hsl(var(--muted)/.4)] border border-[hsl(var(--border))] text-[hsl(var(--foreground))] p-3.5 font-mono text-[11px] space-y-2 overflow-x-auto">
-                        <div className="text-emerald-500 font-bold">
+                        <div className="text-emerald-600 dark:text-emerald-400 font-bold">
                           TOOL: {currentStep.toolInvoked}
                         </div>
                         {currentStep.inputPayload && (
@@ -440,7 +442,7 @@ export function InteractiveInvestigationModal({
                     </div>
                   ) : (
                     <div className="rounded-xl border border-dashed border-[hsl(var(--border))] bg-[hsl(var(--muted)/.2)] p-6 text-center text-[12px] text-[hsl(var(--muted-foreground))] flex flex-col items-center justify-center gap-2.5">
-                      <Sparkles size={20} className="text-amber-500/70 animate-pulse" />
+                      <Sparkles size={20} className="text-emerald-500/70 animate-pulse" />
                       <span>Pre-screening phase: Evaluating bibliography against Crossref and cached integrity registers.</span>
                     </div>
                   )}
@@ -458,7 +460,7 @@ export function InteractiveInvestigationModal({
                       <button
                         type="button"
                         onClick={() => setCurrentStepIndex((prev) => prev + 1)}
-                        className="inline-flex items-center gap-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3 py-1.5 text-[11px] shrink-0 transition-colors shadow-xs"
+                        className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 text-[11px] shrink-0 transition-colors shadow-xs cursor-pointer"
                       >
                         Next <ArrowRight size={11} />
                       </button>

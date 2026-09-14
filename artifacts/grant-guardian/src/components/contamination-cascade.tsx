@@ -323,6 +323,9 @@ export function ContaminationCascade({
   const userTitle = formatDisplayName(user);
   const userProposal = user.proposalName || 'Active Research Grant Proposal';
 
+  const isCleanChain = citation ? citation.status === 'clear' : false;
+  const isRetractedDirect = citation ? citation.status === 'retracted' : false;
+
   const dynamicChain = useMemo(() => {
     if (citation) {
       return buildCascadeForCitation(citation, user);

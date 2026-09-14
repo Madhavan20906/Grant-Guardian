@@ -364,7 +364,7 @@ export function WhyThisDecisionPanel({
 
       {/* Steps List */}
       <div className="divide-y divide-[hsl(var(--border))] p-2 sm:p-4">
-        {steps.map((step) => {
+        {resolvedSteps.map((step) => {
           const isExpanded = expandedStep === step.id;
           return (
             <div

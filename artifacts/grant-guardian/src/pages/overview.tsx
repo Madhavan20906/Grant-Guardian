@@ -424,7 +424,14 @@ export default function Overview() {
               </button>
               <button
                 type="button"
-                onClick={() => setShowDemoModal(true)}
+                onClick={() => {
+                  const target = citations.find((c: Citation) => c.status === 'propagation' || c.status === 'retracted') || citations[0];
+                  if (target) {
+                    setSelectedCitationId(target.id);
+                  } else {
+                    setShowDemoModal(true);
+                  }
+                }}
                 className="inline-flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:opacity-90 px-4.5 py-2.5 text-[12px] font-bold shadow-md active:scale-95 transition-all cursor-pointer"
                 data-testid="btn-demo-banner-cta"
               >
