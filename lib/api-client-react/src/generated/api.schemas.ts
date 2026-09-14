@@ -28,6 +28,34 @@ export const CitationRisk = {
   high: 'high',
 } as const;
 
+export type CitationMetadataGraphCascade = {
+  project?: string;
+  intermediatePaper?: string;
+  retractedPaper?: string;
+  retractionReason?: string;
+  [key: string]: unknown;
+ };
+
+export type CitationMetadataGraph = {
+  rootDoi?: string;
+  referencedDois?: string[];
+  retractedReferencedDois?: string[];
+  depth?: number;
+  cascade?: CitationMetadataGraphCascade;
+  [key: string]: unknown;
+ };
+
+export type CitationMetadataProviders = { [key: string]: unknown };
+
+export type CitationMetadataTraceItem = { [key: string]: unknown };
+
+export interface CitationMetadata {
+  graph?: CitationMetadataGraph;
+  providers?: CitationMetadataProviders;
+  trace?: CitationMetadataTraceItem[];
+  [key: string]: unknown;
+ }
+
 export interface Citation {
   id: number;
   title: string;
@@ -39,6 +67,7 @@ export interface Citation {
   doi: string;
   /** @nullable */
   detail?: string | null;
+  metadata?: CitationMetadata;
 }
 
 export type DeadlineStatus = typeof DeadlineStatus[keyof typeof DeadlineStatus];
@@ -120,4 +149,18 @@ export interface Draft {
   status: DraftStatus;
   body: string;
 }
+
+export type UpdateDraftStatusBodyStatus = typeof UpdateDraftStatusBodyStatus[keyof typeof UpdateDraftStatusBodyStatus];
+
+
+export const UpdateDraftStatusBodyStatus = {
+  draft: 'draft',
+  reviewed: 'reviewed',
+  approved: 'approved',
+  submitted_externally: 'submitted_externally',
+} as const;
+
+export type UpdateDraftStatusBody = {
+  status: UpdateDraftStatusBodyStatus;
+};
 

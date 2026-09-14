@@ -41,7 +41,23 @@ export const ListCitationsResponseItem = zod.object({
   "status": zod.enum(['clear', 'retracted', 'corrected', 'propagation']),
   "risk": zod.enum(['low', 'medium', 'high']),
   "doi": zod.string(),
-  "detail": zod.string().nullish()
+  "detail": zod.string().nullish(),
+  "metadata": zod.object({
+  "graph": zod.object({
+  "rootDoi": zod.string().optional(),
+  "referencedDois": zod.array(zod.string()).optional(),
+  "retractedReferencedDois": zod.array(zod.string()).optional(),
+  "depth": zod.number().optional(),
+  "cascade": zod.object({
+  "project": zod.string().optional(),
+  "intermediatePaper": zod.string().optional(),
+  "retractedPaper": zod.string().optional(),
+  "retractionReason": zod.string().optional()
+}).optional()
+}).optional(),
+  "providers": zod.record(zod.string(), zod.unknown()).optional(),
+  "trace": zod.array(zod.record(zod.string(), zod.unknown())).optional()
+}).optional()
 })
 export const ListCitationsResponse = zod.array(ListCitationsResponseItem)
 
@@ -83,14 +99,7 @@ export const RunGuardianScanResponse = zod.object({
   "scanned": zod.number(),
   "flagged": zod.number(),
   "escalated": zod.number(),
-  "message": zod.string(),
-  "decisions": zod.array(zod.object({
-    "citationId": zod.number(),
-    "status": zod.string(),
-    "risk": zod.string(),
-    "escalated": zod.boolean(),
-    "detail": zod.string().nullish()
-  })).optional()
+  "message": zod.string()
 })
 
 
@@ -102,6 +111,39 @@ export const DraftComplianceReportParams = zod.object({
 })
 
 export const DraftComplianceReportResponse = zod.object({
+  "id": zod.number(),
+  "deadlineId": zod.number(),
+  "title": zod.string(),
+  "status": zod.enum(['draft']),
+  "body": zod.string()
+})
+
+
+/**
+ * @summary List saved compliance drafts
+ */
+export const ListDraftsResponseItem = zod.object({
+  "id": zod.number(),
+  "deadlineId": zod.number(),
+  "title": zod.string(),
+  "status": zod.enum(['draft']),
+  "body": zod.string()
+})
+export const ListDraftsResponse = zod.array(ListDraftsResponseItem)
+
+
+/**
+ * @summary Update a draft lifecycle status
+ */
+export const UpdateDraftStatusParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateDraftStatusBody = zod.object({
+  "status": zod.enum(['draft', 'reviewed', 'approved', 'submitted_externally'])
+})
+
+export const UpdateDraftStatusResponse = zod.object({
   "id": zod.number(),
   "deadlineId": zod.number(),
   "title": zod.string(),

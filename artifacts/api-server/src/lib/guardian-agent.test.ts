@@ -2,10 +2,12 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   classifyDecision,
+  crossref,
   draftWithAgent,
   parseDoisFromContent,
   retractionWatch,
   runGuardianAgent,
+  semanticScholar,
   traversePropagationGraph,
   KNOWN_RETRACTED_DOIS,
   type CitationInput,
@@ -504,4 +506,22 @@ test("strands integration: runGuardianAgent consumes Strands agent tool trace an
       process.env.STRANDS_AGENT_URL = originalStrandsUrl;
     }
   }
+});
+
+test("live network integration: queries real Crossref and Semantic Scholar APIs (network-gated)", async (t) => {
+  if (process.env.CI || process.env.RUN_LIVE_NETWORK !== "true") {
+    t.skip("Skipped in CI by default. Run with RUN_LIVE_NETWORK=true to execute live network test against real Crossref and Semantic Scholar APIs.");
+    return;
+  }
+  // 1. Hit real Crossref REST API for published paper (STAP cell nature paper 10.1038/nature12968)
+  const cr = await crossref("10.1038/nature12968");
+  assert.equal(cr.ok, true);
+  assert.ok(cr.data);
+  assert.match(String((cr.data as any).title), /Stimulus-triggered/i);
+  assert.equal((cr.data as any).is_retracted, true);
+
+  // 2. Hit real Semantic Scholar Graph API
+  const ss = await semanticScholar("10.1016/j.stem.2015.01.002");
+  assert.equal(ss.ok, true);
+  assert.ok(ss.data);
 });

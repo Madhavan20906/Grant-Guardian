@@ -187,7 +187,7 @@ const SCENARIOS: SimulationScenario[] = [
       },
       {
         tool: 'provenance_proof_generator',
-        action: 'HMAC-SHA256 Cryptographic Audit Seal',
+        action: 'HMAC-SHA256 Audit Digest',
         result: 'PROOF-SHA256-A8F4C201B79E334D Generated',
         status: 'success',
         detail: 'Seals multi-registry consensus into tamper-evident NIST SP 800-92 proof receipt.',
@@ -271,7 +271,7 @@ const SCENARIOS: SimulationScenario[] = [
       },
       {
         tool: 'provenance_proof_generator',
-        action: 'HMAC-SHA256 Cryptographic Audit Seal',
+        action: 'HMAC-SHA256 Audit Digest',
         result: 'PROOF-SHA256-3C77E90B12FA9018 Generated',
         status: 'success',
         detail: 'Cryptographically seals cascade findings and routing decision.',
@@ -340,7 +340,7 @@ const SCENARIOS: SimulationScenario[] = [
       },
       {
         tool: 'provenance_proof_generator',
-        action: 'HMAC-SHA256 Cryptographic Audit Seal',
+        action: 'HMAC-SHA256 Audit Digest',
         result: 'PROOF-SHA256-78EF910D44BC8812 Generated',
         status: 'success',
         detail: 'Sealed as SILENT_PASS in tamper-evident compliance ledger.',
@@ -842,7 +842,7 @@ export function StrandsSovereignBossModal({ isOpen, onClose }: StrandsSovereignB
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px]">
                       <div className="space-y-1">
-                        <span className="text-[9px] text-slate-400 uppercase">HMAC-SHA256 Cryptographic Seal</span>
+                        <span className="text-[9px] text-slate-400 uppercase">HMAC-SHA256 Provenance Digest</span>
                         <div className="p-2 rounded bg-slate-50 dark:bg-slate-950 border border-slate-200/70 dark:border-slate-800 text-slate-700 dark:text-slate-300 break-all select-all font-mono text-[10px]">
                           {sc.hmacSeal}
                         </div>

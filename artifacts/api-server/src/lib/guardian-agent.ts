@@ -116,15 +116,15 @@ export async function runStrandsService(citations: CitationInput[]) {
       error: "STRANDS_AGENT_URL is not configured",
       mode: "strands_offline_fallback",
       status_label: "STRANDS UNAVAILABLE — Offline Verification Active",
-      agent_power_level: "SOVEREIGN_MULTI_AGENT_FLEET",
+      agent_power_level: "OFFLINE_DETERMINISTIC_ENGINE",
       tools: 10,
       consensus_registries: [
-        "Crossref REST API",
-        "Retraction Watch Database",
-        "OpenAlex Global Registry",
-        "PubMed Central / NIH NLM",
+        "Crossref REST API (Offline Mock)",
+        "Retraction Watch (20-Paper Benchmark)",
+        "OpenAlex Registry (Offline Cache)",
+        "PubMed Central (MeSH Rule Cache)",
       ],
-      provenance_security: "HMAC-SHA256 Cryptographic Evidence Seal",
+      provenance_security: "HMAC-SHA256 Provenance Digest",
       tool_trace: [] as StrandsPayload["tool_trace"],
       evidence: {} as NonNullable<StrandsPayload["evidence"]>,
     };
@@ -143,15 +143,15 @@ export async function runStrandsService(citations: CitationInput[]) {
         error: `Strands service ${response.status}`,
         mode: "error",
         status_label: `STRANDS SERVICE ERROR (${response.status})`,
-        agent_power_level: "SOVEREIGN_MULTI_AGENT_FLEET",
+        agent_power_level: "OFFLINE_DETERMINISTIC_ENGINE",
         tools: 10,
         consensus_registries: [
-          "Crossref REST API",
-          "Retraction Watch Database",
-          "OpenAlex Global Registry",
-          "PubMed Central / NIH NLM",
+          "Crossref REST API (Offline Mock)",
+          "Retraction Watch (20-Paper Benchmark)",
+          "OpenAlex Registry (Offline Cache)",
+          "PubMed Central (MeSH Rule Cache)",
         ],
-        provenance_security: "HMAC-SHA256 Cryptographic Evidence Seal",
+        provenance_security: "HMAC-SHA256 Provenance Digest",
         tool_trace: [] as StrandsPayload["tool_trace"],
         evidence: {} as NonNullable<StrandsPayload["evidence"]>,
       };
@@ -163,7 +163,7 @@ export async function runStrandsService(citations: CitationInput[]) {
       error: null,
       agent: payload.agent,
       version: payload.version,
-      agent_power_level: payload.agent_power_level ?? "SOVEREIGN_MULTI_AGENT_FLEET",
+      agent_power_level: payload.agent_power_level ?? "STRANDS_MULTI_AGENT_ORCHESTRATOR",
       mode: payload.mode ?? "strands_agentcore_live",
       status_label: payload.status_label ?? "STRANDS AGENT LIVE — AWS Bedrock Orchestration",
       fallback: payload.fallback ?? false,
@@ -174,7 +174,7 @@ export async function runStrandsService(citations: CitationInput[]) {
         "OpenAlex Global Registry",
         "PubMed Central / NIH NLM",
       ],
-      provenance_security: payload.provenance_security ?? "HMAC-SHA256 Cryptographic Evidence Seal",
+      provenance_security: payload.provenance_security ?? "HMAC-SHA256 Provenance Digest",
       subagent_architecture: payload.subagent_architecture,
       durable_session: payload.durable_session,
       tool_trace: payload.tool_trace ?? [],
@@ -188,22 +188,22 @@ export async function runStrandsService(citations: CitationInput[]) {
       error: error instanceof Error ? error.message : "Strands service unavailable",
       mode: "unreachable",
       status_label: "STRANDS UNAVAILABLE — Fallback Mode Active",
-      agent_power_level: "SOVEREIGN_MULTI_AGENT_FLEET",
+      agent_power_level: "OFFLINE_DETERMINISTIC_ENGINE",
       tools: 10,
       consensus_registries: [
-        "Crossref REST API",
-        "Retraction Watch Database",
-        "OpenAlex Global Registry",
-        "PubMed Central / NIH NLM",
+        "Crossref REST API (Offline Mock)",
+        "Retraction Watch (20-Paper Benchmark)",
+        "OpenAlex Registry (Offline Cache)",
+        "PubMed Central (MeSH Rule Cache)",
       ],
-      provenance_security: "HMAC-SHA256 Cryptographic Evidence Seal",
+      provenance_security: "HMAC-SHA256 Provenance Digest",
       tool_trace: [] as StrandsPayload["tool_trace"],
       evidence: {} as NonNullable<StrandsPayload["evidence"]>,
     };
   }
 }
 
-const crossref = async (doi: string): Promise<ToolResult> => {
+export const crossref = async (doi: string): Promise<ToolResult> => {
   try {
     const response = await fetch(`https://api.crossref.org/works/${encodeURIComponent(doi)}`, {
       headers: { "User-Agent": "GrantGuardian/2.0 (mailto:guardian@example.org)" },
@@ -221,7 +221,11 @@ const crossref = async (doi: string): Promise<ToolResult> => {
     );
     const titles = Array.isArray(work.title) ? work.title : [work.title];
     const primaryTitle = String(titles[0] ?? "");
-    const isTitleRetracted = primaryTitle.toUpperCase().startsWith("RETRACTED:") || primaryTitle.toUpperCase().startsWith("RETRACTION:");
+    const isTitleRetracted =
+      primaryTitle.toUpperCase().startsWith("RETRACTED:") ||
+      primaryTitle.toUpperCase().startsWith("RETRACTION:") ||
+      primaryTitle.toUpperCase().startsWith("RETRACTED ARTICLE") ||
+      primaryTitle.toUpperCase().includes("RETRACTED");
     const isDirectRetraction = isRetractedByRelation || hasRetractionUpdate || isTitleRetracted;
 
     return {
@@ -346,17 +350,51 @@ export const retractionWatch = async (doi: string): Promise<ToolResult> => {
   };
 };
 
-const semanticScholar = async (doi: string): Promise<ToolResult> => {
+export const semanticScholar = async (doi: string): Promise<ToolResult> => {
   try {
     const response = await fetch(
       `https://api.semanticscholar.org/graph/v1/paper/DOI:${encodeURIComponent(doi)}?fields=title,references.externalIds`,
-      { signal: AbortSignal.timeout(8000) }
+      {
+        headers: { "User-Agent": "GrantGuardian/2.0 (mailto:guardian@example.org)" },
+        signal: AbortSignal.timeout(8000),
+      }
     );
-    if (!response.ok) {
-      return { tool: "semantic_scholar_graph", ok: false, data: null, error: `Semantic Scholar ${response.status}` };
+    if (response.ok) {
+      return { tool: "semantic_scholar_graph", ok: true, data: await response.json() };
     }
-    return { tool: "semantic_scholar_graph", ok: true, data: await response.json() };
+    // If Semantic Scholar is rate-limited (429) or unavailable, fall back to Crossref reference graph
+    const crFallback = await crossref(doi);
+    if (crFallback.ok && (crFallback.data as any)?.references) {
+      const crRefs = (crFallback.data as any).references;
+      return {
+        tool: "semantic_scholar_graph",
+        ok: true,
+        data: {
+          title: (crFallback.data as any).title,
+          references: crRefs.map((r: any) => ({ externalIds: { DOI: r.DOI } })),
+          source: "Crossref Reference Graph (Fallback)",
+        },
+      };
+    }
+    return { tool: "semantic_scholar_graph", ok: false, data: null, error: `Semantic Scholar ${response.status}` };
   } catch (error) {
+    try {
+      const crFallback = await crossref(doi);
+      if (crFallback.ok && (crFallback.data as any)?.references) {
+        const crRefs = (crFallback.data as any).references;
+        return {
+          tool: "semantic_scholar_graph",
+          ok: true,
+          data: {
+            title: (crFallback.data as any).title,
+            references: crRefs.map((r: any) => ({ externalIds: { DOI: r.DOI } })),
+            source: "Crossref Reference Graph (Fallback)",
+          },
+        };
+      }
+    } catch {
+      // ignore
+    }
     return {
       tool: "semantic_scholar_graph",
       ok: false,

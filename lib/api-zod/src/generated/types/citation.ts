@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { CitationMetadata } from './citationMetadata';
 import type { CitationRisk } from './citationRisk';
 import type { CitationStatus } from './citationStatus';
 
@@ -19,4 +20,5 @@ export interface Citation {
   doi: string;
   /** @nullable */
   detail?: string | null;
+  metadata?: CitationMetadata;
 }

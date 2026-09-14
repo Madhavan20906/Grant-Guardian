@@ -28,13 +28,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Typecheck libraries
-        run: pnpm run typecheck:libs
+      - name: Typecheck entire project
+        run: pnpm run typecheck
 
       - name: Run Build
         run: pnpm run build
 
-      - name: Run TypeScript Tests (43 tests)
+      - name: Run TypeScript Tests (66 tests)
         run: pnpm test
 
   test-python:
@@ -54,5 +54,5 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r agent-service/requirements.txt
 
-      - name: Run Strands Agent Tests (10 tests)
+      - name: Run Strands Agent Tests (24 tests)
         run: python agent-service/test_agent_service.py

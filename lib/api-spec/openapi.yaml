@@ -178,6 +178,40 @@ components:
           enum: [low, medium, high]
         doi: { type: string }
         detail: { type: ["string", "null"] }
+        metadata:
+          $ref: "#/components/schemas/CitationMetadata"
+    CitationMetadata:
+      type: object
+      properties:
+        graph:
+          type: object
+          properties:
+            rootDoi: { type: string }
+            referencedDois:
+              type: array
+              items: { type: string }
+            retractedReferencedDois:
+              type: array
+              items: { type: string }
+            depth: { type: number }
+            cascade:
+              type: object
+              properties:
+                project: { type: string }
+                intermediatePaper: { type: string }
+                retractedPaper: { type: string }
+                retractionReason: { type: string }
+              additionalProperties: true
+          additionalProperties: true
+        providers:
+          type: object
+          additionalProperties: true
+        trace:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+      additionalProperties: true
     Deadline:
       type: object
       required: [id, type, title, dueDate, daysLeft, status, owner]

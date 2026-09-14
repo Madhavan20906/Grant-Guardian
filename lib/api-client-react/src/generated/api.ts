@@ -26,11 +26,12 @@ import type {
   Draft,
   GuardianOverview,
   HealthStatus,
-  ScanResult
+  ScanResult,
+  UpdateDraftStatusBody
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
-import type { ErrorType } from '../custom-fetch';
+import type { ErrorType , BodyType } from '../custom-fetch';
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
@@ -582,5 +583,154 @@ export const useDraftComplianceReport = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getDraftComplianceReportMutationOptions(options));
+    }
+
+export const getListDraftsUrl = () => {
+
+
+
+
+  return `/api/guardian/drafts`
+}
+
+/**
+ * @summary List saved compliance drafts
+ */
+export const listDrafts = async ( options?: Parameters<typeof customFetch>[1]): Promise<Draft[]> => {
+
+  return customFetch<Draft[]>(getListDraftsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListDraftsQueryKey = () => {
+    return [
+    `/api/guardian/drafts`
+    ] as const;
+    }
+
+
+export const getListDraftsQueryOptions = <TData = Awaited<ReturnType<typeof listDrafts>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDrafts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListDraftsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDrafts>>> = ({ signal }) => listDrafts({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listDrafts>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListDraftsQueryResult = NonNullable<Awaited<ReturnType<typeof listDrafts>>>
+export type ListDraftsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List saved compliance drafts
+ */
+
+export function useListDrafts<TData = Awaited<ReturnType<typeof listDrafts>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDrafts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListDraftsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateDraftStatusUrl = (id: number,) => {
+
+
+
+
+  return `/api/guardian/drafts/${id}`
+}
+
+/**
+ * @summary Update a draft lifecycle status
+ */
+export const updateDraftStatus = async (id: number,
+    updateDraftStatusBody: UpdateDraftStatusBody, options?: Parameters<typeof customFetch>[1]): Promise<Draft> => {
+
+  return customFetch<Draft>(getUpdateDraftStatusUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(updateDraftStatusBody)
+  }
+);}
+
+
+
+
+
+export const getUpdateDraftStatusMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDraftStatus>>, TError,{id: number;data: BodyType<UpdateDraftStatusBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateDraftStatus>>, TError,{id: number;data: BodyType<UpdateDraftStatusBody>}, TContext> => {
+
+const mutationKey = ['updateDraftStatus'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateDraftStatus>>, {id: number;data: BodyType<UpdateDraftStatusBody>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateDraftStatus(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateDraftStatusMutationResult = NonNullable<Awaited<ReturnType<typeof updateDraftStatus>>>
+    export type UpdateDraftStatusMutationBody = BodyType<UpdateDraftStatusBody>
+    export type UpdateDraftStatusMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Update a draft lifecycle status
+ */
+export const useUpdateDraftStatus = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDraftStatus>>, TError,{id: number;data: BodyType<UpdateDraftStatusBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateDraftStatus>>,
+        TError,
+        {id: number;data: BodyType<UpdateDraftStatusBody>},
+        TContext
+      > => {
+      return useMutation(getUpdateDraftStatusMutationOptions(options));
     }
 

@@ -103,7 +103,12 @@ def crossref_lookup(doi: str) -> dict[str, Any]:
         title = title_raw[0] if isinstance(title_raw, list) else str(title_raw)
         title_upper = title.upper()
 
-        is_title_retracted = title_upper.startswith("RETRACTED:") or title_upper.startswith("RETRACTION:")
+        is_title_retracted = (
+            title_upper.startswith("RETRACTED:")
+            or title_upper.startswith("RETRACTION:")
+            or title_upper.startswith("RETRACTED ARTICLE")
+            or "RETRACTED" in title_upper
+        )
         has_retraction_update = any(
             isinstance(u, dict) and (u.get("type") == "retraction" or "retraction" in str(u.get("label", "")).lower())
             for u in update_to
@@ -1385,6 +1390,11 @@ def scan(request: ScanRequest) -> dict[str, Any]:
             "contamination_vector": vec_data,
             "provenance_proof": proof_data,
             "consensus_registries": [
+                "Crossref REST API (Offline Mock)",
+                "Retraction Watch (20-Paper Benchmark)",
+                "OpenAlex Registry (Offline Cache)",
+                "PubMed Central (MeSH Rule Cache)",
+            ] if is_fallback else [
                 "Crossref REST API",
                 "Retraction Watch Database",
                 "OpenAlex Global Registry",
@@ -1436,19 +1446,24 @@ def scan(request: ScanRequest) -> dict[str, Any]:
     payload_result = {
         "agent": "strands",
         "version": "2.0.0",
-        "agent_power_level": "SOVEREIGN_MULTI_AGENT_FLEET",
+        "agent_power_level": "STRANDS_MULTI_AGENT_ORCHESTRATOR",
         "mode": mode,
         "status_label": status_label,
         "fallback": is_fallback,
         "bedrock_configured": has_bedrock,
         "tools_available": len(agent.tool_names),
         "consensus_registries": [
+            "Crossref REST API (Offline Mock)",
+            "Retraction Watch (20-Paper Benchmark)",
+            "OpenAlex Registry (Offline Cache)",
+            "PubMed Central (MeSH Rule Cache)",
+        ] if is_fallback else [
             "Crossref REST API",
             "Retraction Watch Database",
             "OpenAlex Global Registry",
             "PubMed Central / NIH NLM",
         ],
-        "provenance_security": "HMAC-SHA256 Cryptographic Evidence Seal",
+        "provenance_security": "HMAC-SHA256 Provenance Digest",
         "subagent_architecture": {
             "orchestrator": "SovereignCoordinatorAgent",
             "citation_subagent": "CitationIntegrityAgent (7 tools)",
@@ -1529,7 +1544,7 @@ def health() -> dict[str, Any]:
         "status": "ok",
         "agent": "strands",
         "version": "2.0.0",
-        "agent_power_level": "SOVEREIGN_MULTI_AGENT_FLEET",
+        "agent_power_level": "STRANDS_MULTI_AGENT_ORCHESTRATOR",
         "mode": mode,
         "status_label": status_label,
         "fallback": is_fallback,
@@ -1541,10 +1556,15 @@ def health() -> dict[str, Any]:
             "GovernanceComplianceSubagent",
         ],
         "consensus_registries": [
+            "Crossref REST API (Offline Mock)",
+            "Retraction Watch (20-Paper Benchmark)",
+            "OpenAlex Registry (Offline Cache)",
+            "PubMed Central (MeSH Rule Cache)",
+        ] if is_fallback else [
             "Crossref REST API",
             "Retraction Watch Database",
             "OpenAlex Global Registry",
             "PubMed Central / NIH NLM",
         ],
-        "provenance_security": "HMAC-SHA256 Cryptographic Evidence Seal",
+        "provenance_security": "HMAC-SHA256 Provenance Digest",
     }

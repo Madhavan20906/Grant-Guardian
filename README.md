@@ -213,7 +213,7 @@ Both modes evaluate intermediate registry findings, apply identical branch-pruni
                                └────────────┼───────────────────────────┘
                                             ↓
                                [provenance_proof_generator]
-                               (HMAC-SHA256 Cryptographic Seal)
+                               (HMAC-SHA256 Provenance Digest)
 ```
 
 #### Comparative Execution Matrix Across Scenarios
@@ -249,7 +249,7 @@ Grant Guardian implements **`DurableSessionManager`** (`agent-service/main.py`),
 | **Negative Scoping** | Naive prompt suggestions easily bypassed by prompt injection | **Enforced Negative Constraints**: Documented tool docstring contracts + deterministic safety policy barrier |
 | **State Persistence** | Stateless per-request invocation (tabula rasa) | **DurableSessionManager**: Stateful cross-sweep memory, clean cache, and cumulative PI decision history |
 | **Decision Authority** | LLM hallucinates validity and auto-deletes citations | **Deterministic Restraint Invariant (`classifyDecision`)**: Mathematical boundary prohibiting AI from altering proposals |
-| **Provenance Security** | Plain text markdown output | **HMAC-SHA256 Cryptographic Seal**: NIST SP 800-92 compliant audit receipts with SHA-256 Merkle leaf hashes |
+| **Provenance Security** | Plain text markdown output | **HMAC-SHA256 Provenance Digest**: NIST SP 800-92 compliant audit receipts with SHA-256 Merkle leaf hashes |
 
 ---
 
@@ -352,9 +352,9 @@ docker run -p 8010:8010 \
 
 ---
 
-## 📊 Safety & Verification Evaluation Matrix (89/89 Automated Tests Passing)
+## 📊 Safety & Verification Evaluation Matrix (90/90 Automated Tests Passing)
 
-Safety is enforced by test, not just by design. The combined test suite includes 89 tests (65 TypeScript tests + 24 Python Strands service tests) proving deterministic invariants across adversarial, propagation, multi-registry consensus, specialized subagent delegation, and cryptographic provenance scenarios:
+Safety is enforced by test, not just by design. The combined test suite includes 90 tests (66 TypeScript tests + 24 Python Strands service tests) proving deterministic invariants across adversarial, propagation, multi-registry consensus, specialized subagent delegation, and cryptographic provenance scenarios:
 
 | Scenario | Ground Truth / Evidence | Agent Action | Deterministic Invariant | Status |
 |:---|:---|:---|:---|:---:|

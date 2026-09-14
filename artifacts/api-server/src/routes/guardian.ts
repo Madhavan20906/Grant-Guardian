@@ -461,15 +461,20 @@ router.get("/guardian/strands/status", async (_req, res) => {
     available: result.available,
     mode: result.mode,
     statusLabel: result.status_label,
-    powerLevel: result.agent_power_level ?? "SOVEREIGN_MULTI_AGENT_FLEET",
+    powerLevel: result.agent_power_level ?? (result.available ? "STRANDS_MULTI_AGENT_ORCHESTRATOR" : "OFFLINE_DETERMINISTIC_ENGINE"),
     tools: result.tools ?? 10,
-    consensusRegistries: result.consensus_registries ?? [
+    consensusRegistries: result.consensus_registries ?? (result.available ? [
       "Crossref REST API",
       "Retraction Watch Database",
       "OpenAlex Global Registry",
       "PubMed Central / NIH NLM",
-    ],
-    provenanceSecurity: result.provenance_security ?? "HMAC-SHA256 Cryptographic Evidence Seal",
+    ] : [
+      "Crossref REST API (Offline Mock)",
+      "Retraction Watch (20-Paper Benchmark)",
+      "OpenAlex Registry (Offline Cache)",
+      "PubMed Central (MeSH Rule Cache)",
+    ]),
+    provenanceSecurity: result.provenance_security ?? "HMAC-SHA256 Provenance Digest",
     error: result.error,
   });
 });

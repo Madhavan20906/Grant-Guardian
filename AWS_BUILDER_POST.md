@@ -13,8 +13,8 @@ Every year, thousands of published scientific papers are retracted due to data f
 
 **Grant Guardian** is an autonomous, safety-first research integrity agent built with **Amazon Bedrock**, the **Python Strands SDK**, **Express/TypeScript**, and **AWS AgentCore**.
 
-Unlike naive LLM wrappers that hallucinate retraction claims or invent citations, Grant Guardian implements a strict **Safety Boundary Architecture** verified by **89 automated tests**:
-1. **89 Automated Tests & Verifiable Reliability Invariants**: Fully passing test suite (65 TypeScript + 24 Python Strands tests). Specifically verifies **Adversarial Prompt Injection Immunity** (malicious strings in literature titles cannot trick the system into clearing retracted works) and **Mathematical Proof of Restraint** (the agent is architecturally prevented from auto-quarantining 2nd-order citations without human PI review).
+Unlike naive LLM wrappers that hallucinate retraction claims or invent citations, Grant Guardian implements a strict **Safety Boundary Architecture** verified by **90 automated tests**:
+1. **90 Automated Tests & Verifiable Reliability Invariants**: Fully passing test suite (66 TypeScript + 24 Python Strands tests). Specifically verifies **Adversarial Prompt Injection Immunity** (malicious strings in literature titles cannot trick the system into clearing retracted works) and **Mathematical Proof of Restraint** (the agent is architecturally prevented from auto-quarantining 2nd-order citations without human PI review).
 2. **Strands Agent as Core Decision Engine**: The agent dynamically orchestrates specialized tools (`crossref_lookup`, `retraction_watch_lookup`, `semantic_scholar_graph`, `check_reference_retractions`, and `escalate_to_human`), and its structured tool execution trace directly feeds the deterministic safety policy.
 3. **Live Evidence-Based Propagation Traversal & 20-Benchmark Registry**: Expanded benchmark dataset of 20 high-profile retracted papers across diverse scientific domains (stem cells, infectious disease, oncology, physics, social science) backed by live OpenAlex query fallback and Crossref `update-to` / `is-retracted-by` relation inspections.
 4. **Multi-Tenant Persona Architecture**: Native support for multiple seeded laboratory personas (`Dr. Elena Rossi` / Materials Lab, `Dr. Marcus Chen` / Neural Interfaces, `Dr. Sarah Jenkins` / Genomic Medicine) with dynamic workspace routing, citation topologies, and compliance registers.
@@ -159,9 +159,9 @@ def build_agent() -> Agent:
 
 ---
 
-## 🛡️ Provenance & 89 Automated Tests
+## 🛡️ Provenance & 90 Automated Tests
 
-Grant Guardian is verified by 89 automated tests in CI (65 TypeScript route/adversarial tests + 24 Python Strands service tests):
+Grant Guardian is verified by 90 automated tests in CI (66 TypeScript route/adversarial tests + 24 Python Strands service tests):
 - **Dynamic Multi-Step Tool Branching**: In Python, integration tests verify the agent dynamically selects tools based on intermediate evidence (e.g. pivoting from clean direct lookup to bibliography graph traversal, to live reference checking, to human escalation).
 - **Bedrock Transcript Replay**: Verifies multi-step agent tool dispatch against recorded Amazon Bedrock tool-calling conversations.
 - **Provider Outages**: When Crossref or Retraction Watch return 500/503 errors, the agent defaults safe and discloses provider degradation instead of inventing clean passes.
