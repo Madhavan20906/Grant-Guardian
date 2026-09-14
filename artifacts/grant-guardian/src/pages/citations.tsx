@@ -40,9 +40,19 @@ import { CitationGraph } from '@/components/citation-graph';
 import { BlastRadius } from '@/components/blast-radius';
 import { ContaminationCascade } from '@/components/contamination-cascade';
 import { OnboardingEmptyState } from '@/components/onboarding-empty-state';
-import { apiRequest, getLocalJudgments, saveLocalJudgment, addLocalActivity } from '@/lib/api';
+import { useAuth } from '@/context/auth-context';
+import {
+  apiRequest,
+  getLocalJudgments,
+  saveLocalJudgment,
+  addLocalActivity,
+  getLocalCitations,
+  addLocalCitation,
+} from '@/lib/api';
 
 export default function Citations() {
+  const { user } = useAuth();
+  const userSlug = user?.tenantSlug || (user?.id ? String(user.id) : undefined);
   const query = useListCitations();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
@@ -58,10 +68,29 @@ export default function Citations() {
 
   const rawCitations = Array.isArray(query.data) ? query.data : [];
 
+  // Merge server citations with account-scoped local citations so imported citations persist across login/logout
+  const allRawCitations = useMemo(() => {
+    const localList = getLocalCitations(userSlug);
+    if (!localList || localList.length === 0) return rawCitations;
+    const merged = [...rawCitations];
+    for (const item of localList) {
+      const norm = String(item.doi || '').trim().toLowerCase();
+      const exists = merged.some(
+        (c: any) =>
+          (norm && String(c.doi || '').trim().toLowerCase() === norm) ||
+          c.id === item.id
+      );
+      if (!exists) {
+        merged.push(item);
+      }
+    }
+    return merged;
+  }, [rawCitations, userSlug]);
+
   // Merge server citations with locally saved judgments to prevent state reverting across pages
   const citationsWithJudgments = useMemo(() => {
-    const local = getLocalJudgments();
-    return rawCitations.map((c: Citation) => {
+    const local = getLocalJudgments(userSlug);
+    return allRawCitations.map((c: Citation) => {
       const lj = local[c.id];
       if (lj) {
         const newStatus = lj.judgment === 'relevant' ? 'quarantined' : lj.judgment === 'not_relevant' ? 'clear' : 'propagation';
@@ -76,7 +105,7 @@ export default function Citations() {
       }
       return c;
     });
-  }, [rawCitations]);
+  }, [allRawCitations, userSlug]);
 
   const citations = useMemo(() => {
     return citationsWithJudgments.filter((citation: Citation) => {
@@ -102,8 +131,8 @@ export default function Citations() {
     setJudgmentSubmitting(id);
     setJudgmentSuccess(null);
 
-    // 1. Immediately record in localStorage so state is sealed across navigation & refresh
-    saveLocalJudgment(id, judgment, notes);
+    // 1. Immediately record in localStorage scoped to active tenant so state is sealed across navigation & refresh
+    saveLocalJudgment(id, judgment, notes, userSlug);
 
     // 2. Add local activity log so /activity immediately records the decision
     const target = citationsWithJudgments.find((c: Citation) => c.id === id);
@@ -119,7 +148,7 @@ export default function Citations() {
       description: `Researcher recorded human judgment for "${paperTitle}". Decision: ${judgment.replace('_', ' ')}. Notes: "${notes || 'No notes provided'}"`,
       kind: 'escalation',
       tone: judgment === 'relevant' ? 'danger' : 'success',
-    });
+    }, userSlug);
 
     try {
       const response = await apiRequest(`/api/guardian/citations/${id}/judgment`, {
@@ -154,6 +183,22 @@ export default function Citations() {
         body: JSON.stringify({ content: `DOI: ${doi}` }),
       });
       if (res.ok) {
+        // Persist imported citation locally partitioned by tenant
+        const imported = Array.isArray(res.data) ? res.data[0] : (res.data?.citations?.[0] || null);
+        addLocalCitation(
+          imported || {
+            id: Date.now(),
+            doi,
+            title: doi,
+            authors: 'Pending metadata lookup',
+            venue: 'External Registry',
+            year: new Date().getFullYear(),
+            status: 'clear',
+            risk: 'low',
+          },
+          userSlug
+        );
+
         setImportSuccess(`DOI ${doi} registered. Running autonomous Crossref & OpenAlex scan...`);
         setNewDoi('');
         try {

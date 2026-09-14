@@ -64,12 +64,15 @@ import {
   addLocalActivity,
   isDeadlineSubmittedLocal,
   getLocalActivities,
+  getLocalCitations,
+  getLocalDeadlines,
 } from '@/lib/api';
 
 export default function Overview() {
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
   const { user } = useAuth();
+  const userSlug = user?.tenantSlug || (user?.id ? String(user.id) : undefined);
   const { activePersona } = usePersona();
   const overviewQuery = useGetGuardianOverview();
   const citationsQuery = useListCitations();
@@ -124,9 +127,27 @@ export default function Overview() {
     refetchInterval: 30000,
   });
 
-  const rawCitations = Array.isArray(citationsQuery.data) ? citationsQuery.data : [];
+  const rawCitations = useMemo(() => {
+    const serverCitations = Array.isArray(citationsQuery.data) ? citationsQuery.data : [];
+    const local = getLocalCitations(userSlug);
+    if (!local || local.length === 0) return serverCitations;
+    const merged = [...serverCitations];
+    for (const item of local) {
+      const norm = String(item.doi || '').trim().toLowerCase();
+      const exists = merged.some(
+        (c: any) =>
+          (norm && String(c.doi || '').trim().toLowerCase() === norm) ||
+          c.id === item.id
+      );
+      if (!exists) {
+        merged.push(item);
+      }
+    }
+    return merged;
+  }, [citationsQuery.data, userSlug]);
+
   const citations = useMemo(() => {
-    const local = getLocalJudgments();
+    const local = getLocalJudgments(userSlug);
     return rawCitations.map((c: Citation) => {
       const lj = local[c.id];
       if (lj) {
@@ -142,21 +163,34 @@ export default function Overview() {
       }
       return c;
     });
-  }, [rawCitations]);
+  }, [rawCitations, userSlug]);
 
-  const rawDeadlines = Array.isArray(deadlinesQuery.data) ? deadlinesQuery.data : [];
+  const rawDeadlines = useMemo(() => {
+    const serverDeadlines = Array.isArray(deadlinesQuery.data) ? deadlinesQuery.data : [];
+    const local = getLocalDeadlines(userSlug);
+    if (!local || local.length === 0) return serverDeadlines;
+    const merged = [...serverDeadlines];
+    for (const item of local) {
+      const exists = merged.some((d: any) => d.id === item.id || d.title === item.title);
+      if (!exists) {
+        merged.push(item);
+      }
+    }
+    return merged;
+  }, [deadlinesQuery.data, userSlug]);
+
   const deadlines = useMemo(() => {
     return rawDeadlines.map((d: Deadline) => {
-      if ((d.progress ?? 0) >= 100 || (d.status as string) === 'clear' || isDeadlineSubmittedLocal(d.id)) {
+      if ((d.progress ?? 0) >= 100 || (d.status as string) === 'clear' || isDeadlineSubmittedLocal(d.id, userSlug)) {
         return { ...d, status: 'clear' as const, progress: 100 };
       }
       return d;
     });
-  }, [rawDeadlines]);
+  }, [rawDeadlines, userSlug]);
 
   const serverActivity = Array.isArray(activityQuery.data) ? activityQuery.data : [];
   const activity = useMemo(() => {
-    const combined = [...getLocalActivities(), ...serverActivity];
+    const combined = [...getLocalActivities(userSlug), ...serverActivity];
     const seen = new Set<string>();
     return combined.filter((item: Activity) => {
       const key = `${item.title}-${item.tone}-${item.description?.slice(0, 35)}`;
@@ -164,7 +198,7 @@ export default function Overview() {
       seen.add(key);
       return true;
     });
-  }, [serverActivity]);
+  }, [serverActivity, userSlug]);
 
   const monitoredCount = citations.length;
   const clearCount = citations.filter((c: Citation) => c.status === 'clear').length;
@@ -235,8 +269,8 @@ export default function Overview() {
   const handleJudgment = async (id: number, judgment: 'relevant' | 'not_relevant' | 'deferred', notes?: string) => {
     setIsSubmittingJudgment(true);
 
-    // 1. Persist locally immediately
-    saveLocalJudgment(id, judgment, notes);
+    // 1. Persist locally immediately scoped to active tenant
+    saveLocalJudgment(id, judgment, notes, userSlug);
 
     // 2. Add local activity item
     const target = citations.find((c: Citation) => c.id === id);
@@ -252,7 +286,7 @@ export default function Overview() {
       description: `Researcher recorded human judgment for "${paperTitle}". Decision: ${judgment.replace('_', ' ')}. Notes: "${notes || 'No notes provided'}"`,
       kind: 'escalation',
       tone: judgment === 'relevant' ? 'danger' : 'success',
-    });
+    }, userSlug);
 
     try {
       const response = await apiRequest(`/api/guardian/citations/${id}/judgment`, {

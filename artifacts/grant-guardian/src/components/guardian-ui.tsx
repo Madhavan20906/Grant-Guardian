@@ -419,11 +419,13 @@ export function DeadlineRow({
   onDraft: () => void;
   onMarkSubmitted?: () => void;
 }) {
+  const { user } = useAuth();
+  const userSlug = user?.tenantSlug || (user?.id ? String(user.id) : undefined);
   const isServerSubmitted =
     (deadline.progress ?? 0) >= 100 ||
     (deadline.status as string) === 'clear' ||
     (deadline.status as string) === 'submitted' ||
-    isDeadlineSubmittedLocal(deadline.id);
+    isDeadlineSubmittedLocal(deadline.id, userSlug);
   const [localSubmitted, setLocalSubmitted] = useState(false);
   const effectiveSubmitted = isServerSubmitted || localSubmitted;
   const isUrgentTrigger = deadline.daysLeft <= 14 && (deadline.progress ?? 0) < 80;

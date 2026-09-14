@@ -3,6 +3,23 @@ export const USER_STORAGE_KEY = 'gg_auth_user';
 export const SUBMITTED_DEADLINES_KEY = 'gg_submitted_deadlines';
 export const CITATION_JUDGMENTS_KEY = 'gg_citation_judgments';
 export const LOCAL_ACTIVITIES_KEY = 'gg_local_activities';
+export const LOCAL_CITATIONS_KEY = 'gg_local_citations';
+export const LOCAL_DEADLINES_KEY = 'gg_local_deadlines';
+
+export function getActiveUserSlug(): string {
+  if (typeof window === 'undefined') return 'elena';
+  const slug = localStorage.getItem('gg_persona_slug');
+  if (slug) return slug;
+  const raw = localStorage.getItem(USER_STORAGE_KEY);
+  if (raw) {
+    try {
+      const u = JSON.parse(raw);
+      if (u.tenantSlug) return u.tenantSlug;
+      if (u.id) return String(u.id);
+    } catch {}
+  }
+  return 'elena';
+}
 
 export function getActiveAuthHeaders(): Record<string, string> {
   const headers: Record<string, string> = {
@@ -15,21 +32,8 @@ export function getActiveAuthHeaders(): Record<string, string> {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  let userSlug = localStorage.getItem('gg_persona_slug');
-  if (!userSlug) {
-    const rawUser = localStorage.getItem(USER_STORAGE_KEY);
-    if (rawUser) {
-      try {
-        const u = JSON.parse(rawUser);
-        userSlug = u.tenantSlug || String(u.id);
-      } catch {}
-    }
-  }
-  if (userSlug) {
-    headers['x-user-id'] = userSlug;
-  } else {
-    headers['x-user-id'] = 'elena';
-  }
+  const userSlug = getActiveUserSlug();
+  headers['x-user-id'] = userSlug;
 
   return headers;
 }
@@ -73,11 +77,16 @@ export async function apiRequest<T = any>(
   }
 }
 
-// Submitted deadlines local persistence
-export function getSubmittedDeadlineIds(): Set<number> {
+// ==========================================
+// Per-account Submitted Deadlines Persistence
+// ==========================================
+
+export function getSubmittedDeadlineIds(userSlug?: string): Set<number> {
   if (typeof window === 'undefined') return new Set();
+  const slug = userSlug || getActiveUserSlug();
+  const key = `${SUBMITTED_DEADLINES_KEY}_${slug}`;
   try {
-    const raw = localStorage.getItem(SUBMITTED_DEADLINES_KEY);
+    const raw = localStorage.getItem(key);
     if (!raw) return new Set();
     const arr = JSON.parse(raw);
     return new Set(Array.isArray(arr) ? arr.map(Number) : []);
@@ -86,20 +95,95 @@ export function getSubmittedDeadlineIds(): Set<number> {
   }
 }
 
-export function markDeadlineSubmittedLocal(id: number) {
+export function markDeadlineSubmittedLocal(id: number, userSlug?: string) {
   if (typeof window === 'undefined') return;
+  const slug = userSlug || getActiveUserSlug();
+  const key = `${SUBMITTED_DEADLINES_KEY}_${slug}`;
   try {
-    const ids = getSubmittedDeadlineIds();
+    const ids = getSubmittedDeadlineIds(slug);
     ids.add(Number(id));
-    localStorage.setItem(SUBMITTED_DEADLINES_KEY, JSON.stringify(Array.from(ids)));
+    localStorage.setItem(key, JSON.stringify(Array.from(ids)));
   } catch {}
 }
 
-export function isDeadlineSubmittedLocal(id: number): boolean {
-  return getSubmittedDeadlineIds().has(Number(id));
+export function isDeadlineSubmittedLocal(id: number, userSlug?: string): boolean {
+  return getSubmittedDeadlineIds(userSlug).has(Number(id));
 }
 
-// Citation judgments local persistence
+// ==========================================
+// Per-account Imported Citations Persistence
+// ==========================================
+
+export function getLocalCitations(userSlug?: string): any[] {
+  if (typeof window === 'undefined') return [];
+  const slug = userSlug || getActiveUserSlug();
+  const key = `${LOCAL_CITATIONS_KEY}_${slug}`;
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function addLocalCitation(citation: any, userSlug?: string) {
+  if (typeof window === 'undefined') return;
+  const slug = userSlug || getActiveUserSlug();
+  const key = `${LOCAL_CITATIONS_KEY}_${slug}`;
+  try {
+    const all = getLocalCitations(slug);
+    const normalizedDoi = String(citation.doi || '').trim().toLowerCase();
+    const exists = all.some((c: any) =>
+      (normalizedDoi && String(c.doi || '').trim().toLowerCase() === normalizedDoi) ||
+      c.id === citation.id
+    );
+    if (!exists) {
+      all.push({
+        ...citation,
+        id: citation.id || Date.now(),
+        userSlug: slug,
+        createdAt: citation.createdAt || new Date().toISOString(),
+      });
+      localStorage.setItem(key, JSON.stringify(all));
+    }
+  } catch {}
+}
+
+// ==========================================
+// Per-account Custom Deadlines Persistence
+// ==========================================
+
+export function getLocalDeadlines(userSlug?: string): any[] {
+  if (typeof window === 'undefined') return [];
+  const slug = userSlug || getActiveUserSlug();
+  const key = `${LOCAL_DEADLINES_KEY}_${slug}`;
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function addLocalDeadline(deadline: any, userSlug?: string) {
+  if (typeof window === 'undefined') return;
+  const slug = userSlug || getActiveUserSlug();
+  const key = `${LOCAL_DEADLINES_KEY}_${slug}`;
+  try {
+    const all = getLocalDeadlines(slug);
+    all.push({
+      ...deadline,
+      id: deadline.id || Date.now(),
+      userSlug: slug,
+    });
+    localStorage.setItem(key, JSON.stringify(all));
+  } catch {}
+}
+
+// ==========================================
+// Per-account Citation Judgments Persistence
+// ==========================================
+
 export interface LocalJudgment {
   id: number;
   judgment: 'relevant' | 'not_relevant' | 'deferred';
@@ -107,45 +191,64 @@ export interface LocalJudgment {
   savedAt: string;
 }
 
-export function getLocalJudgments(): Record<number, LocalJudgment> {
+export function getLocalJudgments(userSlug?: string): Record<number, LocalJudgment> {
   if (typeof window === 'undefined') return {};
+  const slug = userSlug || getActiveUserSlug();
+  const key = `${CITATION_JUDGMENTS_KEY}_${slug}`;
   try {
-    const raw = localStorage.getItem(CITATION_JUDGMENTS_KEY);
+    const raw = localStorage.getItem(key);
     return raw ? JSON.parse(raw) : {};
   } catch {
     return {};
   }
 }
 
-export function saveLocalJudgment(id: number, judgment: 'relevant' | 'not_relevant' | 'deferred', notes?: string) {
+export function saveLocalJudgment(
+  id: number,
+  judgment: 'relevant' | 'not_relevant' | 'deferred',
+  notes?: string,
+  userSlug?: string
+) {
   if (typeof window === 'undefined') return;
+  const slug = userSlug || getActiveUserSlug();
+  const key = `${CITATION_JUDGMENTS_KEY}_${slug}`;
   try {
-    const all = getLocalJudgments();
+    const all = getLocalJudgments(slug);
     all[id] = { id, judgment, notes, savedAt: new Date().toISOString() };
-    localStorage.setItem(CITATION_JUDGMENTS_KEY, JSON.stringify(all));
+    localStorage.setItem(key, JSON.stringify(all));
   } catch {}
 }
 
-// Custom activities local persistence
-export function getLocalActivities(): any[] {
+// ==========================================
+// Per-account Decision Log & Activities Persistence
+// ==========================================
+
+export function getLocalActivities(userSlug?: string): any[] {
   if (typeof window === 'undefined') return [];
+  const slug = userSlug || getActiveUserSlug();
+  const key = `${LOCAL_ACTIVITIES_KEY}_${slug}`;
   try {
-    const raw = localStorage.getItem(LOCAL_ACTIVITIES_KEY);
+    const raw = localStorage.getItem(key);
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
   }
 }
 
-export function addLocalActivity(activity: {
-  title: string;
-  description: string;
-  kind?: string;
-  tone?: string;
-}) {
+export function addLocalActivity(
+  activity: {
+    title: string;
+    description: string;
+    kind?: string;
+    tone?: string;
+  },
+  userSlug?: string
+) {
   if (typeof window === 'undefined') return;
+  const slug = userSlug || getActiveUserSlug();
+  const key = `${LOCAL_ACTIVITIES_KEY}_${slug}`;
   try {
-    const all = getLocalActivities();
+    const all = getLocalActivities(slug);
     const newAct = {
       id: Date.now(),
       title: activity.title,
@@ -153,8 +256,9 @@ export function addLocalActivity(activity: {
       kind: activity.kind || 'clear',
       tone: activity.tone || 'success',
       createdAt: new Date().toISOString(),
+      userSlug: slug,
     };
     all.unshift(newAct);
-    localStorage.setItem(LOCAL_ACTIVITIES_KEY, JSON.stringify(all.slice(0, 50)));
+    localStorage.setItem(key, JSON.stringify(all.slice(0, 50)));
   } catch {}
 }

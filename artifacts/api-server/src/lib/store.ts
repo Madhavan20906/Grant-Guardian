@@ -1,9 +1,14 @@
-import { and, desc, eq } from "drizzle-orm";
+import fs from "node:fs";
+import path from "node:path";
+import { and, desc, eq, or } from "drizzle-orm";
 import { db, isDatabaseConfigured } from "@workspace/db";
 import { activities, citations, deadlines, drafts, preferences, users } from "@workspace/db/schema";
 import { demoActivities, demoCitations, demoDeadlines, demoPersonas, ensureSeedData, type PersonaProfile } from "@workspace/db/seed";
 import { hashPassword } from "./auth";
 import { logger } from "./logger";
+
+const DATA_DIR = path.resolve(process.cwd(), ".data");
+const STORE_FILE = path.join(DATA_DIR, "guardian_store.json");
 
 export interface UserRecord {
   id: number;
@@ -120,6 +125,75 @@ class GuardianStore {
   ];
 
   private initialized: Promise<number> | null = null;
+
+  constructor() {
+    this.loadFromDisk();
+  }
+
+  private loadFromDisk(): boolean {
+    try {
+      if (fs.existsSync(STORE_FILE)) {
+        const raw = fs.readFileSync(STORE_FILE, "utf-8");
+        const data = JSON.parse(raw);
+        if (data && Array.isArray(data.users) && data.users.length > 0) {
+          this.memoryUsers = data.users.map((u: any) => ({ ...u, createdAt: new Date(u.createdAt) }));
+        }
+        if (data && Array.isArray(data.citations) && data.citations.length > 0) {
+          this.memoryCitations = data.citations.map((c: any) => ({
+            ...c,
+            judgmentAt: c.judgmentAt ? new Date(c.judgmentAt) : null,
+            createdAt: new Date(c.createdAt),
+            updatedAt: new Date(c.updatedAt),
+          }));
+        }
+        if (data && Array.isArray(data.deadlines) && data.deadlines.length > 0) {
+          this.memoryDeadlines = data.deadlines.map((d: any) => ({
+            ...d,
+            dueDate: new Date(d.dueDate),
+          }));
+        }
+        if (data && Array.isArray(data.activities) && data.activities.length > 0) {
+          this.memoryActivities = data.activities.map((a: any) => ({
+            ...a,
+            createdAt: new Date(a.createdAt),
+          }));
+        }
+        if (data && Array.isArray(data.preferences) && data.preferences.length > 0) {
+          this.memoryPreferences = data.preferences;
+        }
+        if (data && Array.isArray(data.drafts) && data.drafts.length > 0) {
+          this.memoryDrafts = data.drafts.map((d: any) => ({
+            ...d,
+            createdAt: new Date(d.createdAt),
+          }));
+        }
+        logger.info({ file: STORE_FILE }, "Successfully loaded guardian store state from disk");
+        return true;
+      }
+    } catch (err) {
+      logger.warn({ err }, "Could not load store state from disk; using in-memory defaults");
+    }
+    return false;
+  }
+
+  public saveToDisk(): void {
+    try {
+      if (!fs.existsSync(DATA_DIR)) {
+        fs.mkdirSync(DATA_DIR, { recursive: true });
+      }
+      const data = {
+        users: this.memoryUsers,
+        citations: this.memoryCitations,
+        deadlines: this.memoryDeadlines,
+        activities: this.memoryActivities,
+        preferences: this.memoryPreferences,
+        drafts: this.memoryDrafts,
+      };
+      fs.writeFileSync(STORE_FILE, JSON.stringify(data, null, 2), "utf-8");
+    } catch (err) {
+      logger.warn({ err }, "Could not persist store state to disk");
+    }
+  }
 
   async ensureReady(): Promise<void> {
     if (!isDatabaseConfigured) {
@@ -329,6 +403,7 @@ class GuardianStore {
       tone: "neutral",
     });
 
+    this.saveToDisk();
     return userRecord;
   }
 
@@ -447,6 +522,7 @@ class GuardianStore {
       }
     }
 
+    this.saveToDisk();
     return {
       citationsCount: clonedCitations.length,
       deadlinesCount: clonedDeadlines.length,
@@ -493,6 +569,7 @@ class GuardianStore {
             initials: updated.initials,
           });
         }
+        this.saveToDisk();
         return this.getUserById(id);
       }
     } catch (err) {
@@ -508,6 +585,7 @@ class GuardianStore {
       if (data.focus) mem.focus = data.focus.trim();
       if (data.proposalName) mem.proposalName = data.proposalName.trim();
       if (data.initials) mem.initials = data.initials.trim().toUpperCase();
+      this.saveToDisk();
       return mem;
     }
     return null;
@@ -529,7 +607,22 @@ class GuardianStore {
     const matched = this.memoryUsers.find(
       p => p.tenantSlug.toLowerCase() === clean || p.name.toLowerCase().includes(clean) || p.email.toLowerCase() === clean
     );
-    return matched ? matched.id : 1;
+    if (matched) return matched.id;
+
+    if (isDatabaseConfigured) {
+      try {
+        const [row] = await db
+          .select()
+          .from(users)
+          .where(or(eq(users.tenantSlug, clean), eq(users.email, clean)))
+          .limit(1);
+        if (row) return row.id;
+      } catch (err) {
+        logger.warn({ err, clean }, "Database user lookup failed in getUserId");
+      }
+    }
+
+    return 1;
   }
 
   async getOverview(userId: number) {
@@ -671,6 +764,7 @@ class GuardianStore {
     }
 
     this.memoryDeadlines.push(record);
+    this.saveToDisk();
     return record;
   }
 
@@ -712,6 +806,7 @@ class GuardianStore {
       }
     }
 
+    this.saveToDisk();
     return updatedRecord;
   }
 
@@ -751,6 +846,7 @@ class GuardianStore {
     if (existingIndex !== -1) {
       this.memoryActivities[existingIndex].description = data.description;
       this.memoryActivities[existingIndex].createdAt = now;
+      this.saveToDisk();
       return this.memoryActivities[existingIndex];
     }
 
@@ -766,6 +862,7 @@ class GuardianStore {
 
     if (!isDatabaseConfigured) {
       this.memoryActivities.unshift(record);
+      this.saveToDisk();
       return record;
     }
 
@@ -783,6 +880,7 @@ class GuardianStore {
         .returning();
       if (inserted) {
         this.memoryActivities.unshift(inserted as ActivityRecord);
+        this.saveToDisk();
         return inserted as ActivityRecord;
       }
     } catch (err) {
@@ -790,6 +888,7 @@ class GuardianStore {
     }
 
     this.memoryActivities.unshift(record);
+    this.saveToDisk();
     return record;
   }
 
@@ -837,6 +936,7 @@ class GuardianStore {
       }
     }
 
+    this.saveToDisk();
     return updatedRecord;
   }
 
@@ -853,6 +953,7 @@ class GuardianStore {
 
     if (!isDatabaseConfigured) {
       this.memoryDrafts.unshift(record);
+      this.saveToDisk();
       return record;
     }
 
@@ -875,6 +976,7 @@ class GuardianStore {
     }
 
     this.memoryDrafts.unshift(record);
+    this.saveToDisk();
     return record;
   }
 
@@ -925,6 +1027,7 @@ class GuardianStore {
           .where(eq(preferences.userId, userId))
           .returning();
         if (row) {
+          this.saveToDisk();
           return row as PreferencesRecord;
         }
       } catch (err) {
@@ -938,6 +1041,7 @@ class GuardianStore {
     } else {
       this.memoryPreferences.push(updated);
     }
+    this.saveToDisk();
     return updated;
   }
 
@@ -1009,6 +1113,10 @@ class GuardianStore {
       added.push(newRecord);
     }
 
+    if (added.length > 0) {
+      this.saveToDisk();
+    }
+
     return added;
   }
 
@@ -1067,6 +1175,7 @@ class GuardianStore {
         memTarget.updatedAt = new Date();
       }
     }
+    this.saveToDisk();
   }
 
   async recordJudgment(
@@ -1135,6 +1244,7 @@ class GuardianStore {
       description: activityDesc,
     });
 
+    this.saveToDisk();
     return updatedRecord;
   }
 }

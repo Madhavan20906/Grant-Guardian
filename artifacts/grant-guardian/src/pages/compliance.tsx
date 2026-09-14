@@ -1,16 +1,30 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { FileText, Plus, Sparkles, X, Download, FileDown, Printer, Copy, Check } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { getListActivityQueryKey, getListDeadlinesQueryKey, useDraftComplianceReport, useListDeadlines, type Deadline } from '@workspace/api-client-react';
 import { Button, DeadlineRow, Drawer, EmptyBlock, ErrorBlock, LoadingBlock, SectionHeading, StatusPill } from '@/components/guardian-ui';
-import { apiRequest, getSubmittedDeadlineIds, markDeadlineSubmittedLocal, isDeadlineSubmittedLocal, addLocalActivity } from '@/lib/api';
+import {
+  apiRequest,
+  getSubmittedDeadlineIds,
+  markDeadlineSubmittedLocal,
+  isDeadlineSubmittedLocal,
+  addLocalActivity,
+  getLocalDeadlines,
+  addLocalDeadline,
+} from '@/lib/api';
 import { useAuth, formatDisplayName } from '@/context/auth-context';
 
 export default function Compliance() {
   const queryClient = useQueryClient();
   const query = useListDeadlines();
   const { user } = useAuth();
-  const [submittedIds, setSubmittedIds] = useState<Set<number>>(getSubmittedDeadlineIds);
+  const userSlug = user?.tenantSlug || (user?.id ? String(user.id) : undefined);
+  const [submittedIds, setSubmittedIds] = useState<Set<number>>(() => getSubmittedDeadlineIds(userSlug));
+
+  useEffect(() => {
+    setSubmittedIds(getSubmittedDeadlineIds(userSlug));
+  }, [userSlug]);
+
   const draftMutation = useDraftComplianceReport();
   const [draft, setDraft] = useState<{ id: number; deadlineId: number; title: string; status: string; body: string } | null>(null);
   const [draftError, setDraftError] = useState('');
@@ -25,14 +39,29 @@ export default function Compliance() {
   const [isAdding, setIsAdding] = useState(false);
 
   const rawDeadlines = Array.isArray(query.data) ? query.data : [];
+
+  // Merge server deadlines with account-scoped local deadlines
+  const allRawDeadlines = useMemo(() => {
+    const local = getLocalDeadlines(userSlug);
+    if (!local || local.length === 0) return rawDeadlines;
+    const merged = [...rawDeadlines];
+    for (const item of local) {
+      const exists = merged.some((d: any) => d.id === item.id || d.title === item.title);
+      if (!exists) {
+        merged.push(item);
+      }
+    }
+    return merged;
+  }, [rawDeadlines, userSlug]);
+
   const deadlines = useMemo(() => {
-    return rawDeadlines.map((d: Deadline) => {
+    return allRawDeadlines.map((d: Deadline) => {
       const isSub =
         (d.progress ?? 0) >= 100 ||
         (d.status as string) === 'clear' ||
         (d.status as string) === 'submitted' ||
         submittedIds.has(d.id) ||
-        isDeadlineSubmittedLocal(d.id);
+        isDeadlineSubmittedLocal(d.id, userSlug);
       if (isSub) {
         return {
           ...d,
@@ -42,7 +71,7 @@ export default function Compliance() {
       }
       return d;
     });
-  }, [rawDeadlines, submittedIds]);
+  }, [allRawDeadlines, submittedIds, userSlug]);
   const attention = deadlines.filter((deadline: Deadline) => deadline.status === 'attention').length;
 
   const draftReport = (id: number) => {
@@ -137,6 +166,23 @@ export default function Compliance() {
         }),
       });
       if (res.ok) {
+        const createdRecord = res.data || {
+          id: Date.now(),
+          title: newTitle.trim(),
+          type: newType,
+          dueDate,
+          progress: parseInt(newProgress, 10) || 10,
+          owner: formatDisplayName(user),
+          status: days <= 7 ? 'attention' : days <= 21 ? 'due_soon' : 'on_track',
+        };
+        addLocalDeadline(createdRecord, userSlug);
+        addLocalActivity({
+          title: `Compliance track registered: ${newTitle.trim()}`,
+          description: `New ${newType} deadline added for PI ${formatDisplayName(user)}. Due in ${days} days.`,
+          kind: 'scan',
+          tone: 'neutral',
+        }, userSlug);
+
         setNewTitle('');
         setShowAddModal(false);
         await Promise.all([
@@ -152,9 +198,9 @@ export default function Compliance() {
   };
 
   const handleMarkSubmitted = async (id: number) => {
-    // 1. Immediately record in localStorage so state is persisted across pages & reloads
-    markDeadlineSubmittedLocal(id);
-    setSubmittedIds(new Set(getSubmittedDeadlineIds()));
+    // 1. Immediately record in localStorage so state is persisted across pages & reloads scoped to user
+    markDeadlineSubmittedLocal(id, userSlug);
+    setSubmittedIds(new Set(getSubmittedDeadlineIds(userSlug)));
 
     // 2. Add local activity log so /activity immediately has this milestone
     const target = deadlines.find((d: Deadline) => d.id === id);
@@ -165,7 +211,7 @@ export default function Compliance() {
       description: `Marked officially submitted by PI (${ownerName}) to external sponsor portal. Progress registered at 100%.`,
       kind: 'clear',
       tone: 'success',
-    });
+    }, userSlug);
 
     // 3. Optimistically update React Query cache for instant zero-latency UI update
     queryClient.setQueryData(getListDeadlinesQueryKey(), (old: Deadline[] | undefined) => {

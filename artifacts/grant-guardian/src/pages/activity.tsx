@@ -28,10 +28,13 @@ import {
 } from '@/components/guardian-ui';
 import { EvidenceTimeline } from '@/components/evidence-timeline';
 import { TrustCenter } from '@/components/trust-center';
+import { useAuth } from '@/context/auth-context';
 import { apiRequest, getLocalActivities, addLocalActivity } from '@/lib/api';
 
 export default function ActivityPage() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const userSlug = user?.tenantSlug || (user?.id ? String(user.id) : undefined);
   const query = useListActivity({
     query: {
       queryKey: getListActivityQueryKey(),
@@ -58,7 +61,7 @@ export default function ActivityPage() {
       description,
       kind: 'escalation',
       tone,
-    });
+    }, userSlug);
 
     try {
       await apiRequest('/api/guardian/activity', {
@@ -91,7 +94,7 @@ export default function ActivityPage() {
   };
 
   const serverActivities = Array.isArray(query.data) ? query.data : [];
-  const localActivities = useMemo(() => getLocalActivities(), []);
+  const localActivities = useMemo(() => getLocalActivities(userSlug), [userSlug]);
 
   // Deduplicate consecutive events while ensuring local events show immediately at top
   const deduplicatedActivity = useMemo(() => {
