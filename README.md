@@ -4,16 +4,17 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![AWS Bedrock](https://img.shields.io/badge/AWS-Bedrock%20AgentCore-FF9900?logo=amazon-aws)](agent-service/agentcore.json)
 [![Strands SDK](https://img.shields.io/badge/Strands-SDK%202.0-8b5cf6)](agent-service/main.py)
-[![Tests: 89 Passing](https://img.shields.io/badge/Tests-89%20Passing-10b981)](artifacts/api-server/src/routes/guardian.test.ts)
+[![Tests: 90 Passing](https://img.shields.io/badge/Tests-90%20Passing-10b981)](artifacts/api-server/src/routes/guardian.test.ts)
 
 > **Live Deployment & Verification**:
 > - **PI Web Application**: `https://grant-guardian.onrender.com` (or local `http://localhost:5173`)
 > - **Express API Service**: `https://grant-guardian-api.onrender.com` (or local `http://localhost:3001`)
 > - **Python Strands Agent (FastAPI)**: `https://grant-guardian-strands.onrender.com` (or local `http://localhost:8010`)
 > - **Architecture Specification & Diagram**: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · [docs/architecture-diagram.svg](docs/architecture-diagram.svg)
-> - **AWS Builder Center Series (Bonus Submission)**:
+> - **AWS Builder Center Series**:
 >   - [Part 1: Building Grant Guardian on AWS Bedrock & Strands](https://builder.aws.com/content/3JJch4QjsrB29idCCi4gvHP97S9/agents-for-humans-building-grant-guardian-a-safety-first-autonomous-research-integrity-agent-on-aws-bedrock-and-strands)
->   - [Part 2: Enforcing Adversarial Immunity & Restraint with 89 Tests](https://builder.aws.com/content/3JJfV5D7qDF9IAuVLW5w5I3ljhc/agents-for-humans-enforcing-adversarial-immunity-and-restraint-in-agentic-ai-with-89-automated-tests)
+>   - [Part 2: Orchestrating Multi-Agent Fleets with Python Strands SDK and AWS AgentCore](https://builder.aws.com/content/3JJe6ZCfy68Z2UMcwPpFBizo0N3/agents-for-humans-orchestrating-multi-agent-fleets-with-python-strands-sdk-and-aws-agentcore)
+>   - [Part 3: Enforcing Adversarial Immunity & Restraint in Agentic AI with Automated Tests](https://builder.aws.com/content/3JJfV5D7qDF9IAuVLW5w5I3ljhc/agents-for-humans-enforcing-adversarial-immunity-and-restraint-in-agentic-ai-with-89-automated-tests)
 
 ---
 
@@ -385,7 +386,7 @@ Provision PostgreSQL and set `DATABASE_URL` (optional; if unprovisioned, the bui
 # 1. Install dependencies
 pnpm install
 
-# 2. Run all 89 automated tests (65 TypeScript + 24 Python)
+# 2. Run all 90 automated tests (66 TypeScript + 24 Python)
 pnpm run test:all
 
 # 3. Typecheck and build production artifacts
@@ -398,7 +399,7 @@ pnpm dev
 
 ### Discrete Test Commands
 ```bash
-# 65 TypeScript adversarial, multi-tenant & route tests (with fast-failover)
+# 66 TypeScript adversarial, multi-tenant & route tests (with fast-failover)
 pnpm test
 
 # 24 Python Strands service, dynamic branching, 10-tool fleet, subagents & Bedrock trace replay tests
