@@ -351,10 +351,58 @@ export function StatCard({
   );
 }
 
+export function formatActivityTimestamp(raw: string | undefined | null): string {
+  if (!raw) return 'Just now';
+  try {
+    const d = new Date(raw);
+    if (!isNaN(d.getTime())) {
+      const now = Date.now();
+      const diffMs = now - d.getTime();
+      if (diffMs >= 0 && diffMs < 45_000) return 'Just now';
+      if (diffMs >= 0 && diffMs < 3_600_000) return `${Math.floor(diffMs / 60_000)}m ago`;
+      if (diffMs >= 0 && diffMs < 86_400_000) {
+        return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      }
+      return (
+        d.toLocaleDateString([], { month: 'short', day: 'numeric' }) +
+        ', ' +
+        d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+      );
+    }
+  } catch {}
+  return raw;
+}
+
 export function ActivityRow({ item }: { item: Activity }) {
   const icons = { scan: RefreshCw, flagged: AlertTriangle, escalation: AlertCircle, draft: FileText, clear: CheckCircle2 };
   const Icon = icons[item.kind as keyof typeof icons] ?? ActivityIcon;
-  return <div className="flex gap-3 border-b border-[hsl(var(--border)/.7)] py-3.5 last:border-0" data-testid={`row-activity-${item.id}`}><div className={cx('mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full', item.tone === 'danger' ? 'bg-[hsl(var(--destructive)/.12)] text-[hsl(var(--destructive))]' : item.tone === 'warning' ? 'bg-[hsl(35_76%_61%/.18)] text-[hsl(25_62%_35%)]' : item.tone === 'success' ? 'bg-[hsl(var(--accent)/.25)] text-[hsl(155_35%_27%)]' : 'bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]')}><Icon size={14} /></div><div className="min-w-0 flex-1"><div className="flex flex-wrap items-baseline justify-between gap-2"><div className="text-[11px] font-bold">{item.title}</div><time className="gg-mono text-[9px] text-[hsl(var(--muted-foreground))]">{item.timestamp}</time></div><p className="mt-1 text-[10px] leading-relaxed text-[hsl(var(--muted-foreground))]">{item.description}</p></div></div>;
+  return (
+    <div className="flex gap-3 border-b border-[hsl(var(--border)/.7)] py-3.5 last:border-0" data-testid={`row-activity-${item.id}`}>
+      <div
+        className={cx(
+          'mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full',
+          item.tone === 'danger'
+            ? 'bg-[hsl(var(--destructive)/.12)] text-[hsl(var(--destructive))]'
+            : item.tone === 'warning'
+            ? 'bg-[hsl(35_76%_61%/.18)] text-[hsl(25_62%_35%)]'
+            : item.tone === 'success'
+            ? 'bg-[hsl(var(--accent)/.25)] text-[hsl(155_35%_27%)]'
+            : 'bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]'
+        )}
+      >
+        <Icon size={14} />
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <div className="text-[11px] font-bold">{item.title}</div>
+          <time className="gg-mono text-[9px] text-[hsl(var(--muted-foreground))]">
+            {formatActivityTimestamp(item.timestamp)}
+          </time>
+        </div>
+        <p className="mt-1 text-[10px] leading-relaxed text-[hsl(var(--muted-foreground))]">{item.description}</p>
+      </div>
+    </div>
+  );
 }
 
 export function CitationRow({ citation, onSelect }: { citation: Citation; onSelect?: () => void }) {

@@ -45,7 +45,7 @@ import {
   type Deadline,
   type Activity,
 } from '@workspace/api-client-react';
-import { Drawer, EmptyBlock, ErrorBlock, LoadingBlock, ScanButton, StatCard } from '@/components/guardian-ui';
+import { Drawer, EmptyBlock, ErrorBlock, LoadingBlock, ScanButton, StatCard, formatActivityTimestamp } from '@/components/guardian-ui';
 import { CitationGraph } from '@/components/citation-graph';
 import { BlastRadius } from '@/components/blast-radius';
 import { InvestigationWorkspace } from '@/components/investigation-workspace';
@@ -822,7 +822,7 @@ export default function Overview() {
                         </span>
                       </div>
                       <span className="font-mono text-[10px] text-slate-400 shrink-0">
-                        {item.timestamp || 'Just now'}
+                        {formatActivityTimestamp(item.timestamp)}
                       </span>
                     </div>
                     <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400 truncate">

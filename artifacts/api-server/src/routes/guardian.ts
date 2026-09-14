@@ -166,7 +166,7 @@ router.post("/guardian/activity", async (req, res, next) => {
 
     return res.status(201).json({
       ...activity,
-      timestamp: activity.createdAt.toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }),
+      timestamp: activity.createdAt.toISOString(),
     });
   } catch (error) {
     return next(error);
@@ -201,7 +201,7 @@ router.get("/guardian/activity", async (req, res, next) => {
             id: item.id,
             title,
             description: desc,
-            timestamp: item.createdAt.toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }),
+            timestamp: item.createdAt.toISOString(),
           };
         })
       )

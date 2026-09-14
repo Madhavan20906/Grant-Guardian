@@ -24,6 +24,7 @@ import {
   LoadingBlock,
   SectionHeading,
   StatusPill,
+  formatActivityTimestamp,
 } from '@/components/guardian-ui';
 import { EvidenceTimeline } from '@/components/evidence-timeline';
 import { TrustCenter } from '@/components/trust-center';
@@ -205,7 +206,7 @@ export default function ActivityPage() {
                         <span className={`size-2 rounded-full shrink-0 ${isRisk ? 'bg-rose-500' : isWarn ? 'bg-amber-500' : 'bg-emerald-500'}`} />
                         <span className="font-bold text-[hsl(var(--foreground))]">{item.title}</span>
                       </div>
-                      <span className="text-[9px] text-[hsl(var(--muted-foreground))]">{item.timestamp}</span>
+                      <span className="text-[9px] text-[hsl(var(--muted-foreground))]">{formatActivityTimestamp(item.timestamp)}</span>
                     </div>
                     <div className="text-[10px] text-[hsl(var(--muted-foreground))] pl-4 border-l-2 border-[hsl(var(--border))]">
                       {item.description}
