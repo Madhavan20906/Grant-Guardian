@@ -244,19 +244,19 @@ export default function Compliance() {
   return (
     <div className="gg-stagger space-y-6">
       <SectionHeading
-        eyebrow="Compliance desk"
-        title="Keep the paperwork moving."
-        description="Guardian tracks the dates that can quietly derail a grant. When a deadline needs shape, it can make the first draft for you."
+        eyebrow="Regulatory Risk & Sponsor Governance"
+        title="Compliance Desk & Milestone Runway"
+        description="Continuous oversight of regulatory gates, IRB renewals, NIH/NSF progress reports, and biosafety audits. When paperwork demands preparation, Guardian drafts the initial filing under strict PI supervision."
         action={
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-3 py-2 text-[11px] text-[hsl(var(--muted-foreground))]">
-              <span className="size-2 rounded-full bg-emerald-500" />
-              {attention ? `${attention} deadline${attention === 1 ? '' : 's'} need attention` : 'All deadlines on track'}
+          <div className="flex flex-wrap items-center gap-2.5">
+            <div className="flex items-center gap-2 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-3.5 py-2 text-xs text-[hsl(var(--foreground))] shadow-xs">
+              <span className={`size-2 rounded-full ${attention ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`} />
+              <span className="font-semibold">{attention ? `${attention} Milestone${attention === 1 ? '' : 's'} Require Attention` : 'All 100% On Track'}</span>
             </div>
             <button
               type="button"
               onClick={() => setShowAddModal(true)}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-3.5 py-2 text-xs font-semibold hover:opacity-90 transition-opacity shadow-2xs cursor-pointer"
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-[0.98] text-white px-4 py-2 text-xs font-bold transition-all shadow-xs cursor-pointer"
               data-testid="button-add-deadline"
             >
               <Plus size={14} />
@@ -266,41 +266,76 @@ export default function Compliance() {
         }
       />
 
-      {/* Compliance Metrics Overview - Clean theme cards blending with background */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-2xs">
-          <div className="gg-mono text-[9px] uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-            Total Tracked
+      {/* Compliance Metrics Overview - Executive KPI Grid */}
+      <div className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="rounded-2xl border border-[hsl(var(--border))] bg-gradient-to-b from-[hsl(var(--card))] to-[hsl(var(--muted)/.15)] p-4 shadow-xs relative overflow-hidden">
+          <div className="flex items-center justify-between">
+            <span className="gg-mono text-[9px] uppercase tracking-wider text-[hsl(var(--muted-foreground))] font-bold">
+              Tracked Commitments
+            </span>
+            <span className="flex size-6 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
+              <FileText size={12} />
+            </span>
           </div>
-          <div className="mt-2 text-[24px] font-extrabold text-[hsl(var(--foreground))]">{deadlines.length}</div>
-          <div className="mt-1 text-[10px] text-[hsl(var(--muted-foreground))]">Active grant deadlines</div>
+          <div className="mt-2.5 text-[28px] font-extrabold text-[hsl(var(--foreground))] tabular-nums">{deadlines.length}</div>
+          <div className="mt-1 flex items-center gap-1.5 text-[11px] text-[hsl(var(--muted-foreground))] font-medium">
+            <span className="size-1.5 rounded-full bg-blue-500" />
+            <span>Active regulatory &amp; grant milestones</span>
+          </div>
         </div>
-        <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-2xs">
-          <div className="gg-mono text-[9px] uppercase tracking-wider text-[hsl(var(--muted-foreground))] font-semibold">
-            Needs Attention
+
+        <div className="rounded-2xl border border-rose-500/25 bg-gradient-to-b from-rose-500/5 via-[hsl(var(--card))] to-[hsl(var(--card))] p-4 shadow-xs relative overflow-hidden">
+          <div className="flex items-center justify-between">
+            <span className="gg-mono text-[9px] uppercase tracking-wider text-rose-600 dark:text-rose-400 font-bold">
+              Immediate Attention
+            </span>
+            <span className="flex size-6 items-center justify-center rounded-lg bg-rose-500/15 text-rose-600 dark:text-rose-400">
+              <Sparkles size={12} />
+            </span>
           </div>
-          <div className="mt-2 text-[24px] font-extrabold text-[hsl(var(--foreground))]">
+          <div className="mt-2.5 text-[28px] font-extrabold text-rose-600 dark:text-rose-400 tabular-nums">
             {deadlines.filter((d: Deadline) => d.status === 'attention').length}
           </div>
-          <div className="mt-1 text-[10px] text-[hsl(var(--muted-foreground))]">&lt;14d runway &amp; &lt;80% prep</div>
-        </div>
-        <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-2xs">
-          <div className="gg-mono text-[9px] uppercase tracking-wider text-[hsl(var(--muted-foreground))] font-semibold">
-            Due Soon
+          <div className="mt-1 flex items-center gap-1.5 text-[11px] text-[hsl(var(--muted-foreground))] font-medium">
+            <span className="size-1.5 rounded-full bg-rose-500" />
+            <span>&lt;14d runway &amp; &lt;80% preparation</span>
           </div>
-          <div className="mt-2 text-[24px] font-extrabold text-[hsl(var(--foreground))]">
+        </div>
+
+        <div className="rounded-2xl border border-amber-500/25 bg-gradient-to-b from-amber-500/5 via-[hsl(var(--card))] to-[hsl(var(--card))] p-4 shadow-xs relative overflow-hidden">
+          <div className="flex items-center justify-between">
+            <span className="gg-mono text-[9px] uppercase tracking-wider text-amber-600 dark:text-amber-400 font-bold">
+              Upcoming Horizon
+            </span>
+            <span className="flex size-6 items-center justify-center rounded-lg bg-amber-500/15 text-amber-600 dark:text-amber-400">
+              <FileDown size={12} />
+            </span>
+          </div>
+          <div className="mt-2.5 text-[28px] font-extrabold text-amber-600 dark:text-amber-400 tabular-nums">
             {deadlines.filter((d: Deadline) => d.status === 'due_soon').length}
           </div>
-          <div className="mt-1 text-[10px] text-[hsl(var(--muted-foreground))]">11–21 days preparation window</div>
-        </div>
-        <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-2xs">
-          <div className="gg-mono text-[9px] uppercase tracking-wider text-[hsl(var(--muted-foreground))] font-semibold">
-            On Track / Clear
+          <div className="mt-1 flex items-center gap-1.5 text-[11px] text-[hsl(var(--muted-foreground))] font-medium">
+            <span className="size-1.5 rounded-full bg-amber-500" />
+            <span>11–21 days preparation window</span>
           </div>
-          <div className="mt-2 text-[24px] font-extrabold text-[hsl(var(--foreground))]">
+        </div>
+
+        <div className="rounded-2xl border border-emerald-500/25 bg-gradient-to-b from-emerald-500/5 via-[hsl(var(--card))] to-[hsl(var(--card))] p-4 shadow-xs relative overflow-hidden">
+          <div className="flex items-center justify-between">
+            <span className="gg-mono text-[9px] uppercase tracking-wider text-emerald-600 dark:text-emerald-400 font-bold">
+              Verified / Submitted
+            </span>
+            <span className="flex size-6 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+              <Check size={12} />
+            </span>
+          </div>
+          <div className="mt-2.5 text-[28px] font-extrabold text-emerald-600 dark:text-emerald-400 tabular-nums">
             {deadlines.filter((d: Deadline) => d.status === 'on_track' || (d.status as string) === 'submitted').length}
           </div>
-          <div className="mt-1 text-[10px] text-[hsl(var(--muted-foreground))]">Adequate milestone runway</div>
+          <div className="mt-1 flex items-center gap-1.5 text-[11px] text-[hsl(var(--muted-foreground))] font-medium">
+            <span className="size-1.5 rounded-full bg-emerald-500" />
+            <span>Safe runway or officially filed</span>
+          </div>
         </div>
       </div>
 
@@ -386,45 +421,81 @@ export default function Compliance() {
         </div>
       )}
 
-      {/* Add Deadline Modal */}
+      {/* Add Deadline Modal - Executive Dialog */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 shadow-xl space-y-4">
-            <div className="flex items-center justify-between border-b border-[hsl(var(--border))] pb-3">
-              <h3 className="text-[14px] font-bold text-[hsl(var(--foreground))]">Track New Compliance Deadline</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-150">
+          <div className="w-full max-w-lg rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 sm:p-7 shadow-2xl space-y-5 relative">
+            <div className="flex items-center justify-between border-b border-[hsl(var(--border))] pb-4">
+              <div className="flex items-center gap-2.5">
+                <span className="flex size-8 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                  <Plus size={16} />
+                </span>
+                <div>
+                  <h3 className="text-base font-bold text-[hsl(var(--foreground))]">Register Compliance Horizon</h3>
+                  <p className="text-[11px] text-[hsl(var(--muted-foreground))]">Track institutional filings, sponsor disclosures, or renewal dates.</p>
+                </div>
+              </div>
               <button
                 type="button"
                 onClick={() => setShowAddModal(false)}
-                className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+                className="rounded-lg p-1.5 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition-colors cursor-pointer"
               >
                 <X size={16} />
               </button>
             </div>
 
-            <form onSubmit={handleCreateDeadline} className="space-y-3.5">
+            <form onSubmit={handleCreateDeadline} className="space-y-4">
               <div>
-                <label className="block text-[11px] font-bold text-[hsl(var(--foreground))] mb-1">
+                <label className="block text-xs font-bold text-[hsl(var(--foreground))] mb-1.5">
                   Milestone / Requirement Title
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. NIH Conflict of Interest Disclosure or IRB Modification"
+                  placeholder="e.g. NIH Conflict of Interest Disclosure, NSF RCR Certification, or IRB Modification"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  className="w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3 py-2 text-xs text-[hsl(var(--foreground))] focus:outline-none focus:ring-1 focus:ring-slate-400"
+                  className="w-full rounded-xl border border-[hsl(var(--input))] bg-[hsl(var(--background))] px-3.5 py-2.5 text-xs text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 focus:outline-none transition-all"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              {/* Quick Preset Agency Buttons */}
+              <div>
+                <span className="block text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-1.5">
+                  Quick Agency Presets:
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    { label: 'NIH Annual RPPR', type: 'Funding report', days: '30' },
+                    { label: 'NSF Conflict of Interest', type: 'Ethics disclosure', days: '14' },
+                    { label: 'Institutional IRB Renewal', type: 'IRB renewal', days: '21' },
+                    { label: 'DOD Export Control Review', type: 'Export control', days: '45' },
+                  ].map((preset) => (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      onClick={() => {
+                        setNewTitle(preset.label);
+                        setNewType(preset.type);
+                        setNewDays(preset.days);
+                      }}
+                      className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.4)] hover:bg-[hsl(var(--muted))] px-2.5 py-1 text-[10px] font-semibold text-[hsl(var(--foreground))] transition-colors cursor-pointer"
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-[11px] font-bold text-[hsl(var(--foreground))] mb-1">
-                    Agency / Type
+                  <label className="block text-xs font-bold text-[hsl(var(--foreground))] mb-1.5">
+                    Category / Authority
                   </label>
                   <select
                     value={newType}
                     onChange={(e) => setNewType(e.target.value)}
-                    className="w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3 py-2 text-xs text-[hsl(var(--foreground))] focus:outline-none"
+                    className="w-full rounded-xl border border-[hsl(var(--input))] bg-[hsl(var(--background))] px-3 py-2 text-xs font-medium text-[hsl(var(--foreground))] focus:border-blue-500 focus:outline-none cursor-pointer"
                   >
                     <option value="IRB renewal">IRB renewal</option>
                     <option value="Funding report">Funding report</option>
@@ -438,8 +509,8 @@ export default function Compliance() {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-[hsl(var(--foreground))] mb-1">
-                    Days until due
+                  <label className="block text-xs font-bold text-[hsl(var(--foreground))] mb-1.5">
+                    Days until filing window ({newDays}d)
                   </label>
                   <input
                     type="number"
@@ -447,32 +518,41 @@ export default function Compliance() {
                     max="365"
                     value={newDays}
                     onChange={(e) => setNewDays(e.target.value)}
-                    className="w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3 py-2 text-xs text-[hsl(var(--foreground))] focus:outline-none"
+                    className="w-full rounded-xl border border-[hsl(var(--input))] bg-[hsl(var(--background))] px-3.5 py-2 text-xs font-mono text-[hsl(var(--foreground))] focus:border-blue-500 focus:outline-none"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-[hsl(var(--foreground))] mb-1">
-                  Initial Preparation Readiness ({newProgress}%)
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-bold text-[hsl(var(--foreground))]">
+                    Preparation Readiness Gauge
+                  </label>
+                  <span className="gg-mono text-xs font-bold text-[hsl(var(--foreground))]">
+                    {newProgress}% Complete
+                  </span>
+                </div>
                 <input
                   type="range"
                   min="0"
                   max="100"
                   value={newProgress}
                   onChange={(e) => setNewProgress(e.target.value)}
-                  className="w-full accent-slate-700 dark:accent-slate-300"
+                  className="w-full accent-blue-600 h-2 bg-[hsl(var(--muted))] rounded-lg cursor-pointer"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[hsl(var(--border))]">
+              <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-[hsl(var(--border))]">
                 <Button variant="secondary" onClick={() => setShowAddModal(false)}>
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isAdding}>
-                  {isAdding ? 'Registering...' : 'Register Deadline'}
-                </Button>
+                <button
+                  type="submit"
+                  disabled={isAdding}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-4 py-2 text-xs font-bold shadow-xs cursor-pointer disabled:opacity-50"
+                >
+                  {isAdding ? 'Registering...' : 'Confirm & Track'}
+                </button>
               </div>
             </form>
           </div>

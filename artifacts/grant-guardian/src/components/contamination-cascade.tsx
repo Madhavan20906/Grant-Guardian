@@ -173,10 +173,12 @@ export function ContaminationCascade({
       <div className="grid lg:grid-cols-[1.3fr_1fr] divide-y lg:divide-y-0 lg:divide-x divide-[hsl(var(--border))]">
         {/* Visual Cascade Vertical Chain Canvas */}
         <div className="p-6 bg-[hsl(var(--card))] flex flex-col items-center justify-center">
-          <div className="w-full max-w-[460px] space-y-2 relative">
-            {chain.map((tier, idx) => {
+          <div className="w-full max-w-[480px] space-y-2 relative">
+            {dynamicChain.map((tier, idx) => {
               const isSelected = selectedTierId === tier.id;
-              const isLast = idx === chain.length - 1;
+              const isLast = idx === dynamicChain.length - 1;
+              const isRoot = tier.role === 'retracted_root';
+              const isProposal = tier.role === 'grant_proposal';
 
               return (
                 <React.Fragment key={tier.id}>
@@ -184,33 +186,41 @@ export function ContaminationCascade({
                   <button
                     type="button"
                     onClick={() => setSelectedTierId(tier.id)}
-                    className={`w-full text-left rounded-xl border p-4 transition-all relative shadow-2xs cursor-pointer ${
+                    className={`w-full text-left rounded-2xl border p-4 transition-all relative shadow-xs cursor-pointer ${
                       isSelected
-                        ? 'border-[hsl(var(--foreground))] bg-[hsl(var(--muted))] ring-1 ring-[hsl(var(--border))]'
-                        : 'border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:bg-[hsl(var(--muted)/.4)]'
+                        ? isRoot
+                          ? 'border-rose-500 bg-rose-500/10 ring-2 ring-rose-500/30'
+                          : isProposal
+                          ? 'border-purple-500 bg-purple-500/10 ring-2 ring-purple-500/30'
+                          : 'border-amber-500 bg-amber-500/10 ring-2 ring-amber-500/30'
+                        : isRoot
+                        ? 'border-rose-500/30 bg-gradient-to-r from-rose-500/5 via-[hsl(var(--card))] to-[hsl(var(--card))] hover:border-rose-500/60'
+                        : isProposal
+                        ? 'border-purple-500/30 bg-gradient-to-r from-purple-500/5 via-[hsl(var(--card))] to-[hsl(var(--card))] hover:border-purple-500/60'
+                        : 'border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:border-amber-500/40'
                     }`}
                     data-testid={`cascade-tier-${tier.id}`}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-mono text-[9px] font-bold uppercase px-2 py-0.5 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))]">
+                      <span className={`font-mono text-[9px] font-extrabold uppercase px-2.5 py-0.5 rounded-md border ${tier.badgeColor}`}>
                         {tier.badge}
                       </span>
-                      <span className="font-mono text-[10px] text-[hsl(var(--muted-foreground))]">
+                      <span className="font-mono text-[10px] font-semibold text-[hsl(var(--muted-foreground))]">
                         Hop {idx}
                       </span>
                     </div>
 
-                    <h4 className="mt-2 text-[13px] font-bold text-[hsl(var(--foreground))] leading-snug">
+                    <h4 className="mt-2 text-sm font-bold text-[hsl(var(--foreground))] leading-snug">
                       {tier.title}
                     </h4>
 
-                    <div className="mt-1 flex flex-wrap items-center gap-x-2 text-[11px] text-[hsl(var(--muted-foreground))] font-mono">
+                    <div className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-[hsl(var(--muted-foreground))] font-mono">
                       <span>{tier.authors}</span>
                       <span>·</span>
                       <span>{tier.venue} ({tier.year})</span>
                     </div>
 
-                    <p className="mt-2 text-[11px] text-[hsl(var(--muted-foreground))] line-clamp-2">
+                    <p className="mt-2 text-xs text-[hsl(var(--muted-foreground))] line-clamp-2 leading-relaxed">
                       {tier.claimSnippet}
                     </p>
                   </button>
@@ -218,24 +228,24 @@ export function ContaminationCascade({
                   {/* Flow Arrow with "cited by" label */}
                   {!isLast && (
                     <div className="flex flex-col items-center justify-center my-1.5 py-1">
-                      <div className={`w-0.5 h-3 ${isTracing ? 'bg-[hsl(var(--foreground))] animate-pulse' : 'bg-[hsl(var(--border))]'}`} />
-                      <div className="inline-flex items-center gap-1 rounded-full bg-[hsl(var(--muted))] px-2.5 py-0.5 font-mono text-[9px] font-bold text-[hsl(var(--muted-foreground))] border border-[hsl(var(--border))]">
-                        <ArrowDown size={10} className={isTracing ? 'text-[hsl(var(--foreground))] animate-bounce' : 'text-[hsl(var(--muted-foreground))]'} />
+                      <div className={`w-0.5 h-3 ${isTracing ? 'bg-amber-500 animate-pulse' : 'bg-[hsl(var(--border))]'}`} />
+                      <div className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(var(--muted))] px-3 py-0.5 font-mono text-[9px] font-bold text-[hsl(var(--muted-foreground))] border border-[hsl(var(--border))] shadow-2xs">
+                        <ArrowDown size={11} className={isTracing ? 'text-amber-500 animate-bounce' : 'text-[hsl(var(--muted-foreground))]'} />
                         <span>cited by</span>
                       </div>
-                      <div className={`w-0.5 h-3 ${isTracing ? 'bg-[hsl(var(--foreground))] animate-pulse' : 'bg-[hsl(var(--border))]'}`} />
+                      <div className={`w-0.5 h-3 ${isTracing ? 'bg-amber-500 animate-pulse' : 'bg-[hsl(var(--border))]'}`} />
                     </div>
                   )}
 
                   {/* Terminal Contamination Alert Tag */}
                   {isLast && (
-                    <div className="mt-3 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.4)] p-3 text-center">
-                      <div className="flex items-center justify-center gap-1.5 font-mono text-[11px] font-bold text-[hsl(var(--foreground))] uppercase tracking-widest">
-                        <AlertTriangle size={14} className="text-[hsl(var(--muted-foreground))]" />
-                        ⚠ CONTAMINATION REACHES PROPOSAL AIM
+                    <div className="mt-3 rounded-2xl border border-rose-500/30 bg-rose-500/10 p-3.5 text-center">
+                      <div className="flex items-center justify-center gap-1.5 font-mono text-xs font-bold text-rose-700 dark:text-rose-300 uppercase tracking-wider">
+                        <AlertTriangle size={15} className="text-rose-600 dark:text-rose-400" />
+                        <span>⚠ CONTAMINATION REACHES PROPOSAL AIM</span>
                       </div>
-                      <p className="mt-0.5 text-[11px] text-[hsl(var(--muted-foreground))]">
-                        Hypothesis in Aim 2 is vulnerable to grant reviewer challenge unless remediated.
+                      <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))] font-medium">
+                        Hypothesis in Specific Aim 2 is vulnerable to grant reviewer challenge unless remediated.
                       </p>
                     </div>
                   )}
@@ -250,17 +260,17 @@ export function ContaminationCascade({
           <div className="space-y-4">
             <div>
               <div className="flex items-center justify-between">
-                <span className="font-mono text-[9px] uppercase tracking-widest font-bold text-[hsl(var(--muted-foreground))]">
+                <span className="font-mono text-[9px] uppercase tracking-widest font-extrabold text-[hsl(var(--muted-foreground))]">
                   Cascade Node Inspector
                 </span>
-                <span className="font-mono text-[9px] font-bold uppercase px-2 py-0.5 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--muted))] text-[hsl(var(--foreground))]">
+                <span className={`font-mono text-[9px] font-bold uppercase px-2.5 py-0.5 rounded-md border ${selected.badgeColor}`}>
                   {selected.badge}
                 </span>
               </div>
-              <h3 className="mt-2 text-[15px] font-bold text-[hsl(var(--foreground))] leading-tight">
+              <h3 className="mt-2 text-base font-bold text-[hsl(var(--foreground))] leading-snug">
                 {selected.title}
               </h3>
-              <p className="mt-1 text-[11px] text-[hsl(var(--muted-foreground))]">
+              <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))] font-medium">
                 {selected.authors} · {selected.venue} ({selected.year})
               </p>
               <div className="mt-1 font-mono text-[10px] text-[hsl(var(--muted-foreground))]">
@@ -269,50 +279,50 @@ export function ContaminationCascade({
             </div>
 
             {/* How it propagates contamination */}
-            <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.3)] p-4 space-y-1.5">
-              <div className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase text-[hsl(var(--foreground))] tracking-wider">
-                <AlertTriangle size={12} />
-                Contamination Mechanism
+            <div className="rounded-2xl border border-amber-500/25 bg-amber-500/5 p-4 space-y-1.5">
+              <div className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase text-amber-700 dark:text-amber-300 tracking-wider">
+                <AlertTriangle size={13} />
+                <span>Contamination Mechanism</span>
               </div>
-              <p className="text-[12px] text-[hsl(var(--foreground))] leading-relaxed font-medium">
+              <p className="text-xs text-[hsl(var(--foreground))] leading-relaxed font-medium">
                 {selected.whyContaminated}
               </p>
             </div>
 
             {/* Scientific claim */}
-            <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.2)] p-4 space-y-1.5">
+            <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.25)] p-4 space-y-1.5">
               <div className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase text-[hsl(var(--muted-foreground))] tracking-wider">
-                <Info size={12} />
-                Claim / Experimental Text
+                <Info size={13} />
+                <span>Claim / Experimental Text</span>
               </div>
-              <p className="text-[12px] text-[hsl(var(--foreground))] leading-relaxed font-serif italic">
+              <p className="text-xs text-[hsl(var(--foreground))] leading-relaxed font-serif italic">
                 &ldquo;{selected.claimSnippet}&rdquo;
               </p>
             </div>
 
             {/* Authoritative evidence */}
-            <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 space-y-1">
+            <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 space-y-1">
               <div className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase text-[hsl(var(--muted-foreground))] tracking-wider">
-                <ShieldCheck size={12} className="text-[hsl(var(--muted-foreground))]" />
-                Authoritative Provenance
+                <ShieldCheck size={13} className="text-emerald-500" />
+                <span>Authoritative Provenance</span>
               </div>
-              <p className="text-[11px] text-[hsl(var(--muted-foreground))] font-mono">
+              <p className="text-xs text-[hsl(var(--muted-foreground))] font-mono">
                 {selected.evidence}
               </p>
             </div>
           </div>
 
           {/* Vetted Alternative Pathway Callout */}
-          <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.4)] p-4 space-y-2">
+          <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="font-mono text-[9px] uppercase font-bold text-[hsl(var(--foreground))]">
+              <span className="font-mono text-[9px] uppercase font-bold text-emerald-700 dark:text-emerald-300">
                 Recommended Clean Recovery Pathway
               </span>
-              <span className="rounded bg-[hsl(var(--muted))] border border-[hsl(var(--border))] px-1.5 py-0.5 font-mono text-[9px] font-bold text-[hsl(var(--foreground))]">
+              <span className="rounded-md bg-emerald-500/20 border border-emerald-500/40 px-2 py-0.5 font-mono text-[9px] font-bold text-emerald-800 dark:text-emerald-200">
                 Zero Retraction Cascade
               </span>
             </div>
-            <p className="text-[11px] text-[hsl(var(--foreground))] font-medium">
+            <p className="text-xs text-[hsl(var(--foreground))] font-medium">
               Replace Section 3.2 acid-stress conditioning citations with <strong>Takahashi &amp; Yamanaka (Cell 2019)</strong> standard transcription factors.
             </p>
             <div className="font-mono text-[10px] text-[hsl(var(--muted-foreground))]">

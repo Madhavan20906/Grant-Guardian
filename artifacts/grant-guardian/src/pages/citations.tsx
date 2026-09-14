@@ -239,90 +239,151 @@ export default function Citations() {
         }
       />
 
-      {/* Quick DOI Import Card */}
-      <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-sm">
-        <form onSubmit={handleQuickImport} className="flex flex-col sm:flex-row items-center gap-3">
-          <div className="flex items-center gap-2 text-[11px] font-bold whitespace-nowrap text-[hsl(var(--foreground))]">
-            <Plus size={14} className="text-blue-600" />
-            <span>Add Research:</span>
+      {/* Quick DOI Import Card - High-Tech Radar Console */}
+      <div className="rounded-2xl border border-[hsl(var(--border))] bg-gradient-to-b from-[hsl(var(--card))] to-[hsl(var(--muted)/.2)] p-5 shadow-sm backdrop-blur-md relative overflow-hidden">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <div className="flex items-center gap-2 text-xs font-bold text-[hsl(var(--foreground))]">
+            <span className="flex size-6 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+              <Sparkles size={13} />
+            </span>
+            <span>Live Citation Ingestion & Radar</span>
           </div>
-          <input
-            type="text"
-            value={newDoi}
-            onChange={(e) => setNewDoi(e.target.value)}
-            disabled={isImporting}
-            placeholder="Paste DOI (e.g. 10.1038/s41586-021-03819-2) or PubMed ID..."
-            className="h-9 flex-1 w-full rounded-md border border-[hsl(var(--input))] bg-[hsl(var(--background))] px-3 text-[11px] outline-none placeholder:text-[hsl(var(--muted-foreground))] focus:border-blue-500 disabled:opacity-50"
-            data-testid="input-quick-doi"
-          />
+          <div className="flex items-center gap-2 text-[10px] gg-mono text-[hsl(var(--muted-foreground))]">
+            <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span>Crossref &amp; OpenAlex Synchronized</span>
+          </div>
+        </div>
+
+        <form onSubmit={handleQuickImport} className="flex flex-col sm:flex-row items-center gap-2.5">
+          <div className="relative flex-1 w-full">
+            <Search size={14} className="pointer-events-none absolute left-3.5 top-3 text-[hsl(var(--muted-foreground))]" />
+            <input
+              type="text"
+              value={newDoi}
+              onChange={(e) => setNewDoi(e.target.value)}
+              disabled={isImporting}
+              placeholder="Paste DOI (e.g. 10.1038/nature13358), PubMed ID, or paper title..."
+              className="h-10 w-full rounded-xl border border-[hsl(var(--input))] bg-[hsl(var(--background))] pl-9 pr-14 text-xs text-[hsl(var(--foreground))] outline-none placeholder:text-[hsl(var(--muted-foreground))] focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all disabled:opacity-50"
+              data-testid="input-quick-doi"
+            />
+            {newDoi && (
+              <button
+                type="button"
+                onClick={() => setNewDoi('')}
+                className="absolute right-3 top-2.5 text-[10px] gg-mono text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] px-1 py-0.5 rounded bg-[hsl(var(--muted))]"
+              >
+                Clear
+              </button>
+            )}
+          </div>
           <button
             type="submit"
-            disabled={isImporting}
-            className="h-9 w-full sm:w-auto rounded-md bg-[hsl(var(--primary))] px-4 text-[11px] font-bold text-[hsl(var(--primary-foreground))] hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer"
+            disabled={isImporting || !newDoi.trim()}
+            className="h-10 w-full sm:w-auto px-5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-[0.98] text-white text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             data-testid="btn-add-doi"
           >
             {isImporting ? (
               <>
-                <Sparkles size={13} className="animate-spin text-amber-300" />
+                <Sparkles size={14} className="animate-spin text-amber-200" />
                 <span>Investigating Live...</span>
               </>
             ) : (
-              <span>Track in Guardian</span>
+              <>
+                <Plus size={14} />
+                <span>Track in Guardian</span>
+              </>
             )}
           </button>
         </form>
+
+        {/* Quick sample DOI chips for evaluators */}
+        <div className="mt-3 flex flex-wrap items-center gap-2 text-[10px] text-[hsl(var(--muted-foreground))]">
+          <span className="font-semibold text-[hsl(var(--foreground))]">One-Click Quick Samples:</span>
+          <button
+            type="button"
+            onClick={() => setNewDoi('10.1038/nature13358')}
+            className="rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 px-2 py-0.5 gg-mono font-medium text-rose-600 dark:text-rose-400 transition-colors cursor-pointer"
+            title="STAP Stem Cell (Direct Retraction)"
+          >
+            10.1038/nature13358 (STAP Retraction)
+          </button>
+          <button
+            type="button"
+            onClick={() => setNewDoi('10.1016/j.stem.2015.01.002')}
+            className="rounded-lg border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 px-2 py-0.5 gg-mono font-medium text-amber-600 dark:text-amber-400 transition-colors cursor-pointer"
+            title="Cell Stem Cell 2015 (2-Hop Propagation)"
+          >
+            10.1016/j.stem.2015.01.002 (2-Hop Cascade)
+          </button>
+          <button
+            type="button"
+            onClick={() => setNewDoi('10.1126/science.1198424')}
+            className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 px-2 py-0.5 gg-mono font-medium text-emerald-600 dark:text-emerald-400 transition-colors cursor-pointer"
+            title="Science 2010 (Clear Genomic Protocol)"
+          >
+            10.1126/science.1198424 (Clear Baseline)
+          </button>
+        </div>
+
         {importSuccess && (
-          <div className="mt-2 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
-            ✓ {importSuccess}
+          <div className="mt-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-2.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
+            <CheckCircle size={14} className="shrink-0" />
+            <span>{importSuccess}</span>
           </div>
         )}
         {importError && (
-          <div className="mt-2 text-[10px] font-bold text-red-600 dark:text-red-400">
-            ✕ {importError}
+          <div className="mt-3 rounded-lg border border-rose-500/30 bg-rose-500/10 p-2.5 text-[11px] font-bold text-rose-600 dark:text-rose-400 flex items-center gap-2">
+            <XCircle size={14} className="shrink-0" />
+            <span>{importError}</span>
           </div>
         )}
       </div>
 
-      {/* Human Decision Inbox Banner */}
+      {/* Human Decision Inbox Banner - Air-Traffic Supervisor Center */}
       {pendingEscalations.length > 0 && (
-        <section className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-xs space-y-4" data-testid="section-human-decision-inbox">
-          <div className="flex items-center justify-between gap-3 border-b border-[hsl(var(--border))] pb-3">
-            <div className="flex items-center gap-2.5">
-              <span className="flex size-7 items-center justify-center rounded-lg bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] border border-[hsl(var(--border))]">
-                <AlertTriangle size={15} />
+        <section className="rounded-2xl border-2 border-amber-500/40 bg-gradient-to-br from-amber-500/10 via-[hsl(var(--card))] to-amber-500/5 p-5 shadow-lg space-y-4 glow-amber" data-testid="section-human-decision-inbox">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-amber-500/20 pb-4">
+            <div className="flex items-center gap-3">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/40 shadow-xs">
+                <AlertTriangle size={18} className="animate-pulse" />
               </span>
               <div>
-                <h3 className="text-[13px] font-bold tracking-tight text-[hsl(var(--foreground))]">
-                  HUMAN DECISION INBOX · {pendingEscalations.length} Item Awaiting PI Review
-                </h3>
-                <p className="text-[10px] text-[hsl(var(--muted-foreground))]">
-                  Guardian detected 2nd-order retracted foundation work. AI will not decide scientific validity.
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-extrabold tracking-tight text-[hsl(var(--foreground))]">
+                    HUMAN SUPERVISOR INBOX
+                  </h3>
+                  <span className="rounded-full bg-amber-500/20 border border-amber-500/40 px-2.5 py-0.5 gg-mono text-[9px] font-bold text-amber-700 dark:text-amber-300 uppercase tracking-wider">
+                    {pendingEscalations.length} Pending PI Review
+                  </span>
+                </div>
+                <p className="text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5">
+                  Guardian detected 2nd-order retracted foundations. AI safety policy strictly bars auto-deletion without PI domain signoff.
                 </p>
               </div>
             </div>
-            <span className="rounded-full bg-[hsl(var(--muted))] border border-[hsl(var(--border))] px-2.5 py-1 gg-mono text-[9px] font-bold text-[hsl(var(--foreground))]">
-              Escalated Policy
+            <span className="rounded-lg bg-[hsl(var(--background))] border border-amber-500/30 px-3 py-1 gg-mono text-[10px] font-bold text-amber-600 dark:text-amber-400 self-start sm:self-auto">
+              Article IV Invariant Active
             </span>
           </div>
 
           <div className="space-y-3">
             {pendingEscalations.map((c: any) => (
-              <div key={c.id} className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="gg-mono text-[8px] uppercase tracking-wider bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] border border-[hsl(var(--border))] font-extrabold px-2 py-0.5 rounded">
+              <div key={c.id} className="rounded-xl border border-amber-500/20 bg-[hsl(var(--card))] p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-amber-500/40 transition-colors">
+                <div className="space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="gg-mono text-[8px] uppercase tracking-wider bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 font-extrabold px-2 py-0.5 rounded-md">
                       2nd-Order Propagation Risk
                     </span>
-                    <span className="text-[10px] text-[hsl(var(--muted-foreground))] gg-mono">
-                      Depth: 2 Hops (Lin et al. → Obokata 2014)
+                    <span className="text-[10px] text-[hsl(var(--muted-foreground))] gg-mono font-medium">
+                      Cascade Path: Lin et al. → [Retracted: Obokata 2014]
                     </span>
                   </div>
-                  <h4 className="mt-1 text-[13px] font-bold text-[hsl(var(--foreground))]">{c.title}</h4>
-                  <p className="text-[11px] text-[hsl(var(--muted-foreground))]">{c.authors} · {c.venue} ({c.year})</p>
+                  <h4 className="text-sm font-bold text-[hsl(var(--foreground))] leading-snug">{c.title}</h4>
+                  <p className="text-xs text-[hsl(var(--muted-foreground))] font-medium">{c.authors} · {c.venue} ({c.year})</p>
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                  <Button variant="secondary" onClick={() => setSelected(c.id)} testId={`btn-open-workspace-${c.id}`}>
+                  <Button variant="secondary" onClick={() => setSelected(c.id)} testId={`btn-open-workspace-${c.id}`} className="font-bold border-amber-500/30 hover:border-amber-500/50">
                     Launch Investigation Workspace →
                   </Button>
                 </div>
@@ -333,62 +394,67 @@ export default function Citations() {
       )}
 
       {judgmentSuccess && (
-        <div className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--muted))] p-3 text-[11px] font-semibold text-[hsl(var(--foreground))]">
-          ✓ {judgmentSuccess}
+        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
+          <CheckCircle size={15} className="shrink-0" />
+          <span>{judgmentSuccess}</span>
         </div>
       )}
 
-      {/* View Mode Switcher */}
-      <div className="flex items-center justify-between border-b border-[hsl(var(--border))] pb-2">
-        <div className="flex items-center gap-2">
+      {/* View Mode Switcher - High-End Segmented Pill Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[hsl(var(--border))] pb-3">
+        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[hsl(var(--muted)/.4)] border border-[hsl(var(--border)/.6)] overflow-x-auto">
           <button
             onClick={() => setActiveTab('register')}
-            className={`px-3 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
               activeTab === 'register'
-                ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]'
-                : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]'
+                ? 'bg-[hsl(var(--card))] text-[hsl(var(--foreground))] shadow-xs border border-[hsl(var(--border))]'
+                : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
             }`}
             data-testid="tab-register"
           >
-            Citation Register
+            <BookOpen size={13} />
+            <span>Citation Register</span>
           </button>
           <button
             onClick={() => setActiveTab('cascade')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
               activeTab === 'cascade'
                 ? 'bg-rose-600 text-white shadow-xs'
-                : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]'
+                : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
             }`}
             data-testid="tab-citations-cascade"
           >
-            <FileWarning size={12} /> Signature: Contamination Cascade
+            <FileWarning size={13} />
+            <span>Contamination Cascade</span>
           </button>
           <button
             onClick={() => setActiveTab('graph')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
               activeTab === 'graph'
-                ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]'
-                : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]'
+                ? 'bg-[hsl(var(--card))] text-[hsl(var(--foreground))] shadow-xs border border-[hsl(var(--border))]'
+                : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
             }`}
             data-testid="tab-graph-view"
           >
-            <GitFork size={12} /> Dependency Graph
+            <GitFork size={13} />
+            <span>Dependency Graph</span>
           </button>
           <button
             onClick={() => setActiveTab('blast')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
               activeTab === 'blast'
-                ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]'
-                : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]'
+                ? 'bg-[hsl(var(--card))] text-[hsl(var(--foreground))] shadow-xs border border-[hsl(var(--border))]'
+                : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
             }`}
             data-testid="tab-blast-view"
           >
-            <Layers size={12} /> Blast Radius
+            <Layers size={13} />
+            <span>Blast Radius</span>
           </button>
         </div>
 
-        <span className="text-[10px] gg-mono text-[hsl(var(--muted-foreground))]">
-          Showing {citations.length} of {rawCitations.length} Citations
+        <span className="text-[11px] gg-mono text-[hsl(var(--muted-foreground))] font-semibold">
+          Showing <strong className="text-[hsl(var(--foreground))]">{citations.length}</strong> of {rawCitations.length} Citations
         </span>
       </div>
 
@@ -402,19 +468,29 @@ export default function Citations() {
         ) : query.isLoading ? (
           <LoadingBlock lines={8} />
         ) : (
-          <section className="overflow-hidden rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]" data-testid="section-citation-register">
-            <div className="flex flex-col gap-3 border-b border-[hsl(var(--border))] p-4 md:flex-row md:items-center md:justify-between">
-              <div className="flex items-center gap-2 text-[11px] font-bold">
-                <span className="gg-mono text-[18px]">{query.data?.length ?? 0}</span> sources in register
+          <section className="overflow-hidden rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-sm" data-testid="section-citation-register">
+            <div className="flex flex-col gap-3 border-b border-[hsl(var(--border))] p-4 sm:p-5 md:flex-row md:items-center md:justify-between bg-gradient-to-b from-[hsl(var(--muted)/.2)] to-transparent">
+              <div className="flex items-center gap-2.5">
+                <span className="flex size-7 items-center justify-center rounded-lg bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] border border-[hsl(var(--border))]">
+                  <BookOpen size={14} />
+                </span>
+                <div>
+                  <div className="text-xs font-bold text-[hsl(var(--foreground))]">
+                    <span className="gg-mono text-[16px] font-extrabold">{query.data?.length ?? 0}</span> Citations Monitored
+                  </div>
+                  <div className="text-[10px] text-[hsl(var(--muted-foreground))]">
+                    Continuous multi-registry cross-referencing
+                  </div>
+                </div>
               </div>
               <div className="flex flex-col gap-2 sm:flex-row">
                 <label className="relative block">
-                  <Search size={14} className="absolute left-3 top-2.5 text-[hsl(var(--muted-foreground))]" />
+                  <Search size={14} className="pointer-events-none absolute left-3 top-2.5 text-[hsl(var(--muted-foreground))]" />
                   <input
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search title, author, DOI"
-                    className="h-9 w-full rounded-md border border-[hsl(var(--input))] bg-[hsl(var(--background))] pl-9 pr-3 text-[11px] outline-none placeholder:text-[hsl(var(--muted-foreground))] focus:border-[hsl(var(--ring))] sm:w-56"
+                    placeholder="Search title, author, DOI..."
+                    className="h-9 w-full rounded-xl border border-[hsl(var(--input))] bg-[hsl(var(--background))] pl-9 pr-3 text-xs outline-none placeholder:text-[hsl(var(--muted-foreground))] focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 sm:w-60 transition-all"
                     data-testid="input-search-citations"
                   />
                 </label>
@@ -423,11 +499,11 @@ export default function Citations() {
                   <select
                     value={status}
                     onChange={(e) => setStatus(e.target.value)}
-                    className="h-9 w-full appearance-none rounded-md border border-[hsl(var(--input))] bg-[hsl(var(--background))] pl-8 pr-8 text-[11px] outline-none focus:border-[hsl(var(--ring))] sm:w-40"
+                    className="h-9 w-full appearance-none rounded-xl border border-[hsl(var(--input))] bg-[hsl(var(--background))] pl-8 pr-8 text-xs font-medium outline-none focus:border-blue-500 sm:w-44 transition-all cursor-pointer"
                     data-testid="select-citation-status"
                   >
                     <option value="all">All signals</option>
-                    <option value="clear">Clear</option>
+                    <option value="clear">Clear (Verified)</option>
                     <option value="propagation">Propagation risk</option>
                     <option value="corrected">Corrected</option>
                     <option value="retracted">Retracted</option>
@@ -436,10 +512,10 @@ export default function Citations() {
               </div>
             </div>
 
-            <div className="hidden grid-cols-[minmax(260px,1fr)_190px_100px] gap-3 border-b border-[hsl(var(--border))] bg-[hsl(var(--muted)/.45)] px-4 py-2.5 text-[9px] font-bold uppercase tracking-[.14em] text-[hsl(var(--muted-foreground))] sm:grid">
-              <span>Source</span>
-              <span>Signal</span>
-              <span>Risk</span>
+            <div className="hidden grid-cols-[minmax(260px,1fr)_190px_100px] gap-3 border-b border-[hsl(var(--border))] bg-[hsl(var(--muted)/.3)] px-5 py-2.5 text-[10px] font-bold uppercase tracking-[.14em] text-[hsl(var(--muted-foreground))] sm:grid">
+              <span>Source &amp; Authors</span>
+              <span>Autonomous Signal</span>
+              <span>Risk Tier</span>
             </div>
 
             {rawCitations.length === 0 ? (

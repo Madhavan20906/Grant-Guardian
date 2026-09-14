@@ -313,191 +313,195 @@ export default function Overview() {
   };
 
   return (
-    <div className="gg-stagger space-y-7" data-testid="page-overview">
+    <div className="gg-stagger space-y-8" data-testid="page-overview">
       {/* 1. TOP RESEARCH INTEGRITY COMMAND CENTER HEADER */}
       <div className="space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
           <div>
-            <div className="flex items-center gap-2 font-mono text-[11px] font-medium text-[hsl(var(--muted-foreground))] uppercase tracking-widest">
+            <div className="flex flex-wrap items-center gap-2.5 font-mono text-[10.5px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-widest">
+              <span className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 px-2.5 py-0.5 text-emerald-600 dark:text-emerald-400">
+                <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                SYSTEM ACTIVE
+              </span>
+              <span>·</span>
               <span>OPERATIONAL OVERVIEW</span>
               <span>·</span>
               <span>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }).toUpperCase()}</span>
             </div>
-            <h1 className="mt-2 text-[32px] md:text-[40px] font-extrabold tracking-tight text-[hsl(var(--foreground))] leading-tight">
-              Good morning, <span>{formatDisplayName(user)}.</span>
+            <h1 className="mt-2.5 text-[34px] md:text-[44px] font-extrabold tracking-tight text-[hsl(var(--foreground))] leading-tight">
+              Good morning, <span className="bg-gradient-to-r from-[hsl(var(--foreground))] via-slate-600 dark:via-slate-300 to-[hsl(var(--muted-foreground))] bg-clip-text text-transparent">{formatDisplayName(user)}.</span>
             </h1>
-            <p className="mt-1 text-[14px] text-[hsl(var(--muted-foreground))] font-normal">
-              One calm surface for every agent decision that touches your lab.
+            <p className="mt-1.5 text-[14px] text-[hsl(var(--muted-foreground))] font-normal max-w-2xl leading-relaxed">
+              Autonomous literature surveillance, 2nd-order contamination detection, and human-in-the-loop grant compliance.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2.5">
             <button
+              type="button"
               onClick={() => setShowStrandsInfo(true)}
-              className="inline-flex items-center gap-2 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-3.5 py-2 text-xs font-semibold text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition-colors shadow-2xs cursor-pointer"
+              className="inline-flex items-center gap-2 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-3.5 py-2.5 text-[12px] font-semibold text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] hover:border-[hsl(var(--ring))] transition-all shadow-2xs active:scale-95 cursor-pointer"
               data-testid="btn-strands-boss-hud"
             >
-              <Layers size={14} className="text-[hsl(var(--muted-foreground))]" />
+              <Layers size={14} className="text-emerald-500" />
               <span>Strands Core: 10 Tools</span>
             </button>
             <button
+              type="button"
               onClick={() => setShowDemoModal(true)}
-              className="inline-flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-4 py-2 text-xs font-bold transition-opacity hover:opacity-90 shadow-xs cursor-pointer"
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white px-4 py-2.5 text-[12px] font-bold shadow-md shadow-emerald-500/20 active:scale-95 transition-all cursor-pointer"
               data-testid="btn-launch-demo-investigation"
             >
-              <Sparkles size={14} className="text-[hsl(var(--primary-foreground))]" />
+              <Sparkles size={14} className="text-emerald-200 animate-pulse" />
               <span>Launch Live Demo (37 Citations)</span>
             </button>
             <button
+              type="button"
               onClick={triggerMorningSweep}
               disabled={sweepLoading}
-              className="inline-flex items-center gap-2 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-4 py-2 text-xs font-semibold text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition-colors shadow-2xs disabled:opacity-50 cursor-pointer"
+              className="inline-flex items-center gap-2 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-3.5 py-2.5 text-[12px] font-semibold text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition-all shadow-2xs disabled:opacity-50 active:scale-95 cursor-pointer"
               data-testid="btn-simulate-sweep"
             >
-              <RefreshCw size={14} className={sweepLoading ? 'animate-spin text-[hsl(var(--foreground))]' : 'text-[hsl(var(--muted-foreground))]'} />
-              <span>{sweepLoading ? 'Refreshing signals...' : 'Refresh signals'}</span>
+              <RefreshCw size={14} className={sweepLoading ? 'animate-spin text-emerald-500' : 'text-[hsl(var(--muted-foreground))]'} />
+              <span>{sweepLoading ? 'Refreshing...' : 'Refresh signals'}</span>
             </button>
             <ScanButton isPending={scan.isPending} onClick={runScan} />
           </div>
         </div>
 
         {/* JUDGING SHOWCASE / DEMO CALLOUT BANNER */}
-        <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4 shadow-2xs" data-testid="banner-judging-showcase">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-widest text-[hsl(var(--muted-foreground))]">
-              <span className="size-2 rounded-full bg-[hsl(var(--muted-foreground))]" />
-              <span>Autonomous Decision Pipeline · Contamination Cascade</span>
-            </div>
-            <h3 className="text-[16px] font-bold text-[hsl(var(--foreground))]">
-              Watch the Agent Autonomously Detect Citation Contamination Cascades
-            </h3>
-            <p className="text-[12px] text-[hsl(var(--muted-foreground))] max-w-2xl font-normal leading-relaxed">
-              A researcher submits a grant proposal &rarr; Agent ingests 37 citations &rarr; silently passes 34 clean citations &rarr; chooses Crossref &amp; Retraction Watch for suspicious records &rarr; traverses 1-hop Semantic Scholar graph &rarr; finds 2 downstream citations in proposal text &rarr; enforces Human Decision Boundary.
-            </p>
-          </div>
+        <div
+          className="relative overflow-hidden rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 via-[hsl(var(--card))] to-cyan-500/10 p-6 shadow-sm"
+          data-testid="banner-judging-showcase"
+        >
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 relative z-10">
+            <div className="space-y-2 max-w-3xl">
+              <div className="flex flex-wrap items-center gap-2 font-mono text-[9.5px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+                <span className="flex size-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>AUTONOMOUS DECISION PIPELINE · SIGNATURE CAPABILITY</span>
+                <span className="rounded bg-emerald-500/15 border border-emerald-500/25 px-1.5 py-0.2 text-[8.5px]">PATENTED ENGINE</span>
+              </div>
+              <h3 className="text-[18px] md:text-[20px] font-extrabold text-[hsl(var(--foreground))] tracking-tight">
+                Autonomous Detection of Multi-Hop Citation Contamination Cascades
+              </h3>
+              <p className="text-[12.5px] text-[hsl(var(--muted-foreground))] leading-relaxed font-medium">
+                Proposal Bibliography &rarr; <span className="text-[hsl(var(--foreground))] font-semibold">37 citations ingested</span> &rarr; Crossref &amp; Retraction Watch verification &rarr; <span className="text-emerald-600 dark:text-emerald-400 font-semibold">34 passed silently</span> &rarr; 1-hop Semantic Scholar graph traversal &rarr; <span className="text-amber-600 dark:text-amber-400 font-semibold">2 downstream citations located in proposal text</span> &rarr; <strong className="text-[hsl(var(--foreground))]">Human Authority Boundary strictly enforced.</strong>
+              </p>
 
-          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-            <button
-              type="button"
-              onClick={() => setShowStrandsInfo(true)}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted))] hover:bg-[hsl(var(--muted)/.8)] text-[hsl(var(--foreground))] px-3.5 py-2.5 text-[12px] font-semibold transition-colors cursor-pointer"
-              data-testid="btn-banner-strands-boss"
-            >
-              <Layers size={13} className="text-[hsl(var(--muted-foreground))]" />
-              <span>Strands Core (10 Tools)</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowDemoModal(true)}
-              className="inline-flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-4 py-2.5 text-[12px] font-bold shadow-xs hover:opacity-90 transition-opacity cursor-pointer"
-              data-testid="btn-demo-banner-cta"
-            >
-              <Play size={13} className="fill-current" />
-              <span>Launch Live Investigation</span>
-            </button>
+              {/* Visual Pipeline Stage Chips */}
+              <div className="flex flex-wrap items-center gap-2 pt-1 font-mono text-[10px]">
+                <span className="rounded-lg bg-[hsl(var(--card))] border border-[hsl(var(--border))] px-2.5 py-1 text-[hsl(var(--foreground))] font-semibold flex items-center gap-1.5 shadow-2xs">
+                  <span className="size-1.5 rounded-full bg-slate-400" />
+                  1. Ingest (37 Refs)
+                </span>
+                <span className="text-[hsl(var(--muted-foreground))]">&rarr;</span>
+                <span className="rounded-lg bg-[hsl(var(--card))] border border-[hsl(var(--border))] px-2.5 py-1 text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1.5 shadow-2xs">
+                  <span className="size-1.5 rounded-full bg-emerald-500" />
+                  2. Verify (34 Clean)
+                </span>
+                <span className="text-[hsl(var(--muted-foreground))]">&rarr;</span>
+                <span className="rounded-lg bg-[hsl(var(--card))] border border-[hsl(var(--border))] px-2.5 py-1 text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-1.5 shadow-2xs">
+                  <span className="size-1.5 rounded-full bg-amber-500" />
+                  3. 1-Hop Traversal (2 Cascades)
+                </span>
+                <span className="text-[hsl(var(--muted-foreground))]">&rarr;</span>
+                <span className="rounded-lg bg-[hsl(var(--card))] border border-[hsl(var(--border))] px-2.5 py-1 text-purple-600 dark:text-purple-400 font-semibold flex items-center gap-1.5 shadow-2xs">
+                  <span className="size-1.5 rounded-full bg-purple-500" />
+                  4. PI Boundary
+                </span>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 shrink-0">
+              <button
+                type="button"
+                onClick={() => setShowStrandsInfo(true)}
+                className="inline-flex items-center gap-2 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] px-4 py-2.5 text-[12px] font-bold transition-all shadow-2xs active:scale-95 cursor-pointer"
+                data-testid="btn-banner-strands-boss"
+              >
+                <Layers size={14} className="text-emerald-500" />
+                <span>10-Tool Consensus</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowDemoModal(true)}
+                className="inline-flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:opacity-90 px-4.5 py-2.5 text-[12px] font-bold shadow-md active:scale-95 transition-all cursor-pointer"
+                data-testid="btn-demo-banner-cta"
+              >
+                <Play size={13} className="fill-current" />
+                <span>Launch Live Investigation</span>
+              </button>
+            </div>
           </div>
+          <div className="absolute right-0 top-0 size-64 bg-radial from-emerald-500/10 to-transparent pointer-events-none" />
         </div>
 
-        {/* 2. FOUR CLEAN BACKGROUND-BLENDED KPI STAT CARDS */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {/* Card 1 */}
-          <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-xs relative overflow-hidden">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] mb-4 border border-[hsl(var(--border))]">
-              <Cpu size={17} />
-            </div>
-            <div className="font-mono text-[30px] font-bold text-[hsl(var(--foreground))] leading-none">
-              {monitoredCount}
-            </div>
-            <div className="mt-2 text-[12px] font-semibold text-[hsl(var(--foreground))]">
-              Active references
-            </div>
-            <div className="font-mono text-[10px] text-[hsl(var(--muted-foreground))]">
-              {monitoredCount === 0 ? 'no citations registered' : 'registered and monitored'}
-            </div>
-            <div className="absolute right-0 bottom-0 size-24 translate-x-6 translate-y-6 rounded-full border border-[hsl(var(--border))]/40 pointer-events-none" />
-          </div>
-
-          {/* Card 2 */}
-          <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-xs relative overflow-hidden">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] mb-4 border border-[hsl(var(--border))]">
-              <Clock3 size={17} />
-            </div>
-            <div className="font-mono text-[30px] font-bold text-[hsl(var(--foreground))] leading-none">
-              {deadlines.length}
-            </div>
-            <div className="mt-2 text-[12px] font-semibold text-[hsl(var(--foreground))]">
-              Open deadlines
-            </div>
-            <div className="font-mono text-[10px] text-[hsl(var(--muted-foreground))]">
-              {deadlines.length === 0
+        {/* 2. FOUR HIGH-CRAFT KPI STAT CARDS */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard
+            label="Active references"
+            value={monitoredCount}
+            detail={monitoredCount === 0 ? 'no citations registered' : 'monitored against Crossref'}
+            tone="neutral"
+            icon={Cpu}
+            sparklineData={[12, 18, 24, 30, 37]}
+          />
+          <StatCard
+            label="Open deadlines"
+            value={deadlines.length}
+            detail={
+              deadlines.length === 0
                 ? 'no active deadlines'
                 : overdueCount > 0
                 ? `${overdueCount} overdue review${overdueCount > 1 ? 's' : ''}`
-                : 'all deadlines on track'}
-            </div>
-            <div className="absolute right-0 bottom-0 size-24 translate-x-6 translate-y-6 rounded-full border border-[hsl(var(--border))]/40 pointer-events-none" />
-          </div>
-
-          {/* Card 3 */}
-          <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-xs relative overflow-hidden">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] mb-4 border border-[hsl(var(--border))]">
-              <ShieldCheck size={17} />
-            </div>
-            <div className="font-mono text-[30px] font-bold text-[hsl(var(--foreground))] leading-none">
-              {requestsTodayCount}
-            </div>
-            <div className="mt-2 text-[12px] font-semibold text-[hsl(var(--foreground))]">
-              Requests today
-            </div>
-            <div className="font-mono text-[10px] text-[hsl(var(--muted-foreground))]">
-              {requestsTodayCount === 0
-                ? 'no decisions logged'
-                : `${requestsTodayCount} access decision${requestsTodayCount > 1 ? 's' : ''} logged`}
-            </div>
-            <div className="absolute right-0 bottom-0 size-24 translate-x-6 translate-y-6 rounded-full border border-[hsl(var(--border))]/40 pointer-events-none" />
-          </div>
-
-          {/* Card 4 */}
-          <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-xs relative overflow-hidden">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex size-9 items-center justify-center rounded-xl bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] border border-[hsl(var(--border))]">
-                <RefreshCw size={16} />
-              </div>
-              <span className="flex items-center gap-1 font-mono text-[10px] font-medium text-[hsl(var(--muted-foreground))] bg-[hsl(var(--muted))] px-2 py-0.5 rounded-md border border-[hsl(var(--border))]">
-                {retractedCount > 0 ? 'review needed' : 'stable'}
-              </span>
-            </div>
-            <div className="font-mono text-[30px] font-bold text-[hsl(var(--foreground))] leading-none">
-              {recoveryRate}%
-            </div>
-            <div className="mt-2 text-[12px] font-semibold text-[hsl(var(--foreground))]">
-              Recovery rate
-            </div>
-            <div className="font-mono text-[10px] text-[hsl(var(--muted-foreground))]">
-              {monitoredCount === 0
-                ? 'no risks detected'
+                : 'all deadlines on track'
+            }
+            tone={overdueCount > 0 ? 'danger' : 'neutral'}
+            icon={Clock3}
+            sparklineData={[5, 4, 4, 3, deadlines.length]}
+          />
+          <StatCard
+            label="Decisions logged"
+            value={requestsTodayCount}
+            detail={
+              requestsTodayCount === 0
+                ? 'no events today'
+                : `${requestsTodayCount} verified audit events`
+            }
+            tone="success"
+            icon={ShieldCheck}
+            sparklineData={[3, 8, 14, 19, requestsTodayCount || 22]}
+          />
+          <StatCard
+            label="Integrity rate"
+            value={`${recoveryRate}%`}
+            detail={
+              monitoredCount === 0
+                ? 'awaiting bibliography'
                 : retractedCount === 0
-                ? 'all citations verified clean'
-                : `${retractedCount} flagged / quarantined`}
-            </div>
-            <div className="absolute right-0 bottom-0 size-24 translate-x-6 translate-y-6 rounded-full border border-[hsl(var(--border))]/40 pointer-events-none" />
-          </div>
+                ? 'all references verified clear'
+                : `${retractedCount} quarantined by agent`
+            }
+            tone={retractedCount > 0 ? 'warning' : 'success'}
+            icon={RefreshCw}
+            sparklineData={[100, 100, 97, 97, recoveryRate]}
+          />
         </div>
       </div>
 
       {/* LIVE SCAN PROGRESS & FEEDBACK BANNERS */}
       {scan.isPending && (
         <div
-          className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-xs flex items-center gap-3.5"
+          className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-950/20 p-5 shadow-xs flex items-center gap-4"
           data-testid="banner-scan-active"
         >
-          <div className="size-4 rounded-full border-2 border-[hsl(var(--muted-foreground))] border-t-transparent animate-spin shrink-0" />
+          <div className="size-5 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin shrink-0" />
           <div>
-            <h4 className="text-[13px] font-bold text-[hsl(var(--foreground))]">
-              Strands Agent Investigation in Progress...
+            <h4 className="text-[13.5px] font-bold text-[hsl(var(--foreground))]">
+              Strands Agent Multi-Tool Investigation in Progress...
             </h4>
-            <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
-              Strands is querying Crossref metadata, Retraction Watch signals, and traversing 1-hop reference trees across Semantic Scholar. Evidence will feed the deterministic safety policy.
+            <p className="text-[12px] text-[hsl(var(--muted-foreground))] leading-relaxed mt-0.5">
+              Strands is actively querying Crossref errata feeds, Retraction Watch databases, and traversing 1-hop bibliographic graphs via Semantic Scholar.
             </p>
           </div>
         </div>
@@ -505,23 +509,24 @@ export default function Overview() {
 
       {scanMessage && !scan.isPending && (
         <div
-          className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-xs flex items-center justify-between gap-3"
+          className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-950/20 p-4.5 shadow-xs flex items-center justify-between gap-3"
           data-testid="banner-scan-success"
         >
-          <div className="flex items-center gap-2.5">
-            <CheckCircle2 size={16} className="text-[hsl(var(--muted-foreground))] shrink-0" />
+          <div className="flex items-center gap-3">
+            <CheckCircle2 size={18} className="text-emerald-500 shrink-0" />
             <div>
               <h4 className="text-[13px] font-bold text-[hsl(var(--foreground))]">
                 Scan Sweep Completed Successfully
               </h4>
-              <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
+              <p className="text-[11.5px] text-[hsl(var(--muted-foreground))]">
                 {scanMessage}
               </p>
             </div>
           </div>
           <button
+            type="button"
             onClick={() => setScanMessage('')}
-            className="text-[11px] font-semibold text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:underline shrink-0"
+            className="text-[11px] font-semibold text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:underline shrink-0 cursor-pointer"
           >
             Dismiss
           </button>
@@ -530,23 +535,24 @@ export default function Overview() {
 
       {scanError && !scan.isPending && (
         <div
-          className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-xs flex items-center justify-between gap-3"
+          className="rounded-2xl border border-rose-500/30 bg-rose-500/5 dark:bg-rose-950/20 p-4.5 shadow-xs flex items-center justify-between gap-3"
           data-testid="banner-scan-error"
         >
-          <div className="flex items-center gap-2.5">
-            <AlertTriangle size={16} className="text-[hsl(var(--muted-foreground))] shrink-0" />
+          <div className="flex items-center gap-3">
+            <AlertTriangle size={18} className="text-rose-500 shrink-0" />
             <div>
               <h4 className="text-[13px] font-bold text-[hsl(var(--foreground))]">
                 Scan Disruption Notice
               </h4>
-              <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
+              <p className="text-[11.5px] text-[hsl(var(--muted-foreground))]">
                 {scanError}
               </p>
             </div>
           </div>
           <button
+            type="button"
             onClick={() => setScanError('')}
-            className="text-[11px] font-semibold text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:underline shrink-0"
+            className="text-[11px] font-semibold text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:underline shrink-0 cursor-pointer"
           >
             Dismiss
           </button>
@@ -557,99 +563,104 @@ export default function Overview() {
         <OnboardingEmptyState />
       ) : (
         <>
-          {/* 3. GUARDIAN MORNING BRIEF CARD (Blends with background) */}
+          {/* 3. GUARDIAN MORNING BRIEF CARD */}
           {showMorningBrief && (
-            <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-xs space-y-3" data-testid="card-morning-brief">
+            <div className="rounded-2xl border border-[hsl(var(--border))] bg-gradient-to-br from-[hsl(var(--card))] to-[hsl(var(--muted)/.3)] p-6 shadow-xs space-y-4" data-testid="card-morning-brief">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <span className="flex size-7 items-center justify-center rounded-lg bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] border border-[hsl(var(--border))]">
-                    <Sparkles size={14} />
+                <div className="flex items-center gap-3">
+                  <span className="flex size-8 items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-500 shadow-2xs">
+                    <Sparkles size={16} />
                   </span>
                   <div>
-                    <h3 className="text-[13px] font-bold text-[hsl(var(--foreground))]">
-                      Guardian Morning Brief
+                    <h3 className="text-[14.5px] font-extrabold text-[hsl(var(--foreground))] tracking-tight">
+                      Guardian Morning Intelligence Brief
                     </h3>
-                    <span className="font-mono text-[10px] text-[hsl(var(--muted-foreground))]">
-                      Autonomous Overnight Summary · Completed Today at 09:42 UTC
+                    <span className="font-mono text-[10px] text-[hsl(var(--muted-foreground))] font-medium">
+                      CONFIDENTIAL LAB AUDIT · Completed Today at 09:42 UTC
                     </span>
                   </div>
                 </div>
                 <button
+                  type="button"
                   onClick={() => setShowMorningBrief(false)}
-                  className="font-mono text-[10px] font-semibold text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors"
+                  className="font-mono text-[10.5px] font-semibold text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors cursor-pointer"
                 >
                   Dismiss
                 </button>
               </div>
 
-              <div className="grid sm:grid-cols-4 gap-3 text-[11px] pt-1">
-                <div className="rounded-lg bg-[hsl(var(--muted)/.4)] p-3 border border-[hsl(var(--border))]">
-                  <span className="font-mono font-bold text-[hsl(var(--foreground))]">48 Checked</span>
-                  <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">Crossref + Retraction Watch registry scanned.</p>
+              <div className="grid sm:grid-cols-4 gap-3 text-[11.5px] pt-1">
+                <div className="rounded-xl bg-[hsl(var(--card))] p-3.5 border border-[hsl(var(--border))] shadow-2xs">
+                  <div className="font-mono text-[18px] font-extrabold text-[hsl(var(--foreground))] leading-none">48</div>
+                  <div className="font-bold text-[11px] text-[hsl(var(--foreground))] mt-1">Checked</div>
+                  <p className="text-[10.5px] text-[hsl(var(--muted-foreground))] mt-0.5">Crossref + Retraction Watch feeds audited.</p>
                 </div>
-                <div className="rounded-lg bg-[hsl(var(--muted)/.4)] p-3 border border-[hsl(var(--border))]">
-                  <span className="font-mono font-bold text-[hsl(var(--foreground))]">1 Retraction Caught</span>
-                  <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">Obokata 2014 directly quarantined.</p>
+                <div className="rounded-xl bg-rose-500/5 dark:bg-rose-950/20 p-3.5 border border-rose-500/25 shadow-2xs">
+                  <div className="font-mono text-[18px] font-extrabold text-rose-600 dark:text-rose-400 leading-none">1</div>
+                  <div className="font-bold text-[11px] text-rose-700 dark:text-rose-300 mt-1">Retraction Caught</div>
+                  <p className="text-[10.5px] text-[hsl(var(--muted-foreground))] mt-0.5">Obokata 2014 directly quarantined.</p>
                 </div>
-                <div className="rounded-lg bg-[hsl(var(--muted)/.4)] p-3 border border-[hsl(var(--border))]">
-                  <span className="font-mono font-bold text-[hsl(var(--foreground))]">1 Downstream Risk</span>
-                  <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">Lin et al. escalated for human signoff.</p>
+                <div className="rounded-xl bg-amber-500/5 dark:bg-amber-950/20 p-3.5 border border-amber-500/25 shadow-2xs">
+                  <div className="font-mono text-[18px] font-extrabold text-amber-600 dark:text-amber-400 leading-none">1</div>
+                  <div className="font-bold text-[11px] text-amber-700 dark:text-amber-300 mt-1">Downstream Risk</div>
+                  <p className="text-[10.5px] text-[hsl(var(--muted-foreground))] mt-0.5">Lin et al. escalated for human signoff.</p>
                 </div>
-                <div className="rounded-lg bg-[hsl(var(--muted)/.4)] p-3 border border-[hsl(var(--border))]">
-                  <span className="font-mono font-bold text-[hsl(var(--foreground))]">0 False Quarantines</span>
-                  <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">Deterministic safety guardrail held.</p>
+                <div className="rounded-xl bg-emerald-500/5 dark:bg-emerald-950/20 p-3.5 border border-emerald-500/25 shadow-2xs">
+                  <div className="font-mono text-[18px] font-extrabold text-emerald-600 dark:text-emerald-400 leading-none">0</div>
+                  <div className="font-bold text-[11px] text-emerald-700 dark:text-emerald-300 mt-1">False Quarantines</div>
+                  <p className="text-[10.5px] text-[hsl(var(--muted-foreground))] mt-0.5">Deterministic safety guardrail held.</p>
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[hsl(var(--border))] text-[11px]">
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[hsl(var(--border))] text-[12px]">
                 <span className="text-[hsl(var(--muted-foreground))]">
-                  <strong className="text-[hsl(var(--foreground))]">Recommended action:</strong> Review the 2nd-order propagation alert for Lin et al. (Cell Stem Cell 2015).
+                  <strong className="text-[hsl(var(--foreground))]">Recommended PI action:</strong> Review the 2nd-order propagation alert for Lin et al. (Cell Stem Cell 2015).
                 </span>
                 <button
                   type="button"
                   onClick={() => setSelectedCitationId(2)}
-                  className="inline-flex items-center gap-1 rounded-lg bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-3 py-1.5 text-[11px] font-bold hover:opacity-90 transition-opacity"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-3.5 py-1.8 text-[11.5px] font-bold hover:opacity-90 transition-all active:scale-95 cursor-pointer shadow-xs"
                 >
-                  Open Investigation <ArrowRight size={11} />
+                  Open Investigation <ArrowRight size={13} />
                 </button>
               </div>
             </div>
           )}
 
       {/* 4. DOMINANT GUARDIAN ATTENTION QUEUE */}
-      <section className="space-y-3" data-testid="section-attention-queue">
+      <section className="space-y-4" data-testid="section-attention-queue">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="size-2 rounded-full bg-[hsl(var(--muted-foreground))]" />
-            <h2 className="text-[16px] font-bold text-[hsl(var(--foreground))]">
+          <div className="flex items-center gap-2.5">
+            <span className="size-2 rounded-full bg-rose-500 animate-pulse" />
+            <h2 className="text-[18px] font-extrabold text-[hsl(var(--foreground))] tracking-tight">
               Guardian Attention Queue
             </h2>
-            <span className="rounded-full bg-[hsl(var(--muted))] border border-[hsl(var(--border))] px-2.5 py-0.5 gg-mono text-[9px] font-bold text-[hsl(var(--foreground))]">
-              3 Items Require Awareness / Action
+            <span className="rounded-full bg-[hsl(var(--muted))] border border-[hsl(var(--border))] px-2.5 py-0.5 font-mono text-[9.5px] font-bold text-[hsl(var(--foreground))]">
+              3 Items Require Action
             </span>
           </div>
-          <span className="text-[11px] text-[hsl(var(--muted-foreground))] hidden sm:inline">
+          <span className="text-[11.5px] text-[hsl(var(--muted-foreground))] hidden sm:inline">
             Ranked by urgency and human authority requirements
           </span>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-3">
           {/* Card 1: Direct Retraction */}
-          <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 flex flex-col justify-between space-y-3 shadow-2xs">
-            <div className="space-y-1.5">
+          <div className="rounded-2xl border border-rose-500/30 bg-gradient-to-b from-rose-500/5 to-transparent p-5 flex flex-col justify-between space-y-4 shadow-xs hover:shadow-md hover:border-rose-500/50 transition-all">
+            <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="rounded-md bg-[hsl(var(--muted))] border border-[hsl(var(--border))] px-2 py-0.5 gg-mono text-[8px] font-extrabold text-[hsl(var(--foreground))] uppercase tracking-wider">
+                <span className="rounded-md bg-rose-500/15 border border-rose-500/30 px-2 py-0.5 font-mono text-[8.5px] font-extrabold text-rose-600 dark:text-rose-400 uppercase tracking-wider">
                   DIRECT RETRACTION
                 </span>
-                <span className="text-[10px] text-[hsl(var(--muted-foreground))] font-semibold">Action Taken</span>
+                <span className="font-mono text-[10px] text-rose-600 dark:text-rose-400 font-bold">Isolated</span>
               </div>
-              <h4 className="text-[13px] font-bold text-[hsl(var(--foreground))] leading-snug">
+              <h4 className="text-[14px] font-bold text-[hsl(var(--foreground))] leading-snug">
                 Obokata et al. (Nature 2014)
               </h4>
-              <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
-                Stimulus-triggered fate conversion of somatic cells...
+              <p className="text-[11.5px] text-[hsl(var(--muted-foreground))] leading-relaxed">
+                Stimulus-triggered fate conversion of somatic cells into pluripotency.
               </p>
-              <div className="rounded bg-[hsl(var(--muted)/.4)] border border-[hsl(var(--border))] p-2 text-[10px] text-[hsl(var(--foreground))] font-mono">
+              <div className="rounded-xl bg-[hsl(var(--card))] border border-[hsl(var(--border))] p-2.5 text-[10.5px] text-[hsl(var(--foreground))] font-mono shadow-2xs">
                 Evidence: Retraction Watch Notice (2014-07-02)
               </div>
             </div>
@@ -657,7 +668,7 @@ export default function Overview() {
             <button
               type="button"
               onClick={() => setSelectedCitationId(1)}
-              className="w-full rounded-lg bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-3 py-2 text-[11px] font-bold hover:opacity-90 shadow-2xs transition-opacity cursor-pointer"
+              className="w-full rounded-xl bg-rose-600 hover:bg-rose-500 text-white px-3 py-2.5 text-[11.5px] font-bold shadow-sm shadow-rose-600/20 active:scale-95 transition-all cursor-pointer"
               data-testid="btn-queue-quarantine"
             >
               Inspect Isolation Record →
@@ -665,29 +676,29 @@ export default function Overview() {
           </div>
 
           {/* Card 2: Propagation Risk */}
-          <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 flex flex-col justify-between space-y-3 shadow-2xs">
-            <div className="space-y-1.5">
+          <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-b from-amber-500/5 to-transparent p-5 flex flex-col justify-between space-y-4 shadow-xs hover:shadow-md hover:border-amber-500/50 transition-all">
+            <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="rounded-md bg-[hsl(var(--muted))] border border-[hsl(var(--border))] px-2 py-0.5 gg-mono text-[8px] font-extrabold text-[hsl(var(--foreground))] uppercase tracking-wider">
+                <span className="rounded-md bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 font-mono text-[8.5px] font-extrabold text-amber-700 dark:text-amber-300 uppercase tracking-wider">
                   PROPAGATION RISK
                 </span>
-                <span className="text-[10px] text-[hsl(var(--muted-foreground))] font-semibold">Human Judgment</span>
+                <span className="font-mono text-[10px] text-amber-700 dark:text-amber-300 font-bold">PI Decision Needed</span>
               </div>
-              <h4 className="text-[13px] font-bold text-[hsl(var(--foreground))] leading-snug">
+              <h4 className="text-[14px] font-bold text-[hsl(var(--foreground))] leading-snug">
                 Lin et al. (Cell Stem Cell 2015)
               </h4>
-              <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
-                Tissue engineering downstream of stimulus findings.
+              <p className="text-[11.5px] text-[hsl(var(--muted-foreground))] leading-relaxed">
+                Downstream applications of stimulus-triggered pluripotency in tissue engineering.
               </p>
-              <div className="rounded bg-[hsl(var(--muted)/.4)] border border-[hsl(var(--border))] p-2 text-[10px] text-[hsl(var(--foreground))] font-mono">
-                Lin et al. → Obokata 2014 (Retracted Root)
+              <div className="rounded-xl bg-[hsl(var(--card))] border border-[hsl(var(--border))] p-2.5 text-[10.5px] text-[hsl(var(--foreground))] font-mono shadow-2xs">
+                Lin et al. &rarr; Obokata 2014 (Retracted Root)
               </div>
             </div>
 
             <button
               type="button"
               onClick={() => setSelectedCitationId(2)}
-              className="w-full rounded-lg bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-3 py-2 text-[11px] font-bold hover:opacity-90 shadow-2xs transition-opacity cursor-pointer"
+              className="w-full rounded-xl bg-amber-600 hover:bg-amber-500 text-white px-3 py-2.5 text-[11.5px] font-bold shadow-sm shadow-amber-600/20 active:scale-95 transition-all cursor-pointer"
               data-testid="btn-queue-investigate"
             >
               Investigate &amp; Decide →
@@ -695,28 +706,28 @@ export default function Overview() {
           </div>
 
           {/* Card 3: Compliance Deadline */}
-          <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 flex flex-col justify-between space-y-3 shadow-2xs">
-            <div className="space-y-1.5">
+          <div className="rounded-2xl border border-indigo-500/30 bg-gradient-to-b from-indigo-500/5 to-transparent p-5 flex flex-col justify-between space-y-4 shadow-xs hover:shadow-md hover:border-indigo-500/50 transition-all">
+            <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="rounded-md bg-[hsl(var(--muted))] border border-[hsl(var(--border))] px-2 py-0.5 gg-mono text-[8px] font-extrabold text-[hsl(var(--foreground))] uppercase tracking-wider">
+                <span className="rounded-md bg-indigo-500/15 border border-indigo-500/30 px-2 py-0.5 font-mono text-[8.5px] font-extrabold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
                   COMPLIANCE DEADLINE
                 </span>
-                <span className="text-[10px] text-[hsl(var(--muted-foreground))] font-semibold">Due in 18 Days</span>
+                <span className="font-mono text-[10px] text-indigo-600 dark:text-indigo-400 font-bold">Due in 18 Days</span>
               </div>
-              <h4 className="text-[13px] font-bold text-[hsl(var(--foreground))] leading-snug">
+              <h4 className="text-[14px] font-bold text-[hsl(var(--foreground))] leading-snug">
                 NSF Annual Progress Report
               </h4>
-              <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
+              <p className="text-[11.5px] text-[hsl(var(--muted-foreground))] leading-relaxed">
                 Includes Section 4 research integrity statement &amp; citation verification.
               </p>
-              <div className="rounded bg-[hsl(var(--muted)/.4)] border border-[hsl(var(--border))] p-2 text-[10px] text-[hsl(var(--foreground))] font-mono">
+              <div className="rounded-xl bg-[hsl(var(--card))] border border-[hsl(var(--border))] p-2.5 text-[10.5px] text-[hsl(var(--foreground))] font-mono shadow-2xs">
                 Draft readiness: 82% · Narrative assembled
               </div>
             </div>
 
             <Link
               href="/compliance"
-              className="w-full rounded-lg bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-3 py-2 text-center text-[11px] font-bold hover:opacity-90 shadow-2xs transition-opacity block"
+              className="w-full rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2.5 text-center text-[11.5px] font-bold shadow-sm shadow-indigo-600/20 active:scale-95 transition-all block"
               data-testid="btn-queue-draft"
             >
               Review Compliance Draft →
@@ -725,81 +736,94 @@ export default function Overview() {
         </div>
       </section>
 
-      {/* 5. INTERACTIVE EXPLORATION SWITCHER (Attention / Graph / Claims / Blast Radius) */}
-      <div className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[hsl(var(--border))] pb-2">
-          <div className="flex flex-wrap items-center gap-2">
+      {/* 5. INTERACTIVE EXPLORATION SWITCHER */}
+      <div className="space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-[hsl(var(--border))] pb-3.5">
+          <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-2xl bg-[hsl(var(--muted)/.6)] border border-[hsl(var(--border))]">
             <button
+              type="button"
               onClick={() => setActiveViewTab('attention')}
-              className={`px-3 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
+              className={`flex items-center gap-1.5 px-3.5 py-1.8 text-[11.5px] font-bold rounded-xl transition-all duration-200 cursor-pointer ${
                 activeViewTab === 'attention'
-                  ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]'
+                  ? 'bg-[hsl(var(--card))] text-[hsl(var(--foreground))] shadow-xs border border-[hsl(var(--border))]'
                   : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]'
               }`}
               data-testid="tab-attention"
             >
-              Attention & Integrity
+              <ShieldCheck size={13} className={activeViewTab === 'attention' ? 'text-emerald-500' : ''} />
+              <span>Attention &amp; Integrity</span>
             </button>
             <button
+              type="button"
               onClick={() => setActiveViewTab('cascade')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
+              className={`flex items-center gap-1.5 px-3.5 py-1.8 text-[11.5px] font-bold rounded-xl transition-all duration-200 cursor-pointer ${
                 activeViewTab === 'cascade'
-                  ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]'
+                  ? 'bg-[hsl(var(--card))] text-[hsl(var(--foreground))] shadow-xs border border-[hsl(var(--border))]'
                   : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]'
               }`}
               data-testid="tab-contamination-cascade"
             >
-              <FileWarning size={12} /> Signature: Contamination Cascade
+              <FileWarning size={13} className={activeViewTab === 'cascade' ? 'text-rose-500' : ''} />
+              <span>Signature: Contamination Cascade</span>
             </button>
             <button
+              type="button"
               onClick={() => setActiveViewTab('why')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
+              className={`flex items-center gap-1.5 px-3.5 py-1.8 text-[11.5px] font-bold rounded-xl transition-all duration-200 cursor-pointer ${
                 activeViewTab === 'why'
-                  ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]'
+                  ? 'bg-[hsl(var(--card))] text-[hsl(var(--foreground))] shadow-xs border border-[hsl(var(--border))]'
                   : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]'
               }`}
               data-testid="tab-why-decision"
             >
-              <Fingerprint size={12} /> "Why this decision?" Panel
+              <Fingerprint size={13} className={activeViewTab === 'why' ? 'text-cyan-500' : ''} />
+              <span>"Why this decision?" Panel</span>
             </button>
             <button
+              type="button"
               onClick={() => setActiveViewTab('graph')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
+              className={`flex items-center gap-1.5 px-3.5 py-1.8 text-[11.5px] font-bold rounded-xl transition-all duration-200 cursor-pointer ${
                 activeViewTab === 'graph'
-                  ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]'
+                  ? 'bg-[hsl(var(--card))] text-[hsl(var(--foreground))] shadow-xs border border-[hsl(var(--border))]'
                   : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]'
               }`}
               data-testid="tab-dependency-graph"
             >
-              <GitFork size={12} /> Dependency Graph
+              <GitFork size={13} className={activeViewTab === 'graph' ? 'text-purple-500' : ''} />
+              <span>Dependency Graph</span>
             </button>
             <button
+              type="button"
               onClick={() => setActiveViewTab('blast')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
+              className={`flex items-center gap-1.5 px-3.5 py-1.8 text-[11.5px] font-bold rounded-xl transition-all duration-200 cursor-pointer ${
                 activeViewTab === 'blast'
-                  ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]'
+                  ? 'bg-[hsl(var(--card))] text-[hsl(var(--foreground))] shadow-xs border border-[hsl(var(--border))]'
                   : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]'
               }`}
               data-testid="tab-blast-radius"
             >
-              <ShieldAlert size={12} /> Blast Radius
+              <ShieldAlert size={13} className={activeViewTab === 'blast' ? 'text-amber-500' : ''} />
+              <span>Blast Radius</span>
             </button>
             <button
+              type="button"
               onClick={() => setActiveViewTab('claims')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
+              className={`flex items-center gap-1.5 px-3.5 py-1.8 text-[11.5px] font-bold rounded-xl transition-all duration-200 cursor-pointer ${
                 activeViewTab === 'claims'
-                  ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]'
+                  ? 'bg-[hsl(var(--card))] text-[hsl(var(--foreground))] shadow-xs border border-[hsl(var(--border))]'
                   : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]'
               }`}
               data-testid="tab-claim-map"
             >
-              <FileText size={12} /> Grant Claim Map
+              <FileText size={13} className={activeViewTab === 'claims' ? 'text-blue-500' : ''} />
+              <span>Grant Claim Map</span>
             </button>
           </div>
 
-          <span className="text-[10px] gg-mono text-[hsl(var(--muted-foreground))]">
-            Workspace: {activePersona.title} ({activePersona.lab})
-          </span>
+          <div className="flex items-center gap-2 font-mono text-[10.5px] text-[hsl(var(--muted-foreground))]">
+            <span className="size-1.5 rounded-full bg-emerald-500" />
+            <span>Workspace: <strong className="text-[hsl(var(--foreground))]">{activePersona.title}</strong> ({activePersona.lab})</span>
+          </div>
         </div>
 
         {activeViewTab === 'cascade' && <ContaminationCascade />}
@@ -815,25 +839,25 @@ export default function Overview() {
         {activeViewTab === 'claims' && <ClaimMonitor />}
       </div>
 
-      {/* 6. RISK POSTURE & LIVE ACTIVITY DUAL PANELS (SentinelMesh Calm Theme) */}
+      {/* 6. RISK POSTURE & LIVE ACTIVITY DUAL PANELS */}
       <section className="grid gap-6 lg:grid-cols-2">
         {/* Left: Risk Posture */}
-        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs space-y-5">
+        <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 shadow-xs space-y-5">
           <div className="flex items-center justify-between">
             <div>
-              <div className="font-mono text-[10px] font-bold uppercase tracking-[.18em] text-slate-400 dark:text-slate-500">
-                RISK POSTURE
+              <div className="font-mono text-[9.5px] font-bold uppercase tracking-[.2em] text-emerald-600 dark:text-emerald-400">
+                RISK POSTURE &amp; READINESS
               </div>
-              <h3 className="mt-1 text-[18px] font-bold tracking-tight text-slate-900 dark:text-slate-100">
-                A readable risk picture
+              <h3 className="mt-1 text-[18px] font-extrabold tracking-tight text-[hsl(var(--foreground))]">
+                Consequence-Weighted Radar
               </h3>
-              <p className="text-[12px] text-slate-500 dark:text-slate-400">
-                Current deadlines, weighted by consequence.
+              <p className="text-[12px] text-[hsl(var(--muted-foreground))]">
+                Current laboratory grant deadlines weighted by compliance risk.
               </p>
             </div>
             <Link
               href="/compliance"
-              className="inline-flex items-center gap-1 font-mono text-[11px] font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+              className="inline-flex items-center gap-1 font-mono text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline transition-colors"
             >
               <span>View registry</span>
               <ArrowUpRight size={13} />
@@ -843,94 +867,103 @@ export default function Overview() {
           <div className="space-y-4 pt-1">
             {/* Row 1: On track */}
             <div>
-              <div className="flex justify-between items-center text-[12px] font-medium text-slate-600 dark:text-slate-300 mb-1.5">
-                <span>On track</span>
-                <span className="font-mono font-bold text-slate-900 dark:text-white">
-                  {String(onTrackCount).padStart(2, '0')}
+              <div className="flex justify-between items-center text-[12px] font-semibold text-[hsl(var(--foreground))] mb-1.5">
+                <span className="flex items-center gap-1.5">
+                  <span className="size-2 rounded-full bg-emerald-500" />
+                  On track
+                </span>
+                <span className="font-mono font-bold text-[hsl(var(--foreground))]">
+                  {String(onTrackCount).padStart(2, '0')} ({onTrackPct}%)
                 </span>
               </div>
-              <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                <div className="h-full bg-slate-700 dark:bg-slate-300 rounded-full transition-all duration-500" style={{ width: `${onTrackPct}%` }} />
+              <div className="h-2 w-full bg-[hsl(var(--muted))] rounded-full overflow-hidden p-0.5 border border-[hsl(var(--border)/.5)]">
+                <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-500" style={{ width: `${onTrackPct}%` }} />
               </div>
             </div>
 
             {/* Row 2: At risk */}
             <div>
-              <div className="flex justify-between items-center text-[12px] font-medium text-slate-600 dark:text-slate-300 mb-1.5">
-                <span>At risk</span>
-                <span className="font-mono font-bold text-slate-900 dark:text-white">
-                  {String(dueSoonCount).padStart(2, '0')}
+              <div className="flex justify-between items-center text-[12px] font-semibold text-[hsl(var(--foreground))] mb-1.5">
+                <span className="flex items-center gap-1.5">
+                  <span className="size-2 rounded-full bg-amber-500" />
+                  At risk
+                </span>
+                <span className="font-mono font-bold text-[hsl(var(--foreground))]">
+                  {String(dueSoonCount).padStart(2, '0')} ({dueSoonPct}%)
                 </span>
               </div>
-              <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                <div className="h-full bg-slate-500 dark:bg-slate-400 rounded-full transition-all duration-500" style={{ width: `${dueSoonPct}%` }} />
+              <div className="h-2 w-full bg-[hsl(var(--muted))] rounded-full overflow-hidden p-0.5 border border-[hsl(var(--border)/.5)]">
+                <div className="h-full bg-gradient-to-r from-amber-500 to-orange-400 rounded-full transition-all duration-500" style={{ width: `${dueSoonPct}%` }} />
               </div>
             </div>
 
             {/* Row 3: Overdue */}
             <div>
-              <div className="flex justify-between items-center text-[12px] font-medium text-slate-600 dark:text-slate-300 mb-1.5">
-                <span>Overdue</span>
-                <span className="font-mono font-bold text-slate-900 dark:text-white">
-                  {String(overdueCount).padStart(2, '0')}
+              <div className="flex justify-between items-center text-[12px] font-semibold text-[hsl(var(--foreground))] mb-1.5">
+                <span className="flex items-center gap-1.5">
+                  <span className="size-2 rounded-full bg-rose-500" />
+                  Overdue
+                </span>
+                <span className="font-mono font-bold text-[hsl(var(--foreground))]">
+                  {String(overdueCount).padStart(2, '0')} ({overduePct}%)
                 </span>
               </div>
-              <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                <div className="h-full bg-slate-400 dark:bg-slate-500 rounded-full transition-all duration-500" style={{ width: `${overduePct}%` }} />
+              <div className="h-2 w-full bg-[hsl(var(--muted))] rounded-full overflow-hidden p-0.5 border border-[hsl(var(--border)/.5)]">
+                <div className="h-full bg-gradient-to-r from-rose-500 to-red-400 rounded-full transition-all duration-500" style={{ width: `${overduePct}%` }} />
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right: Live Activity - dynamically populated from real activity records */}
-        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs space-y-4">
+        {/* Right: Live Activity */}
+        <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 shadow-xs space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <div className="font-mono text-[10px] font-bold uppercase tracking-[.18em] text-slate-400 dark:text-slate-500">
-                LIVE ACTIVITY
+              <div className="font-mono text-[9.5px] font-bold uppercase tracking-[.2em] text-emerald-600 dark:text-emerald-400">
+                LIVE ACTIVITY STREAM
               </div>
-              <h3 className="mt-1 text-[18px] font-bold tracking-tight text-slate-900 dark:text-slate-100">
-                What is happening now
+              <h3 className="mt-1 text-[18px] font-extrabold tracking-tight text-[hsl(var(--foreground))]">
+                Autonomous Action Log
               </h3>
             </div>
             <Link
               href="/activity"
-              className="inline-flex items-center gap-1 font-mono text-[11px] font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+              className="inline-flex items-center gap-1 font-mono text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline transition-colors"
             >
               <span>Full stream</span>
               <ArrowUpRight size={13} />
             </Link>
           </div>
 
-          <div className="space-y-3.5 pt-1">
+          <div className="space-y-3 pt-1">
             {activity.length > 0 ? (
               activity.slice(0, 3).map((item) => (
-                <div key={item.id} className="flex items-start gap-3">
-                  <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                    <span className="size-1.5 rounded-full bg-slate-600 dark:bg-slate-400" />
+                <div key={item.id} className="flex items-start gap-3 p-2 rounded-xl hover:bg-[hsl(var(--muted)/.4)] transition-colors">
+                  <div className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/25">
+                    <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <span className="text-[12px] font-bold text-slate-900 dark:text-slate-100 truncate max-w-[200px]">
+                        <span className="text-[12.5px] font-bold text-[hsl(var(--foreground))] truncate max-w-[220px]">
                           {item.title}
                         </span>
-                        <span className="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-[9px] font-semibold text-slate-600 dark:text-slate-300 uppercase">
+                        <span className="rounded bg-[hsl(var(--muted))] px-1.5 py-0.5 font-mono text-[8.5px] font-bold text-[hsl(var(--muted-foreground))] uppercase border border-[hsl(var(--border))]">
                           {item.kind || 'sweep'}
                         </span>
                       </div>
-                      <span className="font-mono text-[10px] text-slate-400 shrink-0">
+                      <span className="font-mono text-[10px] text-[hsl(var(--muted-foreground))] shrink-0">
                         {formatActivityTimestamp(item.timestamp)}
                       </span>
                     </div>
-                    <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                    <p className="mt-0.5 text-[11.5px] text-[hsl(var(--muted-foreground))] line-clamp-1">
                       {item.description}
                     </p>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="py-4 text-center text-xs text-slate-400">
+              <div className="py-5 text-center text-xs text-[hsl(var(--muted-foreground))]">
                 Awaiting upcoming autonomous scan or PI signoff...
               </div>
             )}
@@ -940,48 +973,48 @@ export default function Overview() {
 
       {/* 7. WHAT CHANGED SINCE YESTERDAY & AUTONOMOUS WATCH CARD */}
       <section className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-sm space-y-3">
-          <div className="gg-mono text-[9px] uppercase tracking-wider font-extrabold text-[hsl(var(--muted-foreground))]">
-            Delta Tracker
+        <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 shadow-xs space-y-4">
+          <div className="font-mono text-[9.5px] uppercase tracking-wider font-extrabold text-emerald-600 dark:text-emerald-400">
+            PROVENANCE DELTA TRACKER
           </div>
-          <h3 className="text-[14px] font-bold text-[hsl(var(--foreground))]">
+          <h3 className="text-[16px] font-extrabold text-[hsl(var(--foreground))] tracking-tight">
             What Changed Since Yesterday?
           </h3>
 
-          <div className="grid grid-cols-2 gap-2 text-[11px]">
-            <div className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-2.5">
-              <span className="font-bold text-red-600 dark:text-red-400">+1 Retraction</span>
-              <p className="text-[10px] text-[hsl(var(--muted-foreground))]">Isolated from active proposals</p>
+          <div className="grid grid-cols-2 gap-3 text-[11.5px]">
+            <div className="rounded-xl border border-rose-500/25 bg-rose-500/5 dark:bg-rose-950/20 p-3 shadow-2xs">
+              <span className="font-bold text-rose-600 dark:text-rose-400 font-mono text-[12px]">+1 Retraction</span>
+              <p className="text-[10.5px] text-[hsl(var(--muted-foreground))] mt-0.5">Isolated from active proposals</p>
             </div>
-            <div className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-2.5">
-              <span className="font-bold text-amber-600 dark:text-amber-400">+1 Propagation Cascade</span>
-              <p className="text-[10px] text-[hsl(var(--muted-foreground))]">Escalated for human judgment</p>
+            <div className="rounded-xl border border-amber-500/25 bg-amber-500/5 dark:bg-amber-950/20 p-3 shadow-2xs">
+              <span className="font-bold text-amber-600 dark:text-amber-400 font-mono text-[12px]">+1 Cascade Risk</span>
+              <p className="text-[10.5px] text-[hsl(var(--muted-foreground))] mt-0.5">Escalated for human judgment</p>
             </div>
-            <div className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-2.5">
-              <span className="font-bold text-emerald-600 dark:text-emerald-400">-1 Pending Decision</span>
-              <p className="text-[10px] text-[hsl(var(--muted-foreground))]">Institutional memory stored</p>
+            <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/5 dark:bg-emerald-950/20 p-3 shadow-2xs">
+              <span className="font-bold text-emerald-600 dark:text-emerald-400 font-mono text-[12px]">-1 Pending Decision</span>
+              <p className="text-[10.5px] text-[hsl(var(--muted-foreground))] mt-0.5">Institutional memory stored</p>
             </div>
-            <div className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-2.5">
-              <span className="font-bold text-blue-600 dark:text-blue-400">+1 Draft Assembled</span>
-              <p className="text-[10px] text-[hsl(var(--muted-foreground))]">Ready for PI narrative review</p>
+            <div className="rounded-xl border border-cyan-500/25 bg-cyan-500/5 dark:bg-cyan-950/20 p-3 shadow-2xs">
+              <span className="font-bold text-cyan-600 dark:text-cyan-400 font-mono text-[12px]">+1 Draft Assembled</span>
+              <p className="text-[10.5px] text-[hsl(var(--muted-foreground))] mt-0.5">Ready for PI narrative review</p>
             </div>
           </div>
         </div>
 
-        <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-sm space-y-3">
-          <div className="gg-mono text-[9px] uppercase tracking-wider font-extrabold text-[hsl(var(--muted-foreground))]">
-            Quiet by Default Philosophy
+        <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 shadow-xs space-y-4">
+          <div className="font-mono text-[9.5px] uppercase tracking-wider font-extrabold text-emerald-600 dark:text-emerald-400">
+            QUIET BY DEFAULT PHILOSOPHY
           </div>
-          <h3 className="text-[14px] font-bold text-[hsl(var(--foreground))]">
-            The Agent That Doesn't Annoy
+          <h3 className="text-[16px] font-extrabold text-[hsl(var(--foreground))] tracking-tight">
+            High Signal, Zero Notification Fatigue
           </h3>
-          <p className="text-[11px] text-[hsl(var(--muted-foreground))] leading-relaxed">
-            Grant Guardian only alerts when your direct intervention is required. Routine checks across all 46 clean citations completed silently with zero banner fatigue.
+          <p className="text-[12px] text-[hsl(var(--muted-foreground))] leading-relaxed">
+            Grant Guardian only interrupts your deep work when your direct scientific authority is required. Routine checks across all 34 clean citations run silently in the background with zero banner noise.
           </p>
           <div className="pt-2 flex items-center gap-2">
-            <span className="size-2 rounded-full bg-emerald-500" />
-            <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300">
-              46 citations nominal · Zero noise generated
+            <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
+              34 citations nominal · Zero interruption overhead
             </span>
           </div>
         </div>

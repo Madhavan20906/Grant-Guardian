@@ -128,50 +128,54 @@ export default function ActivityPage() {
         }
       />
 
-      {/* Mode Switcher Tabs */}
-      <div className="flex items-center justify-between border-b border-[hsl(var(--border))] pb-2">
-        <div className="flex items-center gap-2">
+      {/* Mode Switcher Tabs - High-End Segmented Pill Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[hsl(var(--border))] pb-3">
+        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[hsl(var(--muted)/.4)] border border-[hsl(var(--border)/.6)] overflow-x-auto">
           <button
             type="button"
             onClick={() => setActiveTab('log')}
-            className={`px-3 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
               activeTab === 'log'
-                ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]'
-                : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]'
+                ? 'bg-[hsl(var(--card))] text-[hsl(var(--foreground))] shadow-xs border border-[hsl(var(--border))]'
+                : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
             }`}
             data-testid="tab-activity-log"
           >
-            Decision Audit Log
+            <ActivityIcon size={13} />
+            <span>Decision Audit Log</span>
           </button>
           <button
             type="button"
             onClick={() => setActiveTab('console')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
               activeTab === 'console'
-                ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]'
-                : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]'
+                ? 'bg-[hsl(var(--card))] text-[hsl(var(--foreground))] shadow-xs border border-[hsl(var(--border))]'
+                : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
             }`}
             data-testid="tab-agent-console"
           >
-            <Cpu size={12} /> Agent Console & Live Trace
+            <Cpu size={13} />
+            <span>Agent Telemetry &amp; Trace</span>
           </button>
           <button
             type="button"
             onClick={() => setActiveTab('trust')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
               activeTab === 'trust'
-                ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]'
-                : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]'
+                ? 'bg-[hsl(var(--card))] text-[hsl(var(--foreground))] shadow-xs border border-[hsl(var(--border))]'
+                : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
             }`}
             data-testid="tab-trust-center"
           >
-            <Lock size={12} /> Trust Center & Restraint Ledger
+            <Lock size={13} />
+            <span>Trust Center &amp; Restraint Ledger</span>
           </button>
         </div>
 
-        <span className="text-[10px] gg-mono text-[hsl(var(--muted-foreground))]">
-          Deterministic Safety Invariant Active
-        </span>
+        <div className="flex items-center gap-2 text-[10px] gg-mono text-[hsl(var(--muted-foreground))]">
+          <span className="size-1.5 rounded-full bg-emerald-500" />
+          <span>Deterministic Safety Invariant Active</span>
+        </div>
       </div>
 
       {activeTab === 'trust' && <TrustCenter />}
@@ -326,81 +330,93 @@ export default function ActivityPage() {
       {activeTab === 'log' && (
         <div className="space-y-6">
           {/* Activity Breakdown Metric Row - Clickable Interactive Query Filters */}
-          <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
+          <div className="grid gap-3.5 grid-cols-2 sm:grid-cols-4">
             <button
               type="button"
               onClick={() => setTone('all')}
-              className={`rounded-xl border p-3.5 text-left transition-all cursor-pointer shadow-xs ${
+              className={`rounded-2xl border p-4 text-left transition-all cursor-pointer shadow-xs relative overflow-hidden ${
                 tone === 'all'
-                  ? 'border-[hsl(var(--primary))] bg-[hsl(var(--primary)/.08)] ring-1 ring-[hsl(var(--primary)/.3)]'
-                  : 'border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:bg-[hsl(var(--muted)/.4)]'
+                  ? 'border-blue-500/50 bg-gradient-to-b from-blue-500/10 via-[hsl(var(--card))] to-[hsl(var(--card))] ring-2 ring-blue-500/20'
+                  : 'border-[hsl(var(--border))] bg-gradient-to-b from-[hsl(var(--card))] to-[hsl(var(--muted)/.2)] hover:border-[hsl(var(--ring)/.4)]'
               }`}
               data-testid="filter-stat-all"
             >
-              <div className="gg-mono text-[9px] uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-                All Activity
+              <div className="flex items-center justify-between">
+                <span className="gg-mono text-[9px] uppercase tracking-wider text-[hsl(var(--muted-foreground))] font-bold">
+                  All Activity
+                </span>
+                <span className={`size-1.5 rounded-full ${tone === 'all' ? 'bg-blue-500' : 'bg-transparent'}`} />
               </div>
-              <div className="mt-1.5 text-[22px] font-extrabold text-[hsl(var(--foreground))]">
+              <div className="mt-2 text-[26px] font-extrabold text-[hsl(var(--foreground))] tabular-nums">
                 {deduplicatedActivity.length}
               </div>
-              <div className="text-[10px] text-[hsl(var(--muted-foreground))]">Complete audit trail</div>
+              <div className="text-[11px] text-[hsl(var(--muted-foreground))] font-medium">Complete audit trail</div>
             </button>
 
             <button
               type="button"
               onClick={() => setTone(tone === 'danger' ? 'all' : 'danger')}
-              className={`rounded-xl border p-3.5 text-left transition-all cursor-pointer shadow-xs ${
+              className={`rounded-2xl border p-4 text-left transition-all cursor-pointer shadow-xs relative overflow-hidden ${
                 tone === 'danger'
-                  ? 'border-rose-400 dark:border-rose-600 bg-rose-500/10 ring-1 ring-rose-500/20'
-                  : 'border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:bg-[hsl(var(--muted)/.4)]'
+                  ? 'border-rose-500/60 bg-gradient-to-b from-rose-500/15 via-[hsl(var(--card))] to-[hsl(var(--card))] ring-2 ring-rose-500/30'
+                  : 'border-rose-500/20 bg-gradient-to-b from-rose-500/5 via-[hsl(var(--card))] to-[hsl(var(--card))] hover:border-rose-500/40'
               }`}
               data-testid="filter-stat-danger"
             >
-              <div className="gg-mono text-[9px] uppercase tracking-wider text-rose-600 dark:text-rose-400 font-bold">
-                Active Escalations
+              <div className="flex items-center justify-between">
+                <span className="gg-mono text-[9px] uppercase tracking-wider text-rose-600 dark:text-rose-400 font-bold">
+                  Active Escalations
+                </span>
+                <span className={`size-1.5 rounded-full ${tone === 'danger' ? 'bg-rose-500' : 'bg-transparent'}`} />
               </div>
-              <div className="mt-1.5 text-[22px] font-extrabold text-rose-600 dark:text-rose-400">
+              <div className="mt-2 text-[26px] font-extrabold text-rose-600 dark:text-rose-400 tabular-nums">
                 {deduplicatedActivity.filter((a: Activity) => a.tone === 'danger').length}
               </div>
-              <div className="text-[10px] text-[hsl(var(--muted-foreground))]">Requires PI scientific judgment</div>
+              <div className="text-[11px] text-[hsl(var(--muted-foreground))] font-medium">Requires PI scientific review</div>
             </button>
 
             <button
               type="button"
               onClick={() => setTone(tone === 'warning' ? 'all' : 'warning')}
-              className={`rounded-xl border p-3.5 text-left transition-all cursor-pointer shadow-xs ${
+              className={`rounded-2xl border p-4 text-left transition-all cursor-pointer shadow-xs relative overflow-hidden ${
                 tone === 'warning'
-                  ? 'border-amber-400 dark:border-amber-600 bg-amber-500/10 ring-1 ring-amber-500/20'
-                  : 'border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:bg-[hsl(var(--muted)/.4)]'
+                  ? 'border-amber-500/60 bg-gradient-to-b from-amber-500/15 via-[hsl(var(--card))] to-[hsl(var(--card))] ring-2 ring-amber-500/30'
+                  : 'border-amber-500/20 bg-gradient-to-b from-amber-500/5 via-[hsl(var(--card))] to-[hsl(var(--card))] hover:border-amber-500/40'
               }`}
               data-testid="filter-stat-warning"
             >
-              <div className="gg-mono text-[9px] uppercase tracking-wider text-amber-600 dark:text-amber-400 font-bold">
-                Reviews & Warnings
+              <div className="flex items-center justify-between">
+                <span className="gg-mono text-[9px] uppercase tracking-wider text-amber-600 dark:text-amber-400 font-bold">
+                  Reviews &amp; Warnings
+                </span>
+                <span className={`size-1.5 rounded-full ${tone === 'warning' ? 'bg-amber-500' : 'bg-transparent'}`} />
               </div>
-              <div className="mt-1.5 text-[22px] font-extrabold text-amber-600 dark:text-amber-400">
+              <div className="mt-2 text-[26px] font-extrabold text-amber-600 dark:text-amber-400 tabular-nums">
                 {deduplicatedActivity.filter((a: Activity) => a.tone === 'warning').length}
               </div>
-              <div className="text-[10px] text-[hsl(var(--muted-foreground))]">Propagation & deadline alerts</div>
+              <div className="text-[11px] text-[hsl(var(--muted-foreground))] font-medium">Propagation &amp; deadline alerts</div>
             </button>
 
             <button
               type="button"
               onClick={() => setTone(tone === 'success' ? 'all' : 'success')}
-              className={`rounded-xl border p-3.5 text-left transition-all cursor-pointer shadow-xs ${
+              className={`rounded-2xl border p-4 text-left transition-all cursor-pointer shadow-xs relative overflow-hidden ${
                 tone === 'success'
-                  ? 'border-emerald-400 dark:border-emerald-600 bg-emerald-500/10 ring-1 ring-emerald-500/20'
-                  : 'border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:bg-[hsl(var(--muted)/.4)]'
+                  ? 'border-emerald-500/60 bg-gradient-to-b from-emerald-500/15 via-[hsl(var(--card))] to-[hsl(var(--card))] ring-2 ring-emerald-500/30'
+                  : 'border-emerald-500/20 bg-gradient-to-b from-emerald-500/5 via-[hsl(var(--card))] to-[hsl(var(--card))] hover:border-emerald-500/40'
               }`}
               data-testid="filter-stat-success"
             >
-              <div className="gg-mono text-[9px] uppercase tracking-wider text-emerald-600 dark:text-emerald-400 font-bold">
-                Cleared Sweeps
+              <div className="flex items-center justify-between">
+                <span className="gg-mono text-[9px] uppercase tracking-wider text-emerald-600 dark:text-emerald-400 font-bold">
+                  Cleared Sweeps
+                </span>
+                <span className={`size-1.5 rounded-full ${tone === 'success' ? 'bg-emerald-500' : 'bg-transparent'}`} />
               </div>
-              <div className="mt-1.5 text-[22px] font-extrabold text-emerald-600 dark:text-emerald-400">
+              <div className="mt-2 text-[26px] font-extrabold text-emerald-600 dark:text-emerald-400 tabular-nums">
                 {deduplicatedActivity.filter((a: Activity) => a.tone === 'success').length}
               </div>
-              <div className="text-[10px] text-[hsl(var(--muted-foreground))]">Verified clean signals</div>
+              <div className="text-[11px] text-[hsl(var(--muted-foreground))] font-medium">Verified clean signals</div>
             </button>
           </div>
 
@@ -410,15 +426,15 @@ export default function ActivityPage() {
             <LoadingBlock lines={9} />
           ) : (
             <section
-              className="overflow-hidden rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]"
+              className="overflow-hidden rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-sm"
               data-testid="section-activity-log"
             >
-              <div className="flex flex-col gap-3 border-b border-[hsl(var(--border))] bg-[hsl(var(--muted)/.35)] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-3 border-b border-[hsl(var(--border))] bg-gradient-to-b from-[hsl(var(--muted)/.3)] to-transparent px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <div className="gg-mono text-[9px] uppercase tracking-[.17em] text-[hsl(var(--muted-foreground))]">
+                  <div className="gg-mono text-[9px] uppercase tracking-[.17em] text-[hsl(var(--muted-foreground))] font-bold">
                     Chronological Record
                   </div>
-                  <h2 className="mt-1 text-[15px] font-bold">Recent Decisions & Sweep Log</h2>
+                  <h2 className="mt-1 text-sm font-bold text-[hsl(var(--foreground))]">Recent Decisions &amp; Autonomous Sweep Log</h2>
                 </div>
                 <label className="relative">
                   <Filter
@@ -428,14 +444,14 @@ export default function ActivityPage() {
                   <select
                     value={tone}
                     onChange={(e) => setTone(e.target.value)}
-                    className="h-8 appearance-none rounded-md border border-[hsl(var(--input))] bg-[hsl(var(--card))] pl-8 pr-7 text-[10px] outline-none"
+                    className="h-9 appearance-none rounded-xl border border-[hsl(var(--input))] bg-[hsl(var(--background))] pl-8 pr-8 text-xs font-medium outline-none focus:border-blue-500 cursor-pointer"
                     data-testid="select-activity-tone"
                   >
                     <option value="all">All activity</option>
-                    <option value="danger">Escalations</option>
+                    <option value="danger">Active Escalations</option>
                     <option value="warning">Needs review</option>
-                    <option value="success">Cleared</option>
-                    <option value="neutral">Routine</option>
+                    <option value="success">Cleared sweeps</option>
+                    <option value="neutral">Routine events</option>
                   </select>
                 </label>
               </div>

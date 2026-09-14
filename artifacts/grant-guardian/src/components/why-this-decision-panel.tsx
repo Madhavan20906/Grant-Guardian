@@ -169,33 +169,34 @@ export function WhyThisDecisionPanel({
                 className="w-full text-left p-4 flex items-center justify-between gap-4 hover:bg-[hsl(var(--muted)/.5)] rounded-xl cursor-pointer"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex size-7 shrink-0 items-center justify-center rounded-full font-mono text-[11px] font-bold bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] border border-[hsl(var(--border))]">
+                  <div className="flex size-7 shrink-0 items-center justify-center rounded-xl font-mono text-[11px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/25">
                     {step.stepNumber}
                   </div>
 
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-mono text-[11px] font-bold text-[hsl(var(--foreground))]">
+                      <span className="font-mono text-xs font-bold text-[hsl(var(--foreground))]">
                         {step.action}
                       </span>
-                      <span className="font-mono text-[9px] bg-[hsl(var(--muted))] px-1.5 py-0.5 rounded text-[hsl(var(--muted-foreground))] border border-[hsl(var(--border))]">
+                      <span className="font-mono text-[9px] bg-[hsl(var(--muted))] px-2 py-0.5 rounded-md text-[hsl(var(--muted-foreground))] border border-[hsl(var(--border))]">
                         tool: {step.toolName}
                       </span>
                       {step.humanApprovalRequired && (
-                        <span className="rounded bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] border border-[hsl(var(--border))] font-mono text-[9px] font-bold px-1.5 py-0.5">
-                          ⚠ Human Approval Required
+                        <span className="rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 font-mono text-[9px] font-bold px-2 py-0.5 flex items-center gap-1">
+                          <AlertTriangle size={10} />
+                          <span>PI Boundary Enforced</span>
                         </span>
                       )}
                     </div>
-                    <p className="mt-0.5 text-[11px] text-[hsl(var(--muted-foreground))] truncate">
+                    <p className="mt-0.5 text-xs text-[hsl(var(--muted-foreground))] truncate font-medium">
                       Detected: {step.detected}
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="font-mono text-[10px] text-[hsl(var(--muted-foreground))] hidden sm:inline">
-                    {step.latencyMs ? `${step.latencyMs}ms` : ''}
+                  <span className="font-mono text-[10px] text-emerald-600 dark:text-emerald-400 font-bold hidden sm:inline bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
+                    {step.latencyMs ? `${step.latencyMs}ms` : 'verified'}
                   </span>
                   {isExpanded ? <ChevronUp size={16} className="text-[hsl(var(--muted-foreground))]" /> : <ChevronDown size={16} className="text-[hsl(var(--muted-foreground))]" />}
                 </div>
@@ -203,37 +204,37 @@ export function WhyThisDecisionPanel({
 
               {/* Detailed Auditable Breakdown */}
               {isExpanded && (
-                <div className="px-4 pb-4 pt-1 space-y-3 bg-[hsl(var(--muted)/.25)] rounded-b-xl border-t border-[hsl(var(--border))]">
+                <div className="px-4 pb-4 pt-2 space-y-3 bg-[hsl(var(--muted)/.25)] rounded-b-2xl border-t border-[hsl(var(--border))]">
                   <div className="grid sm:grid-cols-2 gap-3 pt-2">
                     {/* Detected */}
-                    <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3 space-y-1">
+                    <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3.5 space-y-1 shadow-xs">
                       <div className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-                        <span className="size-1.5 rounded-full bg-[hsl(var(--muted-foreground))]" />
-                        Detected
+                        <span className="size-1.5 rounded-full bg-blue-500" />
+                        <span>Detected</span>
                       </div>
-                      <p className="text-[12px] text-[hsl(var(--foreground))] leading-relaxed font-medium">
+                      <p className="text-xs text-[hsl(var(--foreground))] leading-relaxed font-medium">
                         {step.detected}
                       </p>
                     </div>
 
                     {/* Action */}
-                    <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3 space-y-1">
+                    <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3.5 space-y-1 shadow-xs">
                       <div className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-                        <span className="size-1.5 rounded-full bg-[hsl(var(--muted-foreground))]" />
-                        Agent Action
+                        <span className="size-1.5 rounded-full bg-purple-500" />
+                        <span>Agent Action</span>
                       </div>
-                      <p className="text-[12px] text-[hsl(var(--foreground))] leading-relaxed font-medium">
+                      <p className="text-xs text-[hsl(var(--foreground))] leading-relaxed font-medium">
                         {step.action}
                       </p>
                     </div>
 
                     {/* Why this source */}
-                    <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3 space-y-1">
+                    <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3.5 space-y-1 shadow-xs">
                       <div className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-                        <Database size={11} />
-                        Why This Source
+                        <Database size={11} className="text-blue-500" />
+                        <span>Why This Source</span>
                       </div>
-                      <p className="text-[12px] text-[hsl(var(--foreground))] leading-relaxed font-medium">
+                      <p className="text-xs text-[hsl(var(--foreground))] leading-relaxed font-medium">
                         {step.whyThisSource}
                       </p>
                       <div className="font-mono text-[10px] text-[hsl(var(--muted-foreground))] pt-0.5">
@@ -242,12 +243,12 @@ export function WhyThisDecisionPanel({
                     </div>
 
                     {/* Result */}
-                    <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3 space-y-1">
+                    <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3.5 space-y-1 shadow-xs">
                       <div className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--foreground))]">
-                        <CheckCircle2 size={11} />
-                        Verification Result
+                        <CheckCircle2 size={11} className="text-emerald-500" />
+                        <span>Verification Result</span>
                       </div>
-                      <p className="text-[12px] text-[hsl(var(--foreground))] leading-relaxed font-medium">
+                      <p className="text-xs text-[hsl(var(--foreground))] leading-relaxed font-medium">
                         {step.result}
                       </p>
                     </div>

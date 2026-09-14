@@ -15,6 +15,7 @@ import {
   ArrowRight,
   Sparkles,
 } from 'lucide-react';
+import { LogoMark } from '@/components/guardian-ui';
 
 export default function AuthPage() {
   const [, setLocation] = useLocation();
@@ -108,40 +109,28 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#0b1120] text-slate-100 flex flex-col justify-between selection:bg-amber-500/30">
+    <div className="min-h-screen w-full bg-[#080d1a] text-slate-100 flex flex-col justify-between selection:bg-amber-500/30">
       {/* Top Banner Branding */}
-      <header className="w-full border-b border-slate-800/80 bg-slate-900/60 backdrop-blur px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex size-9 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400 font-bold border border-amber-500/30 shadow-xs">
-            🛡️
-          </div>
-          <div>
-            <div className="text-[15px] font-bold tracking-tight text-white flex items-center gap-2">
-              <span>GrantGuardian</span>
-              <span className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-amber-300 uppercase tracking-widest">
-                v2.4
-              </span>
-            </div>
-            <div className="text-[10px] text-slate-400 font-medium">
-              Autonomous Citation Integrity & Lab Governance
-            </div>
-          </div>
-        </div>
+      <header className="w-full border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md px-6 py-4 flex items-center justify-between">
+        <LogoMark />
 
-        <div className="flex items-center gap-2 font-mono text-[11px] text-slate-400">
-          <span className="size-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span>Bedrock Sovereign Node Online</span>
+        <div className="flex items-center gap-2.5 font-mono text-[11px] text-slate-400">
+          <span className="relative flex size-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex size-2 rounded-full bg-emerald-400" />
+          </span>
+          <span className="font-semibold text-slate-300">Bedrock Sovereign Node Online</span>
         </div>
       </header>
 
       {/* Main Authentication Card */}
       <main className="flex-1 flex items-center justify-center p-4 sm:p-8">
-        <div className="w-full max-w-xl rounded-2xl border border-slate-800 bg-slate-900/90 shadow-2xl backdrop-blur-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="w-full max-w-xl rounded-3xl border border-slate-800 bg-slate-900/85 shadow-2xl backdrop-blur-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
           {/* Card Header */}
-          <div className="border-b border-slate-800 px-6 sm:px-8 py-6 bg-slate-950/40">
-            <div className="flex items-center gap-3">
-              <div className="flex size-10 items-center justify-center rounded-xl bg-slate-800 border border-slate-700 text-amber-400 shadow-inner">
-                <ShieldCheck size={20} strokeWidth={2.2} />
+          <div className="border-b border-slate-800/80 px-6 sm:px-8 py-6 bg-slate-950/50">
+            <div className="flex items-center gap-3.5">
+              <div className="flex size-11 items-center justify-center rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400 shadow-inner">
+                <ShieldCheck size={22} strokeWidth={2.2} />
               </div>
               <div>
                 <h1 className="text-lg font-bold text-white tracking-tight">
@@ -161,7 +150,7 @@ export default function AuthPage() {
                   setActiveTab('register');
                   setError(null);
                 }}
-                className={`pb-3 flex items-center gap-2 border-b-2 font-semibold transition-all cursor-pointer ${
+                className={`pb-3 flex items-center gap-2 border-b-2 font-bold transition-all cursor-pointer ${
                   activeTab === 'register'
                     ? 'border-amber-400 text-amber-300'
                     : 'border-transparent text-slate-400 hover:text-slate-200'
@@ -177,7 +166,7 @@ export default function AuthPage() {
                   setActiveTab('signin');
                   setError(null);
                 }}
-                className={`pb-3 flex items-center gap-2 border-b-2 font-semibold transition-all cursor-pointer ${
+                className={`pb-3 flex items-center gap-2 border-b-2 font-bold transition-all cursor-pointer ${
                   activeTab === 'signin'
                     ? 'border-amber-400 text-amber-300'
                     : 'border-transparent text-slate-400 hover:text-slate-200'

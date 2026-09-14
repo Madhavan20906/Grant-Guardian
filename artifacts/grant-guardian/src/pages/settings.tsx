@@ -123,28 +123,30 @@ export default function Settings() {
       <div className="w-full space-y-6">
         {/* Lab & Research Identity Section */}
         <section
-          className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]"
+          className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-sm overflow-hidden"
           data-testid="section-lab-identity"
         >
-          <div className="border-b border-[hsl(var(--border))] px-5 py-4 flex items-center justify-between">
+          <div className="border-b border-[hsl(var(--border))] bg-gradient-to-b from-[hsl(var(--muted)/.3)] to-transparent px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <div className="flex items-center gap-2">
-                <Building2 size={16} className="text-slate-700 dark:text-slate-300" />
-                <h2 className="text-[13px] font-bold">Research Laboratory & Tenant Profile</h2>
+                <span className="flex size-6 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                  <Building2 size={14} />
+                </span>
+                <h2 className="text-sm font-bold text-[hsl(var(--foreground))]">Research Laboratory &amp; Tenant Profile</h2>
               </div>
-              <p className="mt-1 text-[10px] text-[hsl(var(--muted-foreground))]">
+              <p className="mt-0.5 text-xs text-[hsl(var(--muted-foreground))] font-medium">
                 All proposal labels, compliance monitors, and citation blast radii dynamically adapt to this identity.
               </p>
             </div>
-            <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-extrabold uppercase text-emerald-600 dark:text-emerald-400 font-mono">
-              {isAuthenticated ? 'Authenticated Account' : 'Evaluation Mode'}
+            <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-[10px] font-extrabold uppercase text-emerald-700 dark:text-emerald-300 font-mono self-start sm:self-auto">
+              {isAuthenticated ? 'Authenticated Workspace' : 'Evaluation Mode'}
             </span>
           </div>
 
-          <form onSubmit={handleSaveProfile} className="p-5 space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <form onSubmit={handleSaveProfile} className="p-6 space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
               <div className="sm:col-span-1">
-                <label className="block text-[11px] font-bold text-[hsl(var(--foreground))] mb-1">
+                <label className="block text-xs font-bold text-[hsl(var(--foreground))] mb-1.5">
                   Academic Title
                 </label>
                 <input
@@ -152,46 +154,46 @@ export default function Settings() {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="e.g. Dr. / Prof."
-                  className="w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3 py-2 text-xs text-[hsl(var(--foreground))] focus:border-purple-500 focus:outline-none"
+                  className="w-full rounded-xl border border-[hsl(var(--input))] bg-[hsl(var(--background))] px-3.5 py-2.5 text-xs text-[hsl(var(--foreground))] focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 focus:outline-none transition-all"
                 />
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-[11px] font-bold text-[hsl(var(--foreground))] mb-1">
+                <label className="block text-xs font-bold text-[hsl(var(--foreground))] mb-1.5">
                   Principal Investigator / Researcher Name
                 </label>
                 <div className="relative">
-                  <User size={14} className="absolute left-3 top-2.5 text-[hsl(var(--muted-foreground))]" />
+                  <User size={14} className="absolute left-3.5 top-3 text-[hsl(var(--muted-foreground))]" />
                   <input
                     type="text"
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Full Name"
-                    className="w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] pl-9 pr-3 py-2 text-xs text-[hsl(var(--foreground))] focus:border-purple-500 focus:outline-none"
+                    className="w-full rounded-xl border border-[hsl(var(--input))] bg-[hsl(var(--background))] pl-9 pr-3.5 py-2.5 text-xs text-[hsl(var(--foreground))] focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 focus:outline-none transition-all"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
-                <label className="block text-[11px] font-bold text-[hsl(var(--foreground))] mb-1">
+                <label className="block text-xs font-bold text-[hsl(var(--foreground))] mb-1.5">
                   Laboratory / Group Name
                 </label>
                 <div className="relative">
-                  <Building2 size={14} className="absolute left-3 top-2.5 text-[hsl(var(--muted-foreground))]" />
+                  <Building2 size={14} className="absolute left-3.5 top-3 text-[hsl(var(--muted-foreground))]" />
                   <input
                     type="text"
                     required
                     value={labName}
                     onChange={(e) => setLabName(e.target.value)}
                     placeholder="e.g. Translational Therapeutics Lab"
-                    className="w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] pl-9 pr-3 py-2 text-xs text-[hsl(var(--foreground))] focus:border-purple-500 focus:outline-none"
+                    className="w-full rounded-xl border border-[hsl(var(--input))] bg-[hsl(var(--background))] pl-9 pr-3.5 py-2.5 text-xs text-[hsl(var(--foreground))] focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 focus:outline-none transition-all"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-[11px] font-bold text-[hsl(var(--foreground))] mb-1">
+                <label className="block text-xs font-bold text-[hsl(var(--foreground))] mb-1.5">
                   Institution / University
                 </label>
                 <input
@@ -200,31 +202,31 @@ export default function Settings() {
                   value={institution}
                   onChange={(e) => setInstitution(e.target.value)}
                   placeholder="e.g. Harvard University / MIT"
-                  className="w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3 py-2 text-xs text-[hsl(var(--foreground))] focus:border-purple-500 focus:outline-none"
+                  className="w-full rounded-xl border border-[hsl(var(--input))] bg-[hsl(var(--background))] px-3.5 py-2.5 text-xs text-[hsl(var(--foreground))] focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 focus:outline-none transition-all"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
-                <label className="block text-[11px] font-bold text-[hsl(var(--foreground))] mb-1">
+                <label className="block text-xs font-bold text-[hsl(var(--foreground))] mb-1.5">
                   Primary Grant Proposal Title
                 </label>
                 <div className="relative">
-                  <FileText size={14} className="absolute left-3 top-2.5 text-[hsl(var(--muted-foreground))]" />
+                  <FileText size={14} className="absolute left-3.5 top-3 text-[hsl(var(--muted-foreground))]" />
                   <input
                     type="text"
                     required
                     value={proposalName}
                     onChange={(e) => setProposalName(e.target.value)}
                     placeholder="e.g. NIH R01 / NSF CAREER"
-                    className="w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] pl-9 pr-3 py-2 text-xs text-[hsl(var(--foreground))] focus:border-purple-500 focus:outline-none"
+                    className="w-full rounded-xl border border-[hsl(var(--input))] bg-[hsl(var(--background))] pl-9 pr-3.5 py-2.5 text-xs text-[hsl(var(--foreground))] focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 focus:outline-none transition-all"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-[11px] font-bold text-[hsl(var(--foreground))] mb-1">
-                  Research Domain & Focus
+                <label className="block text-xs font-bold text-[hsl(var(--foreground))] mb-1.5">
+                  Research Domain &amp; Focus
                 </label>
                 <input
                   type="text"
@@ -232,14 +234,14 @@ export default function Settings() {
                   value={focus}
                   onChange={(e) => setFocus(e.target.value)}
                   placeholder="e.g. Tissue Engineering & Regenerative Medicine"
-                  className="w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3 py-2 text-xs text-[hsl(var(--foreground))] focus:border-purple-500 focus:outline-none"
+                  className="w-full rounded-xl border border-[hsl(var(--input))] bg-[hsl(var(--background))] px-3.5 py-2.5 text-xs text-[hsl(var(--foreground))] focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 focus:outline-none transition-all"
                 />
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-2 border-t border-[hsl(var(--border))]">
-              <span className="text-[10px] text-[hsl(var(--muted-foreground))]">
-                {profileSaved ? 'Profile updated across active workspace.' : 'Changes apply live.'}
+            <div className="flex items-center justify-between pt-3 border-t border-[hsl(var(--border))]">
+              <span className="text-xs text-[hsl(var(--muted-foreground))] font-medium">
+                {profileSaved ? '✓ Profile updated across active workspace.' : 'Changes apply live.'}
               </span>
               <Button type="submit" disabled={profileSaving} testId="button-save-profile">
                 {profileSaved ? <Check size={14} /> : <Save size={14} />}
@@ -251,16 +253,18 @@ export default function Settings() {
 
         {/* Attention Settings Section */}
         <section
-          className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]"
+          className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-sm overflow-hidden"
           data-testid="section-notification-preferences"
         >
-          <div className="border-b border-[hsl(var(--border))] px-5 py-4">
+          <div className="border-b border-[hsl(var(--border))] bg-gradient-to-b from-[hsl(var(--muted)/.3)] to-transparent px-6 py-4">
             <div className="flex items-center gap-2">
-              <SlidersHorizontal size={15} className="text-[hsl(var(--accent-foreground))]" />
-              <h2 className="text-[13px] font-bold">Attention settings</h2>
+              <span className="flex size-6 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                <SlidersHorizontal size={14} />
+              </span>
+              <h2 className="text-sm font-bold text-[hsl(var(--foreground))]">Attention &amp; Alert Invariants</h2>
             </div>
-            <p className="mt-1 text-[10px] text-[hsl(var(--muted-foreground))]">
-              These preferences shape when the desk interrupts you.
+            <p className="mt-0.5 text-xs text-[hsl(var(--muted-foreground))] font-medium">
+              Configure deterministic threshold criteria for autonomous interruptions and weekly intelligence memos.
             </p>
           </div>
           <div className="divide-y divide-[hsl(var(--border)/.7)]">
@@ -300,8 +304,8 @@ export default function Settings() {
         </section>
 
         <div className="flex items-center justify-end gap-3">
-          <span className="text-[10px] text-[hsl(var(--muted-foreground))]">
-            {prefSaved ? 'Preferences saved to workspace' : 'Changes are not saved yet'}
+          <span className="text-xs text-[hsl(var(--muted-foreground))] font-medium">
+            {prefSaved ? '✓ Preferences saved to workspace' : 'Changes are not saved yet'}
           </span>
           <Button onClick={savePreferences} testId="button-save-preferences">
             {prefSaved && <Check size={14} />}Save preferences
@@ -328,13 +332,13 @@ function PreferenceRow({
   testId: string;
 }) {
   return (
-    <div className="flex items-center gap-4 px-5 py-4">
-      <div className="hidden size-8 shrink-0 items-center justify-center rounded-md bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] sm:flex">
-        <Icon size={15} />
+    <div className="flex items-center gap-4 px-6 py-4 hover:bg-[hsl(var(--muted)/.2)] transition-colors">
+      <div className="hidden size-9 shrink-0 items-center justify-center rounded-xl bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] border border-[hsl(var(--border))] sm:flex">
+        <Icon size={16} />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="text-[11px] font-bold">{title}</div>
-        <div className="mt-1 max-w-[550px] text-[10px] leading-relaxed text-[hsl(var(--muted-foreground))]">
+        <div className="text-xs font-bold text-[hsl(var(--foreground))]">{title}</div>
+        <div className="mt-0.5 max-w-[550px] text-xs leading-relaxed text-[hsl(var(--muted-foreground))] font-medium">
           {detail}
         </div>
       </div>
@@ -343,14 +347,14 @@ function PreferenceRow({
         role="switch"
         aria-checked={checked}
         onClick={onChange}
-        className={`relative h-6 w-10 shrink-0 rounded-full transition-colors ${
-          checked ? 'bg-[hsl(var(--accent-foreground))]' : 'bg-[hsl(var(--muted-foreground)/.3)]'
+        className={`relative h-6 w-11 shrink-0 rounded-full transition-all cursor-pointer ${
+          checked ? 'bg-emerald-600 shadow-sm' : 'bg-[hsl(var(--muted-foreground)/.25)]'
         }`}
         data-testid={testId}
       >
         <span
-          className={`absolute top-1 size-4 rounded-full bg-[hsl(var(--card))] shadow-sm transition-transform ${
-            checked ? 'translate-x-5' : 'translate-x-1'
+          className={`absolute top-0.5 size-5 rounded-full bg-white shadow-md transition-transform ${
+            checked ? 'translate-x-5' : 'translate-x-0.5'
           }`}
         />
       </button>
